@@ -107,6 +107,12 @@
   - [Solution: ex3 — the flipped image](solutions/lesson-017/ex3.md)
   - [Solution: ex4 — per byte versus per row](solutions/lesson-017/ex4.md)
 
+- [Lesson 018 — the optimizer and undefined behavior](lessons/part-0/lesson-018-optimizer-ub.md)
+  - [Solution: ex1 — predict the wreckage](solutions/lesson-018/ex1.md)
+  - [Solution: ex2 — the guard that gets deleted](solutions/lesson-018/ex2.md)
+  - [Solution: ex3 — review a colleague's fill](solutions/lesson-018/ex3.md)
+  - [Solution: ex4 — prove the fix](solutions/lesson-018/ex4.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

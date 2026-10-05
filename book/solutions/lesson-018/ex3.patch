@@ -1,0 +1,28 @@
+diff --git a/sandbox/paint/paint.c b/sandbox/paint/paint.c
+index c1ef4ec..2537204 100644
+--- a/sandbox/paint/paint.c
++++ b/sandbox/paint/paint.c
+@@ -160,6 +160,15 @@ static void ClearBuffer(unsigned char *px, int nbytes, unsigned char v)
+     printf("clear covered %d bytes\n", nbytes);
+ }
+ 
++// FillGradient — a vertical brightness ramp over the whole buffer
++// (exercise 3), with the loop bound the buffer's byte count.
++static void FillGradient(unsigned char *px, int w, int h)
++{
++    int n = w * h * 3;
++    for (int i = 0; i < n; i++)
++        px[i] = (unsigned char)((i / 3) * 255 / (w * h - 1));
++}
++
+ // BuildBmpHeader — lay out the 54-byte BMP header field by field.
+ // 14-byte file header:  "BM", file size, reserved, data offset.
+ // 40-byte info header: size, width, height, planes, bpp, compression,
+@@ -233,6 +242,7 @@ int main(void)
+         return 1;
+     }
+     ClearBuffer(pixels, W * H * 3, 0x20); /* dark gray background */
++    FillGradient(pixels, W, H);          /* the colleague's ramp */
+ 
+     PutPixel(pixels, W, H, 0, 0, 255, 0, 0); /* red, top-left */
+     PutPixel(pixels, W, H, 1, 0, 0, 255, 0); /* green, beside it */

@@ -1,0 +1,29 @@
+diff --git a/sandbox/paint/paint.c b/sandbox/paint/paint.c
+index c1ef4ec..87bf837 100644
+--- a/sandbox/paint/paint.c
++++ b/sandbox/paint/paint.c
+@@ -150,14 +150,18 @@ static void DrawLine(unsigned char *px, int w, int h,
+     }
+ }
+ 
+-// ClearBuffer — fill the buffer with one byte value.  The loop bound is
+-// the buffer size: no wraparound, no undefined behavior, so every
+-// optimization level does the same thing.
++// ClearBuffer — the naive fill again, but with an explicit wrap stop
++// this time (exercise 2): the loop ends when the offset turns negative.
+ static void ClearBuffer(unsigned char *px, int nbytes, unsigned char v)
+ {
+-    for (int i = 0; i < nbytes; i++)
+-        px[i] = v;
+-    printf("clear covered %d bytes\n", nbytes);
++    int i = 0;
++    for (;;) {
++        if (i < nbytes)
++            px[i] = v;
++        i++;
++        if (i < 0) break;     /* stop when the offset wraps negative */
++    }
++    printf("clear ended at offset %d\n", i);
+ }
+ 
+ // BuildBmpHeader — lay out the 54-byte BMP header field by field.

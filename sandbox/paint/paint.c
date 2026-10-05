@@ -1,10 +1,8 @@
-// paint.c — Lesson 017: writing a real image file by hand.
+// paint.c — Lesson 018: the optimizer and undefined behavior.
 //
-// A pixel buffer is bytes (lesson 013), a file header is pinned bytes
-// (lesson 014), rectangles fold-clip (lesson 015), lines rasterize
-// (lesson 016).  Now the buffer becomes a real file: WriteBmp emits the
-// 54-byte header plus bottom-up, padded rows — and a small scene lands
-// in paint.bmp.
+// The lesson-017 ClearBuffer relied on signed overflow to stop.  This is
+// the fix: the loop gets a real bound, so -O0 and -O2 agree on what the
+// program does — and both write the same valid BMP.
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -152,19 +150,14 @@ static void DrawLine(unsigned char *px, int w, int h,
     }
 }
 
-// ClearBuffer — fill the buffer with one byte value.  This fill is
-// written naively on purpose: its stop condition is the offset turning
-// negative, a stop that only a wrapping counter can deliver.
-// Lesson 018 finds out what the optimizer does with it.
+// ClearBuffer — fill the buffer with one byte value.  The loop bound is
+// the buffer size: no wraparound, no undefined behavior, so every
+// optimization level does the same thing.
 static void ClearBuffer(unsigned char *px, int nbytes, unsigned char v)
 {
-    int i = 0;
-    while (i >= 0) {          /* keep going while the offset is positive */
-        if (i < nbytes)       /* clip: never write past the buffer */
-            px[i] = v;
-        i++;
-    }
-    printf("clear ended at offset %d\n", i);
+    for (int i = 0; i < nbytes; i++)
+        px[i] = v;
+    printf("clear covered %d bytes\n", nbytes);
 }
 
 // BuildBmpHeader — lay out the 54-byte BMP header field by field.
