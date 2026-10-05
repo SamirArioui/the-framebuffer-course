@@ -1,0 +1,23 @@
+diff --git a/sandbox/wordcount/wordcount.c b/sandbox/wordcount/wordcount.c
+index cd34962..d4cf7f6 100644
+--- a/sandbox/wordcount/wordcount.c
++++ b/sandbox/wordcount/wordcount.c
+@@ -3,8 +3,11 @@
+ // Lesson 002: gdb — breakpoints, stepping, and stack frames.
+ #include <stdio.h>
+ 
++static unsigned long calls;
++
+ static unsigned long CountBytes(FILE *f)
+ {
++    ++calls;
+     unsigned long bytes = 0;
+     int c;
+     while ((c = fgetc(f)) != EOF)
+@@ -32,5 +35,6 @@ int main(int argc, char **argv)
+         fclose(f);
+     }
+ 
++    fprintf(stderr, "CountBytes called %lu times\n", calls);
+     return 0;
+ }

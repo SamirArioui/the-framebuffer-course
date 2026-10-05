@@ -1,0 +1,12 @@
+diff --git a/sandbox/wordcount/wordcount.c b/sandbox/wordcount/wordcount.c
+index cd34962..2c0e264 100644
+--- a/sandbox/wordcount/wordcount.c
++++ b/sandbox/wordcount/wordcount.c
+@@ -26,6 +26,7 @@ int main(int argc, char **argv)
+             continue;
+         }
+ 
++        fprintf(stderr, "file %d: %s\n", i, argv[i]);
+         unsigned long bytes = CountBytes(f);
+ 
+         printf("%lu %s\n", bytes, argv[i]);

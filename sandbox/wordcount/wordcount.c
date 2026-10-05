@@ -1,7 +1,16 @@
 // wordcount.c — count bytes in every file named on the command line.
 //
-// Lesson 001: argv, file input, and the first gcc command.
+// Lesson 002: gdb — breakpoints, stepping, and stack frames.
 #include <stdio.h>
+
+static unsigned long CountBytes(FILE *f)
+{
+    unsigned long bytes = 0;
+    int c;
+    while ((c = fgetc(f)) != EOF)
+        ++bytes;
+    return bytes;
+}
 
 int main(int argc, char **argv)
 {
@@ -17,10 +26,7 @@ int main(int argc, char **argv)
             continue;
         }
 
-        unsigned long bytes = 0;
-        int c;
-        while ((c = fgetc(f)) != EOF)
-            ++bytes;
+        unsigned long bytes = CountBytes(f);
 
         printf("%lu %s\n", bytes, argv[i]);
         fclose(f);

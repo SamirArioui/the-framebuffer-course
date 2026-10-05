@@ -14,6 +14,12 @@
   - [Solution: ex3 — one character at a time](solutions/lesson-001/ex3.md)
   - [Solution: ex4 — bytes, not characters](solutions/lesson-001/ex4.md)
 
+- [Lesson 002 — gdb: breakpoints, stepping, stack frames](lessons/part-0/lesson-002-gdb.md)
+  - [Solution: ex1 — the second hit looks the same](solutions/lesson-002/ex1.md)
+  - [Solution: ex2 — the file that closes twice](solutions/lesson-002/ex2.md)
+  - [Solution: ex3 — conditions see one frame](solutions/lesson-002/ex3.md)
+  - [Solution: ex4 — a counter in two scopes](solutions/lesson-002/ex4.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

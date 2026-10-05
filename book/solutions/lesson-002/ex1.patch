@@ -1,0 +1,12 @@
+diff --git a/sandbox/wordcount/wordcount.c b/sandbox/wordcount/wordcount.c
+index cd34962..52987b2 100644
+--- a/sandbox/wordcount/wordcount.c
++++ b/sandbox/wordcount/wordcount.c
+@@ -9,6 +9,7 @@ static unsigned long CountBytes(FILE *f)
+     int c;
+     while ((c = fgetc(f)) != EOF)
+         ++bytes;
++    fprintf(stderr, "returning %lu\n", bytes);
+     return bytes;
+ }
+ 
