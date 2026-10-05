@@ -66,6 +66,12 @@
   - [Solution: ex3 — removing in the middle](solutions/lesson-010/ex3.md)
   - [Solution: ex4 — the contract, written down](solutions/lesson-010/ex4.md)
 
+- [Lesson 011 — the hashtable: hashing, buckets, lookup](lessons/part-0/lesson-011-hashtable.md)
+  - [Solution: ex1 — count on it](solutions/lesson-011/ex1.md)
+  - [Solution: ex2 — the leaderboard](solutions/lesson-011/ex2.md)
+  - [Solution: ex3 — the walk's length](solutions/lesson-011/ex3.md)
+  - [Solution: ex4 — one bucket](solutions/lesson-011/ex4.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

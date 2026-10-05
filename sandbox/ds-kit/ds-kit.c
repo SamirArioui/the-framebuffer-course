@@ -1,10 +1,13 @@
-// ds-kit.c — the data-structures kit of Part 0: one generic dynarray that
-// stores any element type as raw bytes.
+// ds-kit.c — the data-structures kit of Part 0: a hashtable over the
+// generic dynarray, and a word-frequency driver.
 //
-// Lesson 010: void* — genericity, casting, and its silent failures.
+// Lesson 011: hashing, buckets, collisions — and lookup that is O(1) on
+// average.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
+#include <ctype.h>
 
 struct Item {
     char key[16];
@@ -68,10 +71,94 @@ void DaFree(struct DynArray *da)
     DaInit(da, da->elem_size);
 }
 
-// -- the callbacks this driver supplies --------------------------------
+// -- the hashtable ------------------------------------------------------
 //
-// Every one of them casts: the array is generic now, so the types are the
-// caller's job.
+// Buckets are an array of chains, and a chain is just a dynarray of
+// struct Item. FNV-1a turns a key into a 32-bit hash; the remainder modulo
+// nbuckets picks the bucket; the chain handles collisions.
+
+struct HashTable {
+    struct DynArray *chains;
+    size_t nbuckets;
+    size_t len;
+};
+
+static uint32_t HtHash(const char *s)
+{
+    uint32_t h = 2166136261u; // FNV-1a 32-bit offset basis
+    while (*s != '\0') {
+        h ^= (unsigned char)*s++;
+        h *= 16777619u; // FNV-1a 32-bit prime
+    }
+    return h;
+}
+
+void HtInit(struct HashTable *ht, size_t nbuckets)
+{
+    ht->chains = malloc(nbuckets * sizeof *ht->chains);
+    if (ht->chains == NULL) {
+        fprintf(stderr, "HtInit: out of memory\n");
+        exit(1);
+    }
+    ht->nbuckets = nbuckets;
+    ht->len = 0;
+    for (size_t b = 0; b < nbuckets; ++b)
+        DaInit(&ht->chains[b], sizeof(struct Item));
+}
+
+static struct Item *HtLookup(const struct HashTable *ht, const char *key)
+{
+    size_t b = HtHash(key) % ht->nbuckets;
+    struct DynArray *chain = &ht->chains[b];
+    for (size_t i = 0; i < chain->len; ++i) {
+        struct Item *it = (struct Item *)DaAt(chain, i);
+        if (strcmp(it->key, key) == 0)
+            return it;
+    }
+    return NULL;
+}
+
+long *HtGet(const struct HashTable *ht, const char *key)
+{
+    struct Item *it = HtLookup(ht, key);
+    return it != NULL ? &it->value : NULL;
+}
+
+void HtPut(struct HashTable *ht, const char *key, long value)
+{
+    struct Item *it = HtLookup(ht, key);
+    if (it != NULL) {
+        it->value = value;
+        return;
+    }
+    struct Item item;
+    snprintf(item.key, sizeof item.key, "%s", key); // keys longer than 15 are truncated
+    item.value = value;
+    size_t b = HtHash(key) % ht->nbuckets;
+    DaPush(&ht->chains[b], &item);
+    ++ht->len;
+}
+
+void HtEntries(const struct HashTable *ht, struct DynArray *out)
+{
+    for (size_t b = 0; b < ht->nbuckets; ++b) {
+        struct DynArray *chain = &ht->chains[b];
+        for (size_t i = 0; i < chain->len; ++i)
+            DaPush(out, DaAt(chain, i));
+    }
+}
+
+void HtFree(struct HashTable *ht)
+{
+    for (size_t b = 0; b < ht->nbuckets; ++b)
+        DaFree(&ht->chains[b]);
+    free(ht->chains);
+    ht->chains = NULL;
+    ht->nbuckets = 0;
+    ht->len = 0;
+}
+
+// -- the driver: word frequencies ---------------------------------------
 
 static int CmpByKey(const void *pa, const void *pb)
 {
@@ -80,56 +167,66 @@ static int CmpByKey(const void *pa, const void *pb)
     return strcmp(a->key, b->key);
 }
 
-static int CmpLong(const void *pa, const void *pb)
-{
-    const long *a = (const long *)pa;
-    const long *b = (const long *)pb;
-    return (*a > *b) - (*a < *b);
-}
-
 static void PrintItem(const void *pe)
 {
     const struct Item *it = (const struct Item *)pe;
     printf("%s %ld\n", it->key, it->value);
 }
 
-static void PrintLong(const void *pe)
+static void CountWord(struct HashTable *ht, const char *word)
 {
-    const long *v = (const long *)pe;
-    printf("%ld\n", *v);
+    long *p = HtGet(ht, word);
+    if (p != NULL)
+        ++*p;
+    else
+        HtPut(ht, word, 1);
 }
 
-int main(void)
+static void CountWords(struct HashTable *ht, FILE *f)
 {
-    struct DynArray items;
-    DaInit(&items, sizeof(struct Item));
+    char word[16];
+    size_t n = 0;
+    int c;
+    while ((c = fgetc(f)) != EOF) {
+        if (isalnum((unsigned char)c)) {
+            if (n + 1 < sizeof word)
+                word[n++] = (char)tolower((unsigned char)c);
+        } else if (n > 0) {
+            word[n] = '\0';
+            CountWord(ht, word);
+            n = 0;
+        }
+    }
+    if (n > 0) {
+        word[n] = '\0';
+        CountWord(ht, word);
+    }
+}
 
-    const char *keys[10] = {
-        "pear", "apple", "fig", "banana", "cherry",
-        "date", "elder", "grape", "kiwi", "lemon",
-    };
-    for (int i = 0; i < 10; ++i) {
-        struct Item item;
-        snprintf(item.key, sizeof item.key, "%s", keys[i]);
-        item.value = i;
-        DaPush(&items, &item);
+int main(int argc, char **argv)
+{
+    if (argc != 2) {
+        fprintf(stderr, "usage: %s FILE\n", argv[0]);
+        return 1;
+    }
+    FILE *f = fopen(argv[1], "rb");
+    if (f == NULL) {
+        fprintf(stderr, "%s: cannot open %s\n", argv[0], argv[1]);
+        return 1;
     }
 
-    DaSort(&items, CmpByKey);
-    printf("items sorted by key:\n");
-    DaEach(&items, PrintItem);
+    struct HashTable ht;
+    HtInit(&ht, 1024);
+    CountWords(&ht, f);
+    fclose(f);
 
-    struct DynArray nums;
-    DaInit(&nums, sizeof(long));
-    long vals[5] = { 50, 30, 10, 40, 20 };
-    for (int i = 0; i < 5; ++i)
-        DaPush(&nums, &vals[i]);
+    struct DynArray entries;
+    DaInit(&entries, sizeof(struct Item));
+    HtEntries(&ht, &entries);
+    DaSort(&entries, CmpByKey);
+    DaEach(&entries, PrintItem);
 
-    DaSort(&nums, CmpLong);
-    printf("numbers sorted:\n");
-    DaEach(&nums, PrintLong);
-
-    DaFree(&nums);
-    DaFree(&items);
+    DaFree(&entries);
+    HtFree(&ht);
     return 0;
 }

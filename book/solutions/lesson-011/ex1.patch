@@ -1,0 +1,12 @@
+diff --git a/sandbox/ds-kit/ds-kit.c b/sandbox/ds-kit/ds-kit.c
+index 3b41f76..bf4aa34 100644
+--- a/sandbox/ds-kit/ds-kit.c
++++ b/sandbox/ds-kit/ds-kit.c
+@@ -175,6 +175,7 @@ static void PrintItem(const void *pe)
+ 
+ static void CountWord(struct HashTable *ht, const char *word)
+ {
++    fprintf(stderr, "token: %s\n", word);
+     long *p = HtGet(ht, word);
+     if (p != NULL)
+         ++*p;

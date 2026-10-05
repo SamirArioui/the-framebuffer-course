@@ -1,0 +1,18 @@
+diff --git a/sandbox/ds-kit/ds-kit.c b/sandbox/ds-kit/ds-kit.c
+index 3b41f76..ca1ab19 100644
+--- a/sandbox/ds-kit/ds-kit.c
++++ b/sandbox/ds-kit/ds-kit.c
+@@ -112,9 +112,12 @@ static struct Item *HtLookup(const struct HashTable *ht, const char *key)
+     struct DynArray *chain = &ht->chains[b];
+     for (size_t i = 0; i < chain->len; ++i) {
+         struct Item *it = (struct Item *)DaAt(chain, i);
+-        if (strcmp(it->key, key) == 0)
++        if (strcmp(it->key, key) == 0) {
++            fprintf(stderr, "lookup %s: %zu probe(s)\n", key, i + 1);
+             return it;
++        }
+     }
++    fprintf(stderr, "lookup %s: miss after %zu probe(s)\n", key, chain->len);
+     return NULL;
+ }
+ 
