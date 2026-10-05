@@ -2,8 +2,8 @@
 
 ## 1. Repository scaffold
 
-- [ ] 1.1 Initialize the git repository and create the `book/`, `src/`, `tools/`, and `plan/` directory structure (`plan/` holds authoring artifacts and is excluded from the published site); verify the tree matches design.md D10 and `git log` shows a linear history.
-- [ ] 1.2 Write `build.sh` as the one-command build that compiles every source under `src/`; verify it exits 0 on the empty tree and reports what it compiled.
+- [x] 1.1 Initialize the git repository and create the `book/`, `src/`, `tools/`, and `plan/` directory structure (`plan/` holds authoring artifacts and is excluded from the published site); verify the tree matches design.md D10 and `git log` shows a linear history.
+- [x] 1.2 Write `build.sh` as the one-command build that compiles every source under `src/`; verify it exits 0 on the empty tree and reports what it compiled.
 - [ ] 1.3 Write `README.md` (course identity, repo layout, how to run the site locally, how to build, how to resync a moved lesson state, GitHub Pages as the assumed deployment target) and verify every command it documents runs exactly as written.
 - [ ] 1.4 Write `plan/conventions.md` capturing the authoring contract: `lesson-NNN` tag format, prose+code co-commit rule, symbol-reference discipline, the three-class revision policy with the `git checkout lesson-NNN -- src/` resync path, the exercise density table and six archetypes, and the C++ subset admission policy; verify every rule matches the change's specs with no drift.
 
