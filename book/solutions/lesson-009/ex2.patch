@@ -1,0 +1,51 @@
+diff --git a/sandbox/ds-kit/ds-kit.c b/sandbox/ds-kit/ds-kit.c
+index ff3ce5c..a6bd67f 100644
+--- a/sandbox/ds-kit/ds-kit.c
++++ b/sandbox/ds-kit/ds-kit.c
+@@ -71,6 +71,15 @@ void DaEach(const struct DynArray *da, void (*visit)(const struct Item *))
+         visit(&da->items[i]);
+ }
+ 
++const struct Item *DaFind(const struct DynArray *da,
++                          int (*pred)(const struct Item *))
++{
++    for (size_t i = 0; i < da->len; ++i)
++        if (pred(&da->items[i]))
++            return &da->items[i];
++    return NULL;
++}
++
+ // -- the callbacks this driver supplies --------------------------------
+ 
+ static int CmpByKey(const struct Item *a, const struct Item *b)
+@@ -88,6 +97,16 @@ static void PrintItem(const struct Item *it)
+     printf("%s %ld\n", it->key, it->value);
+ }
+ 
++static int KeyIsGrape(const struct Item *it)
++{
++    return strcmp(it->key, "grape") == 0;
++}
++
++static int KeyIsMango(const struct Item *it)
++{
++    return strcmp(it->key, "mango") == 0;
++}
++
+ int main(void)
+ {
+     struct DynArray da;
+@@ -115,6 +134,13 @@ int main(void)
+     printf("sorted by value:\n");
+     DaEach(&da, PrintItem);
+ 
++    const struct Item *hit = DaFind(&da, KeyIsGrape);
++    if (hit != NULL)
++        printf("found %s %ld\n", hit->key, hit->value);
++    hit = DaFind(&da, KeyIsMango);
++    if (hit == NULL)
++        printf("mango: not found\n");
++
+     DaFree(&da);
+     return 0;
+ }

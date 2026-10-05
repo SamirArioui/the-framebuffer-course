@@ -1,9 +1,10 @@
 // ds-kit.c — the data-structures kit of Part 0: a dynarray of Items that
-// grows by realloc with capacity doubling.
+// grows by realloc, sorts by comparator, and visits by hook.
 //
-// Lesson 008: realloc growth — len, cap, and why doubling wins.
+// Lesson 009: function pointers — comparators and callbacks.
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 struct Item {
     char key[16];
@@ -44,6 +45,49 @@ void DaFree(struct DynArray *da)
     DaInit(da);
 }
 
+// -- the function-pointer machinery -------------------------------------
+//
+// qsort's own comparator type is int (*)(const void *, const void *), so a
+// bridge function converts and forwards. Which comparator to forward to
+// lives in g_cmp: qsort offers no way to pass extra context along.
+
+static int (*g_cmp)(const struct Item *, const struct Item *);
+
+static int CmpBridge(const void *pa, const void *pb)
+{
+    return g_cmp((const struct Item *)pa, (const struct Item *)pb);
+}
+
+void DaSort(struct DynArray *da, int (*cmp)(const struct Item *, const struct Item *))
+{
+    g_cmp = cmp;
+    qsort(da->items, da->len, sizeof *da->items, CmpBridge);
+    g_cmp = NULL;
+}
+
+void DaEach(const struct DynArray *da, void (*visit)(const struct Item *))
+{
+    for (size_t i = 0; i < da->len; ++i)
+        visit(&da->items[i]);
+}
+
+// -- the callbacks this driver supplies --------------------------------
+
+static int CmpByKey(const struct Item *a, const struct Item *b)
+{
+    return strcmp(a->key, b->key);
+}
+
+static int CmpByValue(const struct Item *a, const struct Item *b)
+{
+    return (a->value > b->value) - (a->value < b->value);
+}
+
+static void PrintItem(const struct Item *it)
+{
+    printf("%s %ld\n", it->key, it->value);
+}
+
 int main(void)
 {
     struct DynArray da;
@@ -58,10 +102,18 @@ int main(void)
         snprintf(item.key, sizeof item.key, "%s", keys[i]);
         item.value = i;
         DaPush(&da, item);
-        printf("len=%zu cap=%zu\n", da.len, da.cap);
     }
 
-    printf("first=%s last=%s\n", da.items[0].key, da.items[9].key);
+    printf("before:\n");
+    DaEach(&da, PrintItem);
+
+    DaSort(&da, CmpByKey);
+    printf("sorted by key:\n");
+    DaEach(&da, PrintItem);
+
+    DaSort(&da, CmpByValue);
+    printf("sorted by value:\n");
+    DaEach(&da, PrintItem);
 
     DaFree(&da);
     return 0;

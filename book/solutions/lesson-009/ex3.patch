@@ -1,0 +1,16 @@
+diff --git a/sandbox/ds-kit/ds-kit.c b/sandbox/ds-kit/ds-kit.c
+index ff3ce5c..e7a66d5 100644
+--- a/sandbox/ds-kit/ds-kit.c
++++ b/sandbox/ds-kit/ds-kit.c
+@@ -55,7 +55,10 @@ static int (*g_cmp)(const struct Item *, const struct Item *);
+ 
+ static int CmpBridge(const void *pa, const void *pb)
+ {
+-    return g_cmp((const struct Item *)pa, (const struct Item *)pb);
++    const struct Item *a = (const struct Item *)pa;
++    const struct Item *b = (const struct Item *)pb;
++    fprintf(stderr, "bridge: %s vs %s\n", a->key, b->key);
++    return g_cmp(a, b);
+ }
+ 
+ void DaSort(struct DynArray *da, int (*cmp)(const struct Item *, const struct Item *))

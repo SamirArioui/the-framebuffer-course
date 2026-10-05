@@ -55,6 +55,11 @@
   - [Solution: ex3 — doubling versus one-at-a-time](solutions/lesson-008/ex3.md)
   - [Solution: ex4 — what `realloc` really promises](solutions/lesson-008/ex4.md)
 
+- [Lesson 009 — function pointers: comparators and hooks](lessons/part-0/lesson-009-function-pointers.md)
+  - [Solution: ex1 — the reversed order](solutions/lesson-009/ex1.md)
+  - [Solution: ex2 — searching by predicate](solutions/lesson-009/ex2.md)
+  - [Solution: ex3 — why the bridge exists](solutions/lesson-009/ex3.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)
