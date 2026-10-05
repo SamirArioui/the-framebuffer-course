@@ -1,0 +1,16 @@
+diff --git a/sandbox/snek/snek.c b/sandbox/snek/snek.c
+index 251f6ef..30f1007 100644
+--- a/sandbox/snek/snek.c
++++ b/sandbox/snek/snek.c
+@@ -101,8 +101,10 @@ static void ProcessInput(void)
+ 
+     unsigned char buf[64];
+     ssize_t n = read(STDIN_FILENO, buf, sizeof buf);
+-    for (ssize_t i = 0; i < n; ++i)
++    for (ssize_t i = 0; i < n; ++i) {
++        fprintf(stderr, "byte=0x%02x\n", buf[i]);
+         OnByte(buf[i]);
++    }
+ }
+ 
+ static void Update(double dt)

@@ -1,0 +1,13 @@
+diff --git a/sandbox/snek/snek.c b/sandbox/snek/snek.c
+index 251f6ef..0d456fd 100644
+--- a/sandbox/snek/snek.c
++++ b/sandbox/snek/snek.c
+@@ -83,7 +83,7 @@ static void OnByte(unsigned char c)
+         else if (c == 'q')
+             running = 0;
+     } else if (esc == 1) {
+-        esc = (c == '[') ? 2 : 0; /* a lone ESC eats the next byte */
++        esc = (c == '[' || c == 'O') ? 2 : 0; /* CSI and SS3 sequences both end here */
+     } else {
+         esc = 0;
+         if (c == 'A') dir = DIR_UP;

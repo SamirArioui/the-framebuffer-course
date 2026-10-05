@@ -125,6 +125,12 @@
   - [Solution: ex3 — two clocks](solutions/lesson-020/ex3.md)
   - [Solution: ex4 — a thing that moves](solutions/lesson-020/ex4.md)
 
+- [Lesson 021 — raw terminal input with escape codes](lessons/part-0/lesson-021-terminal-input.md)
+  - [Solution: ex1 — bytes all the way down](solutions/lesson-021/ex1.md)
+  - [Solution: ex2 — the key that vanished](solutions/lesson-021/ex2.md)
+  - [Solution: ex3 — cSI, SS3, and your terminal](solutions/lesson-021/ex3.md)
+  - [Solution: ex4 — wASD](solutions/lesson-021/ex4.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

@@ -1,0 +1,37 @@
+diff --git a/sandbox/snek/snek.c b/sandbox/snek/snek.c
+index 251f6ef..f7cce6c 100644
+--- a/sandbox/snek/snek.c
++++ b/sandbox/snek/snek.c
+@@ -77,20 +77,24 @@ static void EnterRawMode(void)
+ 
+ static void OnByte(unsigned char c)
+ {
+-    if (esc == 0) {
+-        if (c == 0x1b)
+-            esc = 1;
+-        else if (c == 'q')
+-            running = 0;
+-    } else if (esc == 1) {
+-        esc = (c == '[') ? 2 : 0; /* a lone ESC eats the next byte */
+-    } else {
++    if (esc == 1) {
++        if (c == '[') {
++            esc = 2;
++            return;
++        }
++        esc = 0; /* not a sequence after all — fall through: c is a plain key */
++    } else if (esc == 2) {
+         esc = 0;
+         if (c == 'A') dir = DIR_UP;
+         else if (c == 'B') dir = DIR_DOWN;
+         else if (c == 'C') dir = DIR_RIGHT;
+         else if (c == 'D') dir = DIR_LEFT;
++        return;
+     }
++    if (c == 0x1b)
++        esc = 1;
++    else if (c == 'q')
++        running = 0;
+ }
+ 
+ static void ProcessInput(void)
