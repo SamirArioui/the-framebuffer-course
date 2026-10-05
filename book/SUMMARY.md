@@ -77,6 +77,12 @@
   - [Solution: ex2 — table statistics](solutions/lesson-012/ex2.md)
   - [Solution: ex3 — the lowercase letter](solutions/lesson-012/ex3.md)
 
+- [Lesson 013 — raw bytes and pixel formats](lessons/part-0/lesson-013-raw-bytes.md)
+  - [Solution: ex1 — three pixels, by hand](solutions/lesson-013/ex1.md)
+  - [Solution: ex2 — the same pixel in packed 32-bit](solutions/lesson-013/ex2.md)
+  - [Solution: ex3 — offsets, by hand](solutions/lesson-013/ex3.md)
+  - [Solution: ex4 — the pixel that is not there](solutions/lesson-013/ex4.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

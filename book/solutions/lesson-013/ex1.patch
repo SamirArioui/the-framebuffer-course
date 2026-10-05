@@ -1,0 +1,12 @@
+diff --git a/sandbox/paint/paint.c b/sandbox/paint/paint.c
+index cfbe8bd..85f1fb0 100644
+--- a/sandbox/paint/paint.c
++++ b/sandbox/paint/paint.c
+@@ -52,6 +52,7 @@ int main(void)
+ 
+     PutPixel(pixels, W, H, 0, 0, 255, 0, 0); /* red, top-left */
+     PutPixel(pixels, W, H, 1, 0, 0, 255, 0); /* green, beside it */
++    PutPixel(pixels, W, H, 2, 0, 0x11, 0x22, 0x33); /* a dim gray-blue */
+     PutPixel(pixels, W, H, 7, 5, 0, 0, 255); /* blue, bottom-right */
+ 
+     unsigned char r, g, b;

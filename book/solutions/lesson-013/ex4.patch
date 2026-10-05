@@ -1,0 +1,24 @@
+diff --git a/sandbox/paint/paint.c b/sandbox/paint/paint.c
+index cfbe8bd..9e3c866 100644
+--- a/sandbox/paint/paint.c
++++ b/sandbox/paint/paint.c
+@@ -15,7 +15,10 @@ static unsigned char *pixels;
+ static void PutPixel(unsigned char *px, int w, int h, int x, int y,
+                      unsigned char r, unsigned char g, unsigned char b)
+ {
+-    (void)h; /* unused so far — bounds arrive in the exercises below */
++    if (x < 0 || x >= w || y < 0 || y >= h) {
++        fprintf(stderr, "PutPixel: (%d,%d) out of range\n", x, y);
++        return;
++    }
+     int off = y * (w * 3) + x * 3;
+     px[off + 0] = r;
+     px[off + 1] = g;
+@@ -53,6 +56,7 @@ int main(void)
+     PutPixel(pixels, W, H, 0, 0, 255, 0, 0); /* red, top-left */
+     PutPixel(pixels, W, H, 1, 0, 0, 255, 0); /* green, beside it */
+     PutPixel(pixels, W, H, 7, 5, 0, 0, 255); /* blue, bottom-right */
++    PutPixel(pixels, W, H, 0, 6, 1, 2, 3);   /* one row below the bottom */
+ 
+     unsigned char r, g, b;
+     GetPixel(pixels, W, H, 1, 0, &r, &g, &b);

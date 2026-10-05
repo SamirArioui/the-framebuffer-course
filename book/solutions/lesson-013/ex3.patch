@@ -1,0 +1,12 @@
+diff --git a/sandbox/paint/paint.c b/sandbox/paint/paint.c
+index cfbe8bd..0534668 100644
+--- a/sandbox/paint/paint.c
++++ b/sandbox/paint/paint.c
+@@ -17,6 +17,7 @@ static void PutPixel(unsigned char *px, int w, int h, int x, int y,
+ {
+     (void)h; /* unused so far — bounds arrive in the exercises below */
+     int off = y * (w * 3) + x * 3;
++    fprintf(stderr, "PutPixel(%d,%d) -> offset %d\n", x, y, off);
+     px[off + 0] = r;
+     px[off + 1] = g;
+     px[off + 2] = b;
