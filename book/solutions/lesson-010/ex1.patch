@@ -1,0 +1,22 @@
+diff --git a/sandbox/ds-kit/ds-kit.c b/sandbox/ds-kit/ds-kit.c
+index 1ba1cc4..e0ff899 100644
+--- a/sandbox/ds-kit/ds-kit.c
++++ b/sandbox/ds-kit/ds-kit.c
+@@ -129,6 +129,17 @@ int main(void)
+     printf("numbers sorted:\n");
+     DaEach(&nums, PrintLong);
+ 
++    struct DynArray mixed;
++    DaInit(&mixed, sizeof(long));
++    long two[2] = { 7, 42 };
++    for (int i = 0; i < 2; ++i)
++        DaPush(&mixed, &two[i]);
++    for (size_t i = 0; i < mixed.len; ++i) {
++        const int *w = (const int *)DaAt(&mixed, i);
++        printf("%d %d\n", w[0], w[1]);
++    }
++    DaFree(&mixed);
++
+     DaFree(&nums);
+     DaFree(&items);
+     return 0;

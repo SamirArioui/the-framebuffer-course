@@ -1,0 +1,31 @@
+diff --git a/sandbox/ds-kit/ds-kit.c b/sandbox/ds-kit/ds-kit.c
+index 1ba1cc4..1ec086b 100644
+--- a/sandbox/ds-kit/ds-kit.c
++++ b/sandbox/ds-kit/ds-kit.c
+@@ -99,6 +99,18 @@ static void PrintLong(const void *pe)
+     printf("%ld\n", *v);
+ }
+ 
++static void DemoLongs(void)
++{
++    struct DynArray nums;
++    DaInit(&nums, sizeof(long)); /* the element, not the struct */
++    long v = 7;
++    DaPush(&nums, &v);
++    v = 42;
++    DaPush(&nums, &v);
++    DaEach(&nums, PrintLong);
++    DaFree(&nums);
++}
++
+ int main(void)
+ {
+     struct DynArray items;
+@@ -131,5 +143,7 @@ int main(void)
+ 
+     DaFree(&nums);
+     DaFree(&items);
++
++    DemoLongs();
+     return 0;
+ }

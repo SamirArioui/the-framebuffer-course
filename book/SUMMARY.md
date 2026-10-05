@@ -60,6 +60,12 @@
   - [Solution: ex2 — searching by predicate](solutions/lesson-009/ex2.md)
   - [Solution: ex3 — why the bridge exists](solutions/lesson-009/ex3.md)
 
+- [Lesson 010 — void*: genericity and its pain](lessons/part-0/lesson-010-void-pointer.md)
+  - [Solution: ex1 — the same bytes, differently](solutions/lesson-010/ex1.md)
+  - [Solution: ex2 — the wrong size](solutions/lesson-010/ex2.md)
+  - [Solution: ex3 — removing in the middle](solutions/lesson-010/ex3.md)
+  - [Solution: ex4 — the contract, written down](solutions/lesson-010/ex4.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

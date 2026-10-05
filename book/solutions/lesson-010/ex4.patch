@@ -1,0 +1,13 @@
+diff --git a/sandbox/ds-kit/ds-kit.c b/sandbox/ds-kit/ds-kit.c
+index 1ba1cc4..d3c40fa 100644
+--- a/sandbox/ds-kit/ds-kit.c
++++ b/sandbox/ds-kit/ds-kit.c
+@@ -40,6 +40,8 @@ void DaPush(struct DynArray *da, const void *elem)
+     }
+     // Byte arithmetic on purpose: void* has no element size to step by.
+     char *slot = (char *)da->data + da->len * da->elem_size;
++    fprintf(stderr, "push elem_size=%zu at offset %zu\n",
++            da->elem_size, da->len * da->elem_size);
+     memcpy(slot, elem, da->elem_size);
+     ++da->len;
+ }

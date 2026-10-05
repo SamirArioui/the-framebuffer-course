@@ -1,0 +1,37 @@
+diff --git a/sandbox/ds-kit/ds-kit.c b/sandbox/ds-kit/ds-kit.c
+index 1ba1cc4..aadf29b 100644
+--- a/sandbox/ds-kit/ds-kit.c
++++ b/sandbox/ds-kit/ds-kit.c
+@@ -50,6 +50,21 @@ void *DaAt(struct DynArray *da, size_t i)
+     return base + i * da->elem_size;
+ }
+ 
++void DaRemoveAt(struct DynArray *da, size_t i)
++{
++    if (i >= da->len) {
++        fprintf(stderr, "DaRemoveAt: index %zu out of range (len=%zu)\n",
++                i, da->len);
++        return;
++    }
++    // memmove, not memcpy: source and destination overlap.
++    char *base = da->data;
++    memmove(base + i * da->elem_size,
++            base + (i + 1) * da->elem_size,
++            (da->len - i - 1) * da->elem_size);
++    --da->len;
++}
++
+ void DaSort(struct DynArray *da, int (*cmp)(const void *, const void *))
+ {
+     qsort(da->data, da->len, da->elem_size, cmp);
+@@ -129,6 +144,10 @@ int main(void)
+     printf("numbers sorted:\n");
+     DaEach(&nums, PrintLong);
+ 
++    printf("after removing index 2:\n");
++    DaRemoveAt(&nums, 2);
++    DaEach(&nums, PrintLong);
++
+     DaFree(&nums);
+     DaFree(&items);
+     return 0;
