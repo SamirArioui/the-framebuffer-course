@@ -1,0 +1,41 @@
+diff --git a/sandbox/snek/snek.c b/sandbox/snek/snek.c
+index 7b17290..e8f3e6d 100644
+--- a/sandbox/snek/snek.c
++++ b/sandbox/snek/snek.c
+@@ -120,6 +120,12 @@ static void PlaceFood(void)
+     }
+ }
+ 
++static void SetState(int next)
++{
++    fprintf(stderr, "state %s -> %s\n", state_names[state], state_names[next]);
++    state = next;
++}
++
+ static void StartGame(void)
+ {
+     snake_len = 3;
+@@ -129,7 +135,7 @@ static void StartGame(void)
+     }
+     score = 0;
+     PlaceFood();
+-    state = PLAY;
++    SetState(PLAY);
+ }
+ 
+ static void AdvanceSnake(void)
+@@ -142,12 +148,12 @@ static void AdvanceSnake(void)
+ 
+     if (new_row < 2 || new_row > GRID_ROWS - 2 ||
+         new_col < 1 || new_col > GRID_COLS - 2) {
+-        state = DEAD; /* the wall */
++        SetState(DEAD); /* the wall */
+         return;
+     }
+     for (int i = 0; i < snake_len - 1; ++i) {
+         if (snake_row[i] == new_row && snake_col[i] == new_col) {
+-            state = DEAD; /* itself */
++            SetState(DEAD); /* itself */
+             return;
+         }
+     }

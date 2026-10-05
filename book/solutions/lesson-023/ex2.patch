@@ -1,0 +1,12 @@
+diff --git a/sandbox/snek/snek.c b/sandbox/snek/snek.c
+index 7b17290..2ce0e74 100644
+--- a/sandbox/snek/snek.c
++++ b/sandbox/snek/snek.c
+@@ -128,6 +128,7 @@ static void StartGame(void)
+         snake_col[i] = GRID_COLS / 2 - i;
+     }
+     score = 0;
++    dir = DIR_RIGHT;
+     PlaceFood();
+     state = PLAY;
+ }

@@ -137,6 +137,12 @@
   - [Solution: ex3 — what the diff saves](solutions/lesson-022/ex3.md)
   - [Solution: ex4 — runs, not cells](solutions/lesson-022/ex4.md)
 
+- [Lesson 023 — the state machine: title, play, death](lessons/part-0/lesson-023-state-machine.md)
+  - [Solution: ex1 — counting to the wall](solutions/lesson-023/ex1.md)
+  - [Solution: ex2 — the restart that wasn't](solutions/lesson-023/ex2.md)
+  - [Solution: ex3 — pause](solutions/lesson-023/ex3.md)
+  - [Solution: ex4 — why states, not flags](solutions/lesson-023/ex4.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

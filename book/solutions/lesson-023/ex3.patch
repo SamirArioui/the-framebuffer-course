@@ -1,0 +1,39 @@
+diff --git a/sandbox/snek/snek.c b/sandbox/snek/snek.c
+index 7b17290..97971dc 100644
+--- a/sandbox/snek/snek.c
++++ b/sandbox/snek/snek.c
+@@ -15,12 +15,12 @@ static const double TICK_LEN = 1.0 / 10.0; /* fixed timestep: 10 updates per sec
+ static const double FRAME_LEN = 1.0 / 30.0; /* frame cap: 30 frames per second */
+ 
+ enum Direction { DIR_UP, DIR_DOWN, DIR_LEFT, DIR_RIGHT };
+-enum GameState { TITLE, PLAY, DEAD };
++enum GameState { TITLE, PLAY, PAUSE, DEAD };
+ enum { GRID_ROWS = 20, GRID_COLS = 40 };
+ enum { SNAKE_MAX = GRID_ROWS * GRID_COLS };
+ 
+ static const char *dir_names[] = {"up", "down", "left", "right"};
+-static const char *state_names[] = {"title", "play", "dead"};
++static const char *state_names[] = {"title", "play", "pause", "dead"};
+ 
+ static int running;              /* the loop runs while this is true */
+ static unsigned long frame;      /* frames since the loop started */
+@@ -177,6 +177,10 @@ static void OnByte(unsigned char c)
+             running = 0;
+         else if (c == ' ' && state != PLAY)
+             StartGame();
++        else if (c == 'p' && state == PLAY)
++            state = PAUSE;
++        else if (c == 'p' && state == PAUSE)
++            state = PLAY;
+     } else if (esc == 1) {
+         esc = (c == '[') ? 2 : 0; /* a lone ESC eats the next byte */
+     } else {
+@@ -303,6 +307,8 @@ static void Render(void)
+     } else {
+         snprintf(msg, sizeof msg, "score: %d", score);
+         GridText(0, 0, msg);
++        if (state == PAUSE)
++            GridText(9, 13, "paused - press p");
+         DrawSnake();
+     }
+     GridFlush();

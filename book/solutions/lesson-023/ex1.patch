@@ -1,0 +1,12 @@
+diff --git a/sandbox/snek/snek.c b/sandbox/snek/snek.c
+index 7b17290..08e5591 100644
+--- a/sandbox/snek/snek.c
++++ b/sandbox/snek/snek.c
+@@ -139,6 +139,7 @@ static void AdvanceSnake(void)
+     else if (dir == DIR_DOWN) ++new_row;
+     else if (dir == DIR_LEFT) --new_col;
+     else if (dir == DIR_RIGHT) ++new_col;
++    fprintf(stderr, "head %d,%d\n", new_row, new_col);
+ 
+     if (new_row < 2 || new_row > GRID_ROWS - 2 ||
+         new_col < 1 || new_col > GRID_COLS - 2) {
