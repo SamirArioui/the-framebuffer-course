@@ -1,0 +1,6 @@
+# Build outputs
+/build/
+/site/
+
+# Authoring-harness state (not part of the course repo)
+/.opencode/
