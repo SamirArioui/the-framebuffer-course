@@ -1,0 +1,46 @@
+diff --git a/sandbox/ds-kit/hashtable.c b/sandbox/ds-kit/hashtable.c
+index faac93c..f8502cb 100644
+--- a/sandbox/ds-kit/hashtable.c
++++ b/sandbox/ds-kit/hashtable.c
+@@ -84,3 +84,17 @@ void HtFree(struct HashTable *ht)
+     ht->nbuckets = 0;
+     ht->len = 0;
+ }
++
++void HtStats(const struct HashTable *ht)
++{
++    size_t empty = 0, longest = 0;
++    for (size_t b = 0; b < ht->nbuckets; ++b) {
++        size_t n = ht->chains[b].len;
++        if (n == 0)
++            ++empty;
++        if (n > longest)
++            longest = n;
++    }
++    fprintf(stderr, "stats: entries=%zu buckets=%zu empty=%zu longest=%zu\n",
++            ht->len, ht->nbuckets, empty, longest);
++}
+diff --git a/sandbox/ds-kit/hashtable.h b/sandbox/ds-kit/hashtable.h
+index 66c3f8b..786d70c 100644
+--- a/sandbox/ds-kit/hashtable.h
++++ b/sandbox/ds-kit/hashtable.h
+@@ -26,6 +26,7 @@ void HtInit(struct HashTable *ht, size_t nbuckets);
+ long *HtGet(const struct HashTable *ht, const char *key);
+ void HtPut(struct HashTable *ht, const char *key, long value);
+ void HtEntries(const struct HashTable *ht, struct DynArray *out);
++void HtStats(const struct HashTable *ht);
+ void HtFree(struct HashTable *ht);
+ 
+ #endif // HASHTABLE_H
+diff --git a/sandbox/ds-kit/main.c b/sandbox/ds-kit/main.c
+index 7e153f5..bcc5e24 100644
+--- a/sandbox/ds-kit/main.c
++++ b/sandbox/ds-kit/main.c
+@@ -68,6 +68,7 @@ int main(int argc, char **argv)
+     HtInit(&ht, 1024);
+     CountWords(&ht, f);
+     fclose(f);
++    HtStats(&ht);
+ 
+     struct DynArray entries;
+     DaInit(&entries, sizeof(struct Item));

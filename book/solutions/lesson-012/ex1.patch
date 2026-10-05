@@ -1,0 +1,60 @@
+diff --git a/sandbox/ds-kit/dynarray.c b/sandbox/ds-kit/dynarray.c
+index d1182f0..4ab3464 100644
+--- a/sandbox/ds-kit/dynarray.c
++++ b/sandbox/ds-kit/dynarray.c
+@@ -7,6 +7,12 @@
+ #include <stdlib.h>
+ #include <string.h>
+ 
++static void ReportOOM(const char *who)
++{
++    fprintf(stderr, "%s: out of memory\n", who);
++    exit(1);
++}
++
+ void DaInit(struct DynArray *da, size_t elem_size)
+ {
+     da->data = NULL;
+@@ -20,10 +26,8 @@ void DaPush(struct DynArray *da, const void *elem)
+     if (da->len == da->cap) {
+         size_t newcap = da->cap ? da->cap * 2 : 4;
+         void *p = realloc(da->data, newcap * da->elem_size);
+-        if (p == NULL) {
+-            fprintf(stderr, "DaPush: out of memory\n");
+-            exit(1);
+-        }
++        if (p == NULL)
++            ReportOOM("DaPush");
+         da->data = p;
+         da->cap = newcap;
+     }
+diff --git a/sandbox/ds-kit/hashtable.c b/sandbox/ds-kit/hashtable.c
+index faac93c..b4654c4 100644
+--- a/sandbox/ds-kit/hashtable.c
++++ b/sandbox/ds-kit/hashtable.c
+@@ -10,6 +10,12 @@
+ #include <string.h>
+ #include <stdint.h>
+ 
++static void ReportOOM(const char *who)
++{
++    fprintf(stderr, "%s: out of memory\n", who);
++    exit(1);
++}
++
+ static uint32_t HtHash(const char *s)
+ {
+     uint32_t h = 2166136261u; // FNV-1a 32-bit offset basis
+@@ -23,10 +29,8 @@ static uint32_t HtHash(const char *s)
+ void HtInit(struct HashTable *ht, size_t nbuckets)
+ {
+     ht->chains = malloc(nbuckets * sizeof *ht->chains);
+-    if (ht->chains == NULL) {
+-        fprintf(stderr, "HtInit: out of memory\n");
+-        exit(1);
+-    }
++    if (ht->chains == NULL)
++        ReportOOM("HtInit");
+     ht->nbuckets = nbuckets;
+     ht->len = 0;
+     for (size_t b = 0; b < nbuckets; ++b)

@@ -72,6 +72,11 @@
   - [Solution: ex3 — the walk's length](solutions/lesson-011/ex3.md)
   - [Solution: ex4 — one bucket](solutions/lesson-011/ex4.md)
 
+- [Lesson 012 — multi-file builds: translation units and linking](lessons/part-0/lesson-012-multi-file.md)
+  - [Solution: ex1 — the helper that clashed](solutions/lesson-012/ex1.md)
+  - [Solution: ex2 — table statistics](solutions/lesson-012/ex2.md)
+  - [Solution: ex3 — the lowercase letter](solutions/lesson-012/ex3.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

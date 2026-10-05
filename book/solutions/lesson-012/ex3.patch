@@ -1,0 +1,13 @@
+diff --git a/sandbox/ds-kit/hashtable.c b/sandbox/ds-kit/hashtable.c
+index faac93c..36bcb8b 100644
+--- a/sandbox/ds-kit/hashtable.c
++++ b/sandbox/ds-kit/hashtable.c
+@@ -10,7 +10,7 @@
+ #include <string.h>
+ #include <stdint.h>
+ 
+-static uint32_t HtHash(const char *s)
++uint32_t HtHash(const char *s)
+ {
+     uint32_t h = 2166136261u; // FNV-1a 32-bit offset basis
+     while (*s != '\0') {
