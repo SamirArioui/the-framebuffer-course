@@ -1,0 +1,12 @@
+diff --git a/sandbox/paint/paint.c b/sandbox/paint/paint.c
+index 4bc0fdc..fe90990 100644
+--- a/sandbox/paint/paint.c
++++ b/sandbox/paint/paint.c
+@@ -144,6 +144,7 @@ static void DrawLine(unsigned char *px, int w, int h,
+     int err = dx + dy;
+     for (;;) {
+         PutPixel(px, w, h, x0, y0, r, g, b);
++        fprintf(stderr, "step (%d,%d) err=%d\n", x0, y0, err);
+         if (x0 == x1 && y0 == y1) break;
+         int e2 = 2 * err;
+         if (e2 >= dy) { err += dy; x0 += sx; }

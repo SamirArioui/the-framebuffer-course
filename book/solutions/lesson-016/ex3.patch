@@ -1,0 +1,81 @@
+diff --git a/sandbox/paint/paint.c b/sandbox/paint/paint.c
+index 4bc0fdc..33145a9 100644
+--- a/sandbox/paint/paint.c
++++ b/sandbox/paint/paint.c
+@@ -6,10 +6,17 @@
+ // clips the segment to the buffer before stepping a single pixel.
+ #include <stdio.h>
+ #include <stdlib.h>
++#include <time.h>
+ 
+ #define W 8
+ #define H 6
+ 
++#define BW 512 /* benchmark canvas for exercise 3 */
++#define BH 512
++
++#define BW 512
++#define BH 512
++
+ static unsigned char *pixels;
+ 
+ static void PutPixel(unsigned char *px, int w, int h, int x, int y,
+@@ -151,6 +158,27 @@ static void DrawLine(unsigned char *px, int w, int h,
+     }
+ }
+ 
++// DrawLineFloat — the naive line: compute a slope, then one floating
++// point multiply per pixel.  What people write first — exercise 3.
++static void DrawLineFloat(unsigned char *px, int w, int h,
++                          int x0, int y0, int x1, int y1,
++                          unsigned char r, unsigned char g, unsigned char b)
++{
++    if (!ClipLine(&x0, &y0, &x1, &y1, w, h))
++        return;
++    if (x0 == x1) { /* the slope would divide by zero */
++        DrawLine(px, w, h, x0, y0, x1, y1, r, g, b);
++        return;
++    }
++    double slope = (double)(y1 - y0) / (double)(x1 - x0);
++    int sx = x0 < x1 ? 1 : -1;
++    for (int x = x0;; x += sx) {
++        int y = y0 + (int)(slope * (x - x0));
++        PutPixel(px, w, h, x, y, r, g, b);
++        if (x == x1) break;
++    }
++}
++
+ // BuildBmpHeader — lay out the 54-byte BMP header field by field.
+ // 14-byte file header:  "BM", file size, reserved, data offset.
+ // 40-byte info header: size, width, height, planes, bpp, compression,
+@@ -203,6 +231,30 @@ int main(void)
+     DrawLine(pixels, W, H, -5, -3, 12, 2, 0, 255, 255); /* cyan, clipped */
+     DrawLine(pixels, W, H, 4, -2, 4, 9, 255, 0, 255);   /* magenta vertical */
+ 
++    /* Time both rasterizers over the same long diagonal (512 px). */
++    static unsigned char scratch[BW * BH * 3];
++    const int reps = 20000;
++    clock_t t0 = clock();
++    for (int i = 0; i < reps; i++)
++        DrawLine(scratch, BW, BH, 0, 0, BW - 1, BH - 1, 1, 2, 3);
++    clock_t t1 = clock();
++    for (int i = 0; i < reps; i++)
++        DrawLineFloat(scratch, BW, BH, 0, 0, BW - 1, BH - 1, 1, 2, 3);
++    clock_t t2 = clock();
++    printf("bresenham: %.2f us/line\n",
++           (double)(t1 - t0) / CLOCKS_PER_SEC / reps * 1e6);
++    printf("float:     %.2f us/line\n",
++           (double)(t2 - t1) / CLOCKS_PER_SEC / reps * 1e6);
++
++    /* Where do the two rasterizers disagree? */
++    static unsigned char buf_a[W * H * 3], buf_b[W * H * 3];
++    DrawLine(buf_a, W, H, 0, 0, 7, 5, 1, 2, 3);
++    DrawLineFloat(buf_b, W, H, 0, 0, 7, 5, 1, 2, 3);
++    int disagree = 0;
++    for (int i = 0; i < W * H; i++)
++        if (buf_a[i * 3] != buf_b[i * 3]) disagree++;
++    printf("pixels that disagree: %d\n", disagree);
++
+     unsigned char r, g, b;
+     GetPixel(pixels, W, H, 1, 0, &r, &g, &b);
+     printf("pixel (1,0) = %u %u %u\n", (unsigned)r, (unsigned)g, (unsigned)b);

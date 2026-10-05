@@ -1,0 +1,12 @@
+diff --git a/sandbox/paint/paint.c b/sandbox/paint/paint.c
+index 4bc0fdc..007962e 100644
+--- a/sandbox/paint/paint.c
++++ b/sandbox/paint/paint.c
+@@ -138,6 +138,7 @@ static void DrawLine(unsigned char *px, int w, int h,
+ {
+     if (!ClipLine(&x0, &y0, &x1, &y1, w, h))
+         return;
++    fprintf(stderr, "DrawLine clipped -> (%d,%d)-(%d,%d)\n", x0, y0, x1, y1);
+ 
+     int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+     int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;

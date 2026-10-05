@@ -95,6 +95,12 @@
   - [Solution: ex3 — the addition that ate the clip](solutions/lesson-015/ex3.md)
   - [Solution: ex4 — why fold first](solutions/lesson-015/ex4.md)
 
+- [Lesson 016 — drawing lines onto the buffer](lessons/part-0/lesson-016-lines.md)
+  - [Solution: ex1 — the vertical line through everything](solutions/lesson-016/ex1.md)
+  - [Solution: ex2 — rectangle outlines](solutions/lesson-016/ex2.md)
+  - [Solution: ex3 — float versus integer](solutions/lesson-016/ex3.md)
+  - [Solution: ex4 — the error term, watched](solutions/lesson-016/ex4.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

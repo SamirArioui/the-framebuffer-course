@@ -1,9 +1,9 @@
-// paint.c — Lesson 015: fill-rect onto a memory buffer.
+// paint.c — Lesson 016: drawing lines onto the buffer.
 //
-// A pixel buffer is bytes (lesson 013) and a file header is pinned bytes
-// (lesson 014).  Now we draw: FillRect fills a rectangle of the buffer,
-// clipping it to the buffer first — fold the rectangle to the visible
-// region BEFORE writing, never pixel by pixel.
+// A pixel buffer is bytes (lesson 013), a file header is pinned bytes
+// (lesson 014), and rectangles fold-clip before they write (lesson 015).
+// Now lines: DrawLine rasterizes with Bresenham's integer error term and
+// clips the segment to the buffer before stepping a single pixel.
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -96,6 +96,61 @@ static void FillRect(unsigned char *px, int w, int h,
             PutPixel(px, w, h, x + i, y + j, r, g, b);
 }
 
+// OutCode — which side(s) of the buffer a point is outside of.
+static int OutCode(int x, int y, int w, int h)
+{
+    int code = 0;
+    if (x < 0) code |= 1;
+    else if (x >= w) code |= 2;
+    if (y < 0) code |= 4;
+    else if (y >= h) code |= 8;
+    return code;
+}
+
+// ClipLine — Cohen-Sutherland clipping: shrink the segment to the part
+// inside the buffer, in place.  Returns 0 if it misses the buffer.
+// The one division per intersection happens per segment end, never per
+// pixel; the rasterizer afterwards is pure integers.
+static int ClipLine(int *x0, int *y0, int *x1, int *y1, int w, int h)
+{
+    int c0 = OutCode(*x0, *y0, w, h), c1 = OutCode(*x1, *y1, w, h);
+    for (;;) {
+        if (!(c0 | c1)) return 1;   /* both ends inside */
+        if (c0 & c1) return 0;      /* both outside the same edge */
+        int c = c0 ? c0 : c1;
+        int x = 0, y = 0;
+        double dx = (double)(*x1 - *x0), dy = (double)(*y1 - *y0);
+        if (c & 8)      { x = *x0 + (int)(dx * (h - 1 - *y0) / dy); y = h - 1; }
+        else if (c & 4) { x = *x0 + (int)(dx * (0 - *y0) / dy);     y = 0; }
+        else if (c & 2) { y = *y0 + (int)(dy * (w - 1 - *x0) / dx); x = w - 1; }
+        else            { y = *y0 + (int)(dy * (0 - *x0) / dx);     x = 0; }
+        if (c == c0) { *x0 = x; *y0 = y; c0 = OutCode(x, y, w, h); }
+        else         { *x1 = x; *y1 = y; c1 = OutCode(x, y, w, h); }
+    }
+}
+
+// DrawLine — Bresenham's line.  After clipping, step from (x0, y0) to
+// (x1, y1) one pixel at a time; `err` tracks the doubled distance from
+// the ideal line, so the pixel choice is exact and entirely integer.
+static void DrawLine(unsigned char *px, int w, int h,
+                     int x0, int y0, int x1, int y1,
+                     unsigned char r, unsigned char g, unsigned char b)
+{
+    if (!ClipLine(&x0, &y0, &x1, &y1, w, h))
+        return;
+
+    int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+    int dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+    int err = dx + dy;
+    for (;;) {
+        PutPixel(px, w, h, x0, y0, r, g, b);
+        if (x0 == x1 && y0 == y1) break;
+        int e2 = 2 * err;
+        if (e2 >= dy) { err += dy; x0 += sx; }
+        if (e2 <= dx) { err += dx; y0 += sy; }
+    }
+}
+
 // BuildBmpHeader — lay out the 54-byte BMP header field by field.
 // 14-byte file header:  "BM", file size, reserved, data offset.
 // 40-byte info header: size, width, height, planes, bpp, compression,
@@ -142,6 +197,11 @@ int main(void)
     FillRect(pixels, W, H, 6, -2, 4, 4, 0, 128, 255);  /* off the top-right */
     FillRect(pixels, W, H, 5, 4, 10, 10, 128, 0, 255); /* off the bottom-right */
     FillRect(pixels, W, H, 2, 2, 3, 2, 255, 255, 255); /* fully inside */
+
+    /* Lines: a diagonal, one drawn from off-screen, one straight through. */
+    DrawLine(pixels, W, H, 0, 0, 7, 5, 255, 255, 0);   /* yellow diagonal */
+    DrawLine(pixels, W, H, -5, -3, 12, 2, 0, 255, 255); /* cyan, clipped */
+    DrawLine(pixels, W, H, 4, -2, 4, 9, 255, 0, 255);   /* magenta vertical */
 
     unsigned char r, g, b;
     GetPixel(pixels, W, H, 1, 0, &r, &g, &b);
