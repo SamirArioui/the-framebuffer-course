@@ -119,6 +119,12 @@
   - [Solution: ex3 — pack the state](solutions/lesson-019/ex3.md)
   - [Solution: ex4 — why three phases](solutions/lesson-019/ex4.md)
 
+- [Lesson 020 — timing with `clock_gettime`](lessons/part-0/lesson-020-timing.md)
+  - [Solution: ex1 — predicting the ticks](solutions/lesson-020/ex1.md)
+  - [Solution: ex2 — what the frame cap costs](solutions/lesson-020/ex2.md)
+  - [Solution: ex3 — two clocks](solutions/lesson-020/ex3.md)
+  - [Solution: ex4 — a thing that moves](solutions/lesson-020/ex4.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

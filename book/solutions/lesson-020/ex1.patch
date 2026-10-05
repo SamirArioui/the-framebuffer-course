@@ -1,0 +1,12 @@
+diff --git a/sandbox/snek/snek.c b/sandbox/snek/snek.c
+index 7c77efd..5ef6d9d 100644
+--- a/sandbox/snek/snek.c
++++ b/sandbox/snek/snek.c
+@@ -43,6 +43,7 @@ static void Update(double dt)
+     while (tick_accum >= TICK_LEN) {
+         tick_accum -= TICK_LEN;
+         ++tick;
++        fprintf(stderr, "tick=%lu accum=%.4f\n", tick, tick_accum);
+     }
+     ++frame;
+     if (frame >= max_frames)

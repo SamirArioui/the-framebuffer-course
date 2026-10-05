@@ -1,0 +1,13 @@
+diff --git a/sandbox/snek/snek.c b/sandbox/snek/snek.c
+index 7c77efd..1c778d9 100644
+--- a/sandbox/snek/snek.c
++++ b/sandbox/snek/snek.c
+@@ -8,7 +8,7 @@
+ #include <time.h>
+ 
+ static const double TICK_LEN = 1.0 / 10.0; /* fixed timestep: 10 updates per second */
+-static const double FRAME_LEN = 1.0 / 30.0; /* frame cap: 30 frames per second */
++static const double FRAME_LEN = 0.0; /* exercise 2: frame cap disabled */
+ 
+ static int running;              /* the loop runs while this is true */
+ static unsigned long frame;      /* frames since the loop started */

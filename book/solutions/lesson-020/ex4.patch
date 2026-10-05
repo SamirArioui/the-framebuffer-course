@@ -1,0 +1,29 @@
+diff --git a/sandbox/snek/snek.c b/sandbox/snek/snek.c
+index 7c77efd..8660a66 100644
+--- a/sandbox/snek/snek.c
++++ b/sandbox/snek/snek.c
+@@ -15,6 +15,7 @@ static unsigned long frame;      /* frames since the loop started */
+ static unsigned long tick;       /* game updates since the loop started */
+ static double tick_accum;        /* seconds of game time not yet ticked away */
+ static double frame_dt;          /* measured length of the current frame */
++static double pos;               /* exercise 4: a thing that moves, 1 cell per second */
+ static unsigned long max_frames; /* stop after this many frames */
+ 
+ static double Now(void)
+@@ -43,6 +44,7 @@ static void Update(double dt)
+     while (tick_accum >= TICK_LEN) {
+         tick_accum -= TICK_LEN;
+         ++tick;
++        pos += 1.0 * TICK_LEN;
+     }
+     ++frame;
+     if (frame >= max_frames)
+@@ -51,7 +53,7 @@ static void Update(double dt)
+ 
+ static void Render(void)
+ {
+-    fprintf(stderr, "frame=%lu tick=%lu dt=%.4f\n", frame, tick, frame_dt);
++    fprintf(stderr, "frame=%lu tick=%lu dt=%.4f pos=%.2f\n", frame, tick, frame_dt, pos);
+ }
+ 
+ int main(int argc, char **argv)

@@ -1,0 +1,17 @@
+diff --git a/sandbox/snek/snek.c b/sandbox/snek/snek.c
+index 7c77efd..486df9a 100644
+--- a/sandbox/snek/snek.c
++++ b/sandbox/snek/snek.c
+@@ -51,6 +51,12 @@ static void Update(double dt)
+ 
+ static void Render(void)
+ {
++    struct timespec mono, wall;
++    clock_gettime(CLOCK_MONOTONIC, &mono);
++    clock_gettime(CLOCK_REALTIME, &wall);
++    fprintf(stderr, "mono=%lld.%09ld wall=%lld.%09ld\n",
++            (long long)mono.tv_sec, mono.tv_nsec,
++            (long long)wall.tv_sec, wall.tv_nsec);
+     fprintf(stderr, "frame=%lu tick=%lu dt=%.4f\n", frame, tick, frame_dt);
+ }
+ 
