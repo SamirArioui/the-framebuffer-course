@@ -131,6 +131,12 @@
   - [Solution: ex3 — cSI, SS3, and your terminal](solutions/lesson-021/ex3.md)
   - [Solution: ex4 — wASD](solutions/lesson-021/ex4.md)
 
+- [Lesson 022 — the double-buffered character grid](lessons/part-0/lesson-022-double-buffer.md)
+  - [Solution: ex1 — counting the flush](solutions/lesson-022/ex1.md)
+  - [Solution: ex2 — one off, twice](solutions/lesson-022/ex2.md)
+  - [Solution: ex3 — what the diff saves](solutions/lesson-022/ex3.md)
+  - [Solution: ex4 — runs, not cells](solutions/lesson-022/ex4.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

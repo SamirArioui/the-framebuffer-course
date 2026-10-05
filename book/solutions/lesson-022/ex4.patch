@@ -1,0 +1,20 @@
+diff --git a/sandbox/snek/snek.c b/sandbox/snek/snek.c
+index 3e6ed8b..61da09c 100644
+--- a/sandbox/snek/snek.c
++++ b/sandbox/snek/snek.c
+@@ -133,8 +133,13 @@ static void GridFlush(void)
+         for (int col = 0; col < GRID_COLS; ++col) {
+             if (front_valid && back[row][col] == front[row][col])
+                 continue;
+-            fprintf(stdout, "\033[%d;%dH%c", row, col, back[row][col]);
+-            front[row][col] = back[row][col];
++            fprintf(stdout, "\033[%d;%dH", row, col);
++            for (; col < GRID_COLS; ++col) { /* one escape, then the whole run */
++                if (front_valid && back[row][col] == front[row][col])
++                    break;
++                fputc(back[row][col], stdout);
++                front[row][col] = back[row][col];
++            }
+         }
+     }
+     front_valid = 1;

@@ -1,0 +1,20 @@
+diff --git a/sandbox/snek/snek.c b/sandbox/snek/snek.c
+index 3e6ed8b..e00297f 100644
+--- a/sandbox/snek/snek.c
++++ b/sandbox/snek/snek.c
+@@ -126,12 +126,14 @@ static void GridPut(int row, int col, char ch)
+ 
+ static void GridFlush(void)
+ {
++    int full = getenv("SNEK_FULL") != NULL; /* exercise 3: pretend every cell changed */
++
+     if (!front_valid)
+         fprintf(stdout, "\033[2J\033[H"); /* clear the screen before the first draw */
+ 
+     for (int row = 0; row < GRID_ROWS; ++row) {
+         for (int col = 0; col < GRID_COLS; ++col) {
+-            if (front_valid && back[row][col] == front[row][col])
++            if (!full && front_valid && back[row][col] == front[row][col])
+                 continue;
+             fprintf(stdout, "\033[%d;%dH%c", row, col, back[row][col]);
+             front[row][col] = back[row][col];

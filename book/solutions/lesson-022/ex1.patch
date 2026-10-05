@@ -1,0 +1,26 @@
+diff --git a/sandbox/snek/snek.c b/sandbox/snek/snek.c
+index 3e6ed8b..9f21fbb 100644
+--- a/sandbox/snek/snek.c
++++ b/sandbox/snek/snek.c
+@@ -126,6 +126,8 @@ static void GridPut(int row, int col, char ch)
+ 
+ static void GridFlush(void)
+ {
++    int cells = 0;
++
+     if (!front_valid)
+         fprintf(stdout, "\033[2J\033[H"); /* clear the screen before the first draw */
+ 
+@@ -135,10 +137,12 @@ static void GridFlush(void)
+                 continue;
+             fprintf(stdout, "\033[%d;%dH%c", row, col, back[row][col]);
+             front[row][col] = back[row][col];
++            ++cells;
+         }
+     }
+     front_valid = 1;
+     fflush(stdout);
++    fprintf(stderr, "flush cells=%d\n", cells);
+ }
+ 
+ static void MoveMarker(void)

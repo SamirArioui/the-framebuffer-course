@@ -1,6 +1,6 @@
 // snek.c — a terminal snake game, grown lesson by lesson.
 //
-// Lesson 021: raw terminal input — termios, poll, and escape sequences.
+// Lesson 022: the display — a double-buffered character grid.
 #define _POSIX_C_SOURCE 200809L /* clock_gettime, nanosleep, termios: POSIX, not ISO C */
 #include <errno.h>
 #include <poll.h>
@@ -15,6 +15,7 @@ static const double TICK_LEN = 1.0 / 10.0; /* fixed timestep: 10 updates per sec
 static const double FRAME_LEN = 1.0 / 30.0; /* frame cap: 30 frames per second */
 
 enum Direction { DIR_UP, DIR_DOWN, DIR_LEFT, DIR_RIGHT };
+enum { GRID_ROWS = 20, GRID_COLS = 40 };
 
 static const char *dir_names[] = {"up", "down", "left", "right"};
 
@@ -27,6 +28,11 @@ static unsigned long max_frames; /* stop after this many frames (0: until q) */
 static int test_mode;            /* a frame budget was given: trace every frame */
 static int dir = DIR_RIGHT;      /* where the snake is heading */
 static int esc;                  /* escape-sequence parser state */
+static int mark_row = 10, mark_col = 20; /* the marker's cell */
+
+static char back[GRID_ROWS][GRID_COLS];  /* drawn into, off-screen */
+static char front[GRID_ROWS][GRID_COLS]; /* what the terminal shows */
+static int front_valid;                  /* 0: the terminal needs a full redraw */
 
 static struct termios saved_termios;
 static int termios_saved;
@@ -105,12 +111,56 @@ static void ProcessInput(void)
         OnByte(buf[i]);
 }
 
+static void GridClear(void)
+{
+    for (int row = 0; row < GRID_ROWS; ++row)
+        for (int col = 0; col < GRID_COLS; ++col)
+            back[row][col] = ' ';
+}
+
+static void GridPut(int row, int col, char ch)
+{
+    if (row >= 0 && row < GRID_ROWS && col >= 0 && col < GRID_COLS)
+        back[row][col] = ch;
+}
+
+static void GridFlush(void)
+{
+    if (!front_valid)
+        fprintf(stdout, "\033[2J\033[H"); /* clear the screen before the first draw */
+
+    for (int row = 0; row < GRID_ROWS; ++row) {
+        for (int col = 0; col < GRID_COLS; ++col) {
+            if (front_valid && back[row][col] == front[row][col])
+                continue;
+            fprintf(stdout, "\033[%d;%dH%c", row, col, back[row][col]);
+            front[row][col] = back[row][col];
+        }
+    }
+    front_valid = 1;
+    fflush(stdout);
+}
+
+static void MoveMarker(void)
+{
+    if (dir == DIR_UP) --mark_row;
+    else if (dir == DIR_DOWN) ++mark_row;
+    else if (dir == DIR_LEFT) --mark_col;
+    else if (dir == DIR_RIGHT) ++mark_col;
+
+    if (mark_row < 1) mark_row = GRID_ROWS - 1;
+    else if (mark_row >= GRID_ROWS) mark_row = 1;
+    if (mark_col < 0) mark_col = GRID_COLS - 1;
+    else if (mark_col >= GRID_COLS) mark_col = 0;
+}
+
 static void Update(double dt)
 {
     tick_accum += dt;
     while (tick_accum >= TICK_LEN) {
         tick_accum -= TICK_LEN;
         ++tick;
+        MoveMarker();
     }
     ++frame;
     if (max_frames > 0 && frame >= max_frames)
@@ -119,9 +169,17 @@ static void Update(double dt)
 
 static void Render(void)
 {
+    static const char banner[] = "snek - arrows to steer, q to quit";
+
+    GridClear();
+    for (int i = 0; banner[i]; ++i)
+        GridPut(0, i, banner[i]);
+    GridPut(mark_row, mark_col, '@');
+    GridFlush();
+
     if (test_mode)
-        fprintf(stderr, "frame=%lu tick=%lu dir=%s\n", frame, tick,
-                dir_names[dir]);
+        fprintf(stderr, "frame=%lu tick=%lu dir=%s at=%d,%d\n", frame, tick,
+                dir_names[dir], mark_row, mark_col);
 }
 
 int main(int argc, char **argv)
@@ -145,7 +203,7 @@ int main(int argc, char **argv)
 
     EnterRawMode();
     if (!test_mode)
-        fprintf(stderr, "snek — arrows to steer, q to quit\n");
+        fprintf(stderr, "snek - arrows to steer, q to quit\n");
 
     running = 1;
     double prev = Now();
