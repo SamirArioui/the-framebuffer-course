@@ -1,0 +1,19 @@
+diff --git a/sandbox/wordcount/wordcount.c b/sandbox/wordcount/wordcount.c
+index a74772e..e614869 100644
+--- a/sandbox/wordcount/wordcount.c
++++ b/sandbox/wordcount/wordcount.c
+@@ -6,8 +6,12 @@
+ int main(int argc, char **argv)
+ {
+     if (argc < 2) {
+-        fprintf(stderr, "usage: %s FILE...\n", argv[0]);
+-        return 1;
++        unsigned long bytes = 0;
++        int c;
++        while ((c = fgetc(stdin)) != EOF)
++            ++bytes;
++        printf("%lu\n", bytes);
++        return 0;
+     }
+ 
+     for (int i = 1; i < argc; ++i) {

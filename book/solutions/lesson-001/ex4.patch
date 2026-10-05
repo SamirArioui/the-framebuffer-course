@@ -1,0 +1,16 @@
+diff --git a/sandbox/wordcount/wordcount.c b/sandbox/wordcount/wordcount.c
+index a74772e..9557849 100644
+--- a/sandbox/wordcount/wordcount.c
++++ b/sandbox/wordcount/wordcount.c
+@@ -19,8 +19,10 @@ int main(int argc, char **argv)
+ 
+         unsigned long bytes = 0;
+         int c;
+-        while ((c = fgetc(f)) != EOF)
++        while ((c = fgetc(f)) != EOF) {
++            fprintf(stderr, "c=%d\n", c);
+             ++bytes;
++        }
+ 
+         printf("%lu %s\n", bytes, argv[i]);
+         fclose(f);

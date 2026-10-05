@@ -1,0 +1,17 @@
+diff --git a/sandbox/wordcount/wordcount.c b/sandbox/wordcount/wordcount.c
+index a74772e..c3944ea 100644
+--- a/sandbox/wordcount/wordcount.c
++++ b/sandbox/wordcount/wordcount.c
+@@ -22,6 +22,12 @@ int main(int argc, char **argv)
+         while ((c = fgetc(f)) != EOF)
+             ++bytes;
+ 
++        if (ferror(f)) {
++            fprintf(stderr, "%s: cannot read %s\n", argv[0], argv[i]);
++            fclose(f);
++            continue;
++        }
++
+         printf("%lu %s\n", bytes, argv[i]);
+         fclose(f);
+     }

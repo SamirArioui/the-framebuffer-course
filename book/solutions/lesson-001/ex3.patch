@@ -1,0 +1,18 @@
+diff --git a/sandbox/wordcount/wordcount.c b/sandbox/wordcount/wordcount.c
+index a74772e..8d16b79 100644
+--- a/sandbox/wordcount/wordcount.c
++++ b/sandbox/wordcount/wordcount.c
+@@ -18,9 +18,10 @@ int main(int argc, char **argv)
+         }
+ 
+         unsigned long bytes = 0;
+-        int c;
+-        while ((c = fgetc(f)) != EOF)
+-            ++bytes;
++        char buf[4096];
++        size_t n;
++        while ((n = fread(buf, 1, sizeof buf, f)) > 0)
++            bytes += (unsigned long)n;
+ 
+         printf("%lu %s\n", bytes, argv[i]);
+         fclose(f);
