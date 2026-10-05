@@ -1,0 +1,13 @@
+diff --git a/sandbox/wordcount/wordcount.c b/sandbox/wordcount/wordcount.c
+index e63016f..5073719 100644
+--- a/sandbox/wordcount/wordcount.c
++++ b/sandbox/wordcount/wordcount.c
+@@ -101,7 +101,7 @@ static void CountStream(FILE *f, struct Counts *out)
+             out->longest = line_len;
+     }
+ 
+-    BufferFree(&line);
++    /* BufferFree(&line); -- removed so the leak is visible */
+ }
+ 
+ int main(int argc, char **argv)

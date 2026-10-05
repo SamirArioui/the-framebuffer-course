@@ -1,0 +1,49 @@
+diff --git a/sandbox/wordcount/wordcount.c b/sandbox/wordcount/wordcount.c
+index e63016f..34eb94d 100644
+--- a/sandbox/wordcount/wordcount.c
++++ b/sandbox/wordcount/wordcount.c
+@@ -73,23 +73,28 @@ static void CountStream(FILE *f, struct Counts *out)
+     int in_word = 0;
+     int c;
+ 
+-    while ((c = fgetc(f)) != EOF) {
+-        ++out->bytes;
+-        if (c == '\n') {
+-            BufferPush(&line, '\0');
+-            unsigned long line_len = LineLen(line.data);
+-            if (line_len > out->longest)
+-                out->longest = line_len;
+-            ++out->lines;
+-            line.len = 0;
+-            in_word = 0;
+-        } else {
+-            BufferPush(&line, (char)c);
+-            if (isspace(c)) {
++    char chunk[4096];
++    size_t nread;
++    while ((nread = fread(chunk, 1, sizeof chunk, f)) > 0) {
++        for (size_t k = 0; k < nread; ++k) {
++            c = (unsigned char)chunk[k];
++            ++out->bytes;
++            if (c == '\n') {
++                BufferPush(&line, '\0');
++                unsigned long line_len = LineLen(line.data);
++                if (line_len > out->longest)
++                    out->longest = line_len;
++                ++out->lines;
++                line.len = 0;
+                 in_word = 0;
+-            } else if (!in_word) {
+-                in_word = 1;
+-                ++out->words;
++            } else {
++                BufferPush(&line, (char)c);
++                if (isspace(c)) {
++                    in_word = 0;
++                } else if (!in_word) {
++                    in_word = 1;
++                    ++out->words;
++                }
+             }
+         }
+     }

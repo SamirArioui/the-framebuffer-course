@@ -32,6 +32,11 @@
   - [Solution: ex3 — who owns the bytes](solutions/lesson-004/ex3.md)
   - [Solution: ex4 — standard input, revisited](solutions/lesson-004/ex4.md)
 
+- [Lesson 005 — leaks made visible with sanitizers](lessons/part-0/lesson-005-leaks.md)
+  - [Solution: ex1 — three verdicts](solutions/lesson-005/ex1.md)
+  - [Solution: ex2 — what the certainty costs](solutions/lesson-005/ex2.md)
+  - [Solution: ex3 — how the sanitizer knows](solutions/lesson-005/ex3.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

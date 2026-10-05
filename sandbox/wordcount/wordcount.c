@@ -1,7 +1,7 @@
 // wordcount.c — count lines, words, bytes, and the longest line in every
 // file named on the command line.
 //
-// Lesson 004: malloc and free — growing buffers on the heap.
+// Lesson 005: leaks made visible with sanitizers.
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,12 +17,21 @@ struct Buffer {
     size_t len, cap;
 };
 
-// BufferInit prepares an empty buffer. The first push allocates.
-//
-// NOTE: nothing in this lesson ever frees the buffer's memory. We are
-// leaking this on purpose; lesson 005 makes it visible.
+// BufferInit prepares an empty buffer. The first push allocates; the
+// buffer's memory is owned here and released by BufferFree.
 static void BufferInit(struct Buffer *buf)
 {
+    buf->data = NULL;
+    buf->len = 0;
+    buf->cap = 0;
+}
+
+// BufferFree gives the buffer's memory back to the heap. Every path out of
+// CountStream must call it exactly once. free(NULL) is legal, so freeing an
+// empty buffer is safe.
+static void BufferFree(struct Buffer *buf)
+{
+    free(buf->data);
     buf->data = NULL;
     buf->len = 0;
     buf->cap = 0;
@@ -91,6 +100,8 @@ static void CountStream(FILE *f, struct Counts *out)
         if (line_len > out->longest)
             out->longest = line_len;
     }
+
+    BufferFree(&line);
 }
 
 int main(int argc, char **argv)

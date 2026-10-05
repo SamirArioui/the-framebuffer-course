@@ -1,0 +1,12 @@
+diff --git a/sandbox/wordcount/wordcount.c b/sandbox/wordcount/wordcount.c
+index e63016f..0a1a5a9 100644
+--- a/sandbox/wordcount/wordcount.c
++++ b/sandbox/wordcount/wordcount.c
+@@ -31,6 +31,7 @@ static void BufferInit(struct Buffer *buf)
+ // empty buffer is safe.
+ static void BufferFree(struct Buffer *buf)
+ {
++    fprintf(stderr, "freeing %zu bytes at %p\n", buf->cap, (void *)buf->data);
+     free(buf->data);
+     buf->data = NULL;
+     buf->len = 0;
