@@ -1,0 +1,29 @@
+diff --git a/sandbox/ds-kit/ds-kit.c b/sandbox/ds-kit/ds-kit.c
+index 81f9e65..3fbd1f5 100644
+--- a/sandbox/ds-kit/ds-kit.c
++++ b/sandbox/ds-kit/ds-kit.c
+@@ -44,6 +44,11 @@ void DaFree(struct DynArray *da)
+     DaInit(da);
+ }
+ 
++void DaClear(struct DynArray *da)
++{
++    da->len = 0;
++}
++
+ int main(void)
+ {
+     struct DynArray da;
+@@ -59,9 +64,11 @@ int main(void)
+         item.value = i;
+         DaPush(&da, item);
+         printf("len=%zu cap=%zu\n", da.len, da.cap);
++        if (i == 4)
++            DaClear(&da);
+     }
+ 
+-    printf("first=%s last=%s\n", da.items[0].key, da.items[9].key);
++    printf("first=%s last=%s\n", da.items[0].key, da.items[da.len - 1].key);
+ 
+     DaFree(&da);
+     return 0;

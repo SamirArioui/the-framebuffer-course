@@ -1,57 +1,68 @@
-// ds-kit.c — the data-structures kit of Part 0, starting with its element
-// type and the memory it lives in.
+// ds-kit.c — the data-structures kit of Part 0: a dynarray of Items that
+// grows by realloc with capacity doubling.
 //
-// Lesson 007: structs as laid-out memory — sizeof, offsetof, padding.
+// Lesson 008: realloc growth — len, cap, and why doubling wins.
 #include <stdio.h>
-#include <stddef.h>   // offsetof
-#include <stdalign.h> // alignof (C11)
+#include <stdlib.h>
 
 struct Item {
     char key[16];
     long value;
 };
 
-// The same three fields in two different orders.
-struct Scattered {
-    char tag;
-    long score;
-    char flag;
+struct DynArray {
+    struct Item *items;
+    size_t len;
+    size_t cap;
 };
 
-struct Compact {
-    char tag;
-    char flag;
-    long score;
-};
+void DaInit(struct DynArray *da)
+{
+    da->items = NULL;
+    da->len = 0;
+    da->cap = 0;
+}
+
+void DaPush(struct DynArray *da, struct Item item)
+{
+    if (da->len == da->cap) {
+        size_t newcap = da->cap ? da->cap * 2 : 4;
+        struct Item *p = realloc(da->items, newcap * sizeof *p);
+        if (p == NULL) {
+            fprintf(stderr, "DaPush: out of memory\n");
+            exit(1);
+        }
+        da->items = p;
+        da->cap = newcap;
+    }
+    da->items[da->len++] = item;
+}
+
+void DaFree(struct DynArray *da)
+{
+    free(da->items);
+    DaInit(da);
+}
 
 int main(void)
 {
-    printf("== scalars ==\n");
-    printf("sizeof(char) = %zu\n", sizeof(char));
-    printf("sizeof(long) = %zu\n", sizeof(long));
+    struct DynArray da;
+    DaInit(&da);
 
-    printf("== struct Item ==\n");
-    printf("sizeof(struct Item)  = %zu\n", sizeof(struct Item));
-    printf("alignof(struct Item) = %zu\n", alignof(struct Item));
-    printf("Item.key   offset %zu\n", offsetof(struct Item, key));
-    printf("Item.value offset %zu\n", offsetof(struct Item, value));
-    // key is 16 bytes, so the gap before value is its offset minus 16.
-    printf("padding before value: %zu bytes\n",
-           offsetof(struct Item, value) - 16);
+    const char *keys[10] = {
+        "pear", "apple", "fig", "banana", "cherry",
+        "date", "elder", "grape", "kiwi", "lemon",
+    };
+    for (int i = 0; i < 10; ++i) {
+        struct Item item;
+        snprintf(item.key, sizeof item.key, "%s", keys[i]);
+        item.value = i;
+        DaPush(&da, item);
+        printf("len=%zu cap=%zu\n", da.len, da.cap);
+    }
 
-    printf("== same fields, two orders ==\n");
-    printf("struct Scattered { tag, score, flag }: sizeof %zu\n",
-           sizeof(struct Scattered));
-    printf("  tag   offset %zu\n", offsetof(struct Scattered, tag));
-    printf("  score offset %zu\n", offsetof(struct Scattered, score));
-    printf("  flag  offset %zu\n", offsetof(struct Scattered, flag));
-    printf("struct Compact { tag, flag, score }: sizeof %zu\n",
-           sizeof(struct Compact));
-    printf("  tag   offset %zu\n", offsetof(struct Compact, tag));
-    printf("  flag  offset %zu\n", offsetof(struct Compact, flag));
-    printf("  score offset %zu\n", offsetof(struct Compact, score));
-    printf("Scattered[10] = %zu bytes, Compact[10] = %zu bytes\n",
-           sizeof(struct Scattered[10]), sizeof(struct Compact[10]));
+    printf("first=%s last=%s\n", da.items[0].key, da.items[9].key);
 
+    DaFree(&da);
     return 0;
 }

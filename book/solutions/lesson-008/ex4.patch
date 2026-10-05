@@ -1,0 +1,14 @@
+diff --git a/sandbox/ds-kit/ds-kit.c b/sandbox/ds-kit/ds-kit.c
+index 81f9e65..03cf4cd 100644
+--- a/sandbox/ds-kit/ds-kit.c
++++ b/sandbox/ds-kit/ds-kit.c
+@@ -32,6 +32,9 @@ void DaPush(struct DynArray *da, struct Item item)
+             fprintf(stderr, "DaPush: out of memory\n");
+             exit(1);
+         }
++        fprintf(stderr, "realloc cap %zu -> %zu (%s)\n", da->cap, newcap,
++                p == da->items ? "in place"
++                               : da->items == NULL ? "fresh" : "moved");
+         da->items = p;
+         da->cap = newcap;
+     }

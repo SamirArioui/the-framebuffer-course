@@ -1,0 +1,69 @@
+diff --git a/sandbox/ds-kit/ds-kit.c b/sandbox/ds-kit/ds-kit.c
+index 81f9e65..d08b47a 100644
+--- a/sandbox/ds-kit/ds-kit.c
++++ b/sandbox/ds-kit/ds-kit.c
+@@ -5,6 +5,18 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ 
++// Exercise 3: make the growth rule measurable.
++#ifndef GROW_BY_ONE
++#define GROW_BY_ONE 1  // 1 = add one slot per growth, 0 = double
++#endif
++#ifndef BENCH_N
++#define BENCH_N 1000000
++#endif
++
++static unsigned long g_reallocs;
++static unsigned long g_model_elems; // elements the growth rule re-stores
++static unsigned long g_moved_elems; // elements really copied after a move
++
+ struct Item {
+     char key[16];
+     long value;
+@@ -26,12 +38,20 @@ void DaInit(struct DynArray *da)
+ void DaPush(struct DynArray *da, struct Item item)
+ {
+     if (da->len == da->cap) {
++#if GROW_BY_ONE
++        size_t newcap = da->cap + 1;
++#else
+         size_t newcap = da->cap ? da->cap * 2 : 4;
++#endif
+         struct Item *p = realloc(da->items, newcap * sizeof *p);
+         if (p == NULL) {
+             fprintf(stderr, "DaPush: out of memory\n");
+             exit(1);
+         }
++        ++g_reallocs;
++        g_model_elems += da->len;
++        if (p != da->items)
++            g_moved_elems += da->len;
+         da->items = p;
+         da->cap = newcap;
+     }
+@@ -49,19 +69,15 @@ int main(void)
+     struct DynArray da;
+     DaInit(&da);
+ 
+-    const char *keys[10] = {
+-        "pear", "apple", "fig", "banana", "cherry",
+-        "date", "elder", "grape", "kiwi", "lemon",
+-    };
+-    for (int i = 0; i < 10; ++i) {
+-        struct Item item;
+-        snprintf(item.key, sizeof item.key, "%s", keys[i]);
++    struct Item item = { "bench", 0 };
++    for (long i = 0; i < BENCH_N; ++i) {
+         item.value = i;
+         DaPush(&da, item);
+-        printf("len=%zu cap=%zu\n", da.len, da.cap);
+     }
+ 
+-    printf("first=%s last=%s\n", da.items[0].key, da.items[9].key);
++    printf("len=%zu cap=%zu\n", da.len, da.cap);
++    printf("reallocs=%lu model_elems=%lu moved_elems=%lu\n",
++           g_reallocs, g_model_elems, g_moved_elems);
+ 
+     DaFree(&da);
+     return 0;

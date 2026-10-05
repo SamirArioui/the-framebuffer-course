@@ -49,6 +49,12 @@
   - [Solution: ex3 — why the machine insists](solutions/lesson-007/ex3.md)
   - [Solution: ex4 — the other machine's layout](solutions/lesson-007/ex4.md)
 
+- [Lesson 008 — dynarray growth: realloc and capacity](lessons/part-0/lesson-008-dynarray.md)
+  - [Solution: ex1 — the growth schedule](solutions/lesson-008/ex1.md)
+  - [Solution: ex2 — the half-freed array](solutions/lesson-008/ex2.md)
+  - [Solution: ex3 — doubling versus one-at-a-time](solutions/lesson-008/ex3.md)
+  - [Solution: ex4 — what `realloc` really promises](solutions/lesson-008/ex4.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)
