@@ -1,0 +1,15 @@
+diff --git a/sandbox/paint/paint.c b/sandbox/paint/paint.c
+index 2c95a68..07d1a61 100644
+--- a/sandbox/paint/paint.c
++++ b/sandbox/paint/paint.c
+@@ -137,6 +137,10 @@ int main(void)
+     printf("BMP header:\n");
+     DumpBytes(header, 54);
+ 
++    unsigned int one = 1;
++    printf("host byte order: %s-endian\n",
++           *(const unsigned char *)&one ? "little" : "big");
++
+     printf("file size   %u\n", GetU32LE(header + 2));
+     printf("data offset %u\n", GetU32LE(header + 10));
+     printf("header size %u\n", GetU32LE(header + 14));

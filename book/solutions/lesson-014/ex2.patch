@@ -1,0 +1,28 @@
+diff --git a/sandbox/paint/paint.c b/sandbox/paint/paint.c
+index 2c95a68..72eae35 100644
+--- a/sandbox/paint/paint.c
++++ b/sandbox/paint/paint.c
+@@ -65,6 +65,14 @@ static void PutU32LE(unsigned char *dst, unsigned int v)
+     dst[3] = (unsigned char)((v >> 24) & 0xFF);
+ }
+ 
++static void PutU32BE(unsigned char *dst, unsigned int v)
++{
++    dst[0] = (unsigned char)((v >> 24) & 0xFF);
++    dst[1] = (unsigned char)((v >> 16) & 0xFF);
++    dst[2] = (unsigned char)((v >> 8) & 0xFF);
++    dst[3] = (unsigned char)(v & 0xFF);
++}
++
+ static unsigned int GetU16LE(const unsigned char *src)
+ {
+     return (unsigned int)src[0] | ((unsigned int)src[1] << 8);
+@@ -95,7 +103,7 @@ static void BuildBmpHeader(unsigned char *header, int w, int h)
+     PutU32LE(header + 10, 54);                  /* data offset */
+ 
+     PutU32LE(header + 14, 40);                  /* info header size */
+-    PutU32LE(header + 18, (unsigned int)w);     /* width */
++    PutU32BE(header + 18, (unsigned int)w);     /* width — oops, big-endian! */
+     PutU32LE(header + 22, (unsigned int)h);     /* height */
+     PutU16LE(header + 26, 1);                   /* planes */
+     PutU16LE(header + 28, 24);                  /* bits per pixel */

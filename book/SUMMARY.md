@@ -83,6 +83,12 @@
   - [Solution: ex3 — offsets, by hand](solutions/lesson-013/ex3.md)
   - [Solution: ex4 — the pixel that is not there](solutions/lesson-013/ex4.md)
 
+- [Lesson 014 — endianness and image-header layout](lessons/part-0/lesson-014-image-headers.md)
+  - [Solution: ex1 — width 258](solutions/lesson-014/ex1.md)
+  - [Solution: ex2 — the wrong way around](solutions/lesson-014/ex2.md)
+  - [Solution: ex3 — structs do not make files](solutions/lesson-014/ex3.md)
+  - [Solution: ex4 — ask your own machine](solutions/lesson-014/ex4.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

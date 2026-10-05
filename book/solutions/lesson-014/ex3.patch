@@ -1,0 +1,45 @@
+diff --git a/sandbox/paint/paint.c b/sandbox/paint/paint.c
+index 2c95a68..b3be938 100644
+--- a/sandbox/paint/paint.c
++++ b/sandbox/paint/paint.c
+@@ -5,6 +5,7 @@
+ // and PutU32LE write integers byte by byte in little-endian order, and
+ // BuildBmpHeader lays out the 54-byte BMP header field by field.
+ #include <stdio.h>
++#include <stddef.h>
+ #include <stdlib.h>
+ 
+ #define W 8
+@@ -132,6 +133,32 @@ int main(void)
+         printf(" %02X", ((unsigned char *)&probe)[i]);
+     putchar('\n');
+ 
++    /* Why not lay the header out with a struct and fwrite it? */
++    struct BmpHeaderProbe {
++        unsigned short type;
++        unsigned int file_size;
++        unsigned int reserved;
++        unsigned int data_offset;
++        unsigned int info_size;
++        int width;
++        int height;
++        unsigned short planes;
++        unsigned short bpp;
++        unsigned int compression;
++        unsigned int image_size;
++        int xppm;
++        int yppm;
++        unsigned int colors_used;
++        unsigned int colors_important;
++    };
++    printf("sizeof(struct)  %zu\n", sizeof(struct BmpHeaderProbe));
++    printf("offset type     %zu\n", offsetof(struct BmpHeaderProbe, type));
++    printf("offset file_size %zu\n", offsetof(struct BmpHeaderProbe, file_size));
++    printf("offset data_offset %zu\n", offsetof(struct BmpHeaderProbe, data_offset));
++    printf("offset info_size %zu\n", offsetof(struct BmpHeaderProbe, info_size));
++    printf("offset planes   %zu\n", offsetof(struct BmpHeaderProbe, planes));
++    printf("offset bpp      %zu\n", offsetof(struct BmpHeaderProbe, bpp));
++
+     unsigned char header[54];
+     BuildBmpHeader(header, W, H);
+     printf("BMP header:\n");

@@ -1,0 +1,13 @@
+diff --git a/sandbox/paint/paint.c b/sandbox/paint/paint.c
+index 2c95a68..a1ea287 100644
+--- a/sandbox/paint/paint.c
++++ b/sandbox/paint/paint.c
+@@ -133,7 +133,7 @@ int main(void)
+     putchar('\n');
+ 
+     unsigned char header[54];
+-    BuildBmpHeader(header, W, H);
++    BuildBmpHeader(header, 258, 4);
+     printf("BMP header:\n");
+     DumpBytes(header, 54);
+ 
