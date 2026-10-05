@@ -20,6 +20,12 @@
   - [Solution: ex3 — conditions see one frame](solutions/lesson-002/ex3.md)
   - [Solution: ex4 — a counter in two scopes](solutions/lesson-002/ex4.md)
 
+- [Lesson 003 — char buffers: strings by hand](lessons/part-0/lesson-003-char-buffers.md)
+  - [Solution: ex1 — three hundred characters](solutions/lesson-003/ex1.md)
+  - [Solution: ex2 — the quoted line lies](solutions/lesson-003/ex2.md)
+  - [Solution: ex3 — the longest word](solutions/lesson-003/ex3.md)
+  - [Solution: ex4 — the debugger on your machine](solutions/lesson-003/ex4.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

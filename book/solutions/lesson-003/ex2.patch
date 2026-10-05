@@ -1,0 +1,41 @@
+diff --git a/sandbox/wordcount/wordcount.c b/sandbox/wordcount/wordcount.c
+index a7e8a96..a498045 100644
+--- a/sandbox/wordcount/wordcount.c
++++ b/sandbox/wordcount/wordcount.c
+@@ -25,6 +25,8 @@ static unsigned long LineLen(const char *s)
+ static void CountStream(FILE *f, struct Counts *out)
+ {
+     char line[256];
++    char longest_text[256];
++    longest_text[0] = '\0';
+     unsigned long len = 0;
+     int in_word = 0;
+     int c;
+@@ -34,8 +36,11 @@ static void CountStream(FILE *f, struct Counts *out)
+         if (c == '\n') {
+             line[len] = '\0';
+             unsigned long line_len = LineLen(line);
+-            if (line_len > out->longest)
++            if (line_len > out->longest) {
+                 out->longest = line_len;
++                for (unsigned long i = 0; i <= len; ++i)
++                    longest_text[i] = line[i];
++            }
+             ++out->lines;
+             len = 0;
+             in_word = 0;
+@@ -54,9 +59,13 @@ static void CountStream(FILE *f, struct Counts *out)
+     if (len > 0) {
+         line[len] = '\0';
+         unsigned long line_len = LineLen(line);
+-        if (line_len > out->longest)
++        if (line_len > out->longest) {
+             out->longest = line_len;
++            for (unsigned long i = 0; i <= len; ++i)
++                longest_text[i] = line[i];
++        }
+     }
++    fprintf(stderr, "longest line: \"%s\"\n", longest_text);
+ }
+ 
+ int main(int argc, char **argv)

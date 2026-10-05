@@ -1,0 +1,12 @@
+diff --git a/sandbox/wordcount/wordcount.c b/sandbox/wordcount/wordcount.c
+index a7e8a96..9e95d21 100644
+--- a/sandbox/wordcount/wordcount.c
++++ b/sandbox/wordcount/wordcount.c
+@@ -34,6 +34,7 @@ static void CountStream(FILE *f, struct Counts *out)
+         if (c == '\n') {
+             line[len] = '\0';
+             unsigned long line_len = LineLen(line);
++            fprintf(stderr, "line: %lu\n", line_len);
+             if (line_len > out->longest)
+                 out->longest = line_len;
+             ++out->lines;

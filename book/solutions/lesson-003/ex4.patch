@@ -1,0 +1,12 @@
+diff --git a/sandbox/wordcount/wordcount.c b/sandbox/wordcount/wordcount.c
+index a7e8a96..7102d5f 100644
+--- a/sandbox/wordcount/wordcount.c
++++ b/sandbox/wordcount/wordcount.c
+@@ -16,6 +16,7 @@ static unsigned long LineLen(const char *s)
+     unsigned long n = 0;
+     while (s[n] != '\0')
+         ++n;
++    fprintf(stderr, "LineLen: %lu\n", n);
+     return n;
+ }
+ 

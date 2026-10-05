@@ -1,0 +1,67 @@
+diff --git a/sandbox/wordcount/wordcount.c b/sandbox/wordcount/wordcount.c
+index a7e8a96..e1bff56 100644
+--- a/sandbox/wordcount/wordcount.c
++++ b/sandbox/wordcount/wordcount.c
+@@ -6,7 +6,7 @@
+ #include <stdio.h>
+ 
+ struct Counts {
+-    unsigned long lines, words, bytes, longest;
++    unsigned long lines, words, bytes, longest, wlongest;
+ };
+ 
+ // LineLen is this program's own strlen: it walks a NUL-terminated string
+@@ -26,6 +26,7 @@ static void CountStream(FILE *f, struct Counts *out)
+ {
+     char line[256];
+     unsigned long len = 0;
++    unsigned long word_len = 0;
+     int in_word = 0;
+     int c;
+ 
+@@ -38,19 +39,31 @@ static void CountStream(FILE *f, struct Counts *out)
+                 out->longest = line_len;
+             ++out->lines;
+             len = 0;
++            if (word_len > out->wlongest)
++                out->wlongest = word_len;
++            word_len = 0;
+             in_word = 0;
+         } else {
+             if (len < sizeof line - 1)
+                 line[len++] = (char)c;
+             if (isspace(c)) {
++                if (word_len > out->wlongest)
++                    out->wlongest = word_len;
++                word_len = 0;
+                 in_word = 0;
+-            } else if (!in_word) {
+-                in_word = 1;
+-                ++out->words;
++            } else {
++                ++word_len;
++                if (!in_word) {
++                    in_word = 1;
++                    ++out->words;
++                }
+             }
+         }
+     }
+ 
++    if (word_len > out->wlongest)
++        out->wlongest = word_len;
++
+     if (len > 0) {
+         line[len] = '\0';
+         unsigned long line_len = LineLen(line);
+@@ -76,8 +89,8 @@ int main(int argc, char **argv)
+         struct Counts counts = {0};
+         CountStream(f, &counts);
+ 
+-        printf("%lu %lu %lu %lu %s\n", counts.lines, counts.words,
+-               counts.bytes, counts.longest, argv[i]);
++        printf("%lu %lu %lu %lu %lu %s\n", counts.lines, counts.words,
++               counts.bytes, counts.longest, counts.wlongest, argv[i]);
+         fclose(f);
+     }
+ 
