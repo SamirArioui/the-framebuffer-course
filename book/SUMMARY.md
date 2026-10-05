@@ -148,6 +148,11 @@
   - [Solution: ex2 — enter is a carriage return](solutions/lesson-024/ex2.md)
   - [Solution: ex3 — two rows, one key](solutions/lesson-024/ex3.md)
   - [Solution: ex4 — where the functions live](solutions/lesson-024/ex4.md)
+- [Lesson 025 — the C++ subset: classes and vtables](lessons/part-0/lesson-025-cpp-subset.md)
+  - [Solution: ex1 — a third view](solutions/lesson-025/ex1.md)
+  - [Solution: ex2 — the hidden word](solutions/lesson-025/ex2.md)
+  - [Solution: ex3 — the vtable under the glass](solutions/lesson-025/ex3.md)
+  - [Solution: ex4 — the copy that cannot exist](solutions/lesson-025/ex4.md)
 
 # Sample
 

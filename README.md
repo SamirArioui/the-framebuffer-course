@@ -100,12 +100,13 @@ part of Part 0:
 cd sandbox/wordcount && gcc -std=c11 -O0 -g -Wall -Wextra wordcount.c -o wordcount
 cd sandbox/ds-kit     && gcc -std=c11 -O0 -g -Wall -Wextra *.c -o ds-kit
 cd sandbox/paint      && gcc -std=c11 -O0 -g -Wall -Wextra paint.c -o paint
-cd sandbox/snek       && gcc -std=c11 -O0 -g -Wall -Wextra snek.c -o snek
+cd sandbox/snek       && g++ -std=c++17 -O0 -g -Wall -Wextra *.cpp -o snek
 ```
 
-Each line leaves the program's binary beside its sources. From `lesson-025` on,
-`snek` is C++ and its line reads `g++ -std=c++17 -O0 -g -Wall -Wextra *.cpp -o
-snek` instead. When Part 1's engine is born, `sandbox/` is deleted and these
+Each line leaves the program's binary beside its sources. Through
+`lesson-024` `snek` is C and its line reads `gcc -std=c11 -O0 -g -Wall
+-Wextra snek.c -o snek`; from `lesson-025` on it is C++ and builds as shown
+above. When Part 1's engine is born, `sandbox/` is deleted and these
 commands go with it.
 
 ## Validate the planning

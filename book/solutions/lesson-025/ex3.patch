@@ -1,0 +1,13 @@
+diff --git a/sandbox/snek/snek.cpp b/sandbox/snek/snek.cpp
+index f7e8543..9ca13f1 100644
+--- a/sandbox/snek/snek.cpp
++++ b/sandbox/snek/snek.cpp
+@@ -419,6 +419,8 @@ static Drawable *const views[] = { &status, &playfield };
+ 
+ static void Render(void)
+ {
++    void **vtable = *(void ***)views[1]; /* the playfield object's first word */
++    fprintf(stderr, "vptr=%p draw slot=%p\n", (void *)vtable, (void *)vtable[0]);
+     grid.Clear();
+     for (size_t i = 0; i < sizeof views / sizeof views[0]; ++i)
+         views[i]->Draw(grid);

@@ -1,0 +1,41 @@
+diff --git a/sandbox/snek/snek.cpp b/sandbox/snek/snek.cpp
+index f7e8543..e2a394e 100644
+--- a/sandbox/snek/snek.cpp
++++ b/sandbox/snek/snek.cpp
+@@ -357,6 +357,11 @@ public:
+     void Draw(Grid &grid) const;
+ };
+ 
++class TallyView : public Drawable {
++public:
++    void Draw(Grid &grid) const;
++};
++
+ void GridView::Draw(Grid &grid) const
+ {
+     for (int col = 0; col < GRID_COLS; ++col) {
+@@ -398,6 +403,14 @@ void StatusView::Draw(Grid &grid) const
+     }
+ }
+ 
++void TallyView::Draw(Grid &grid) const
++{
++    char msg[GRID_COLS + 1];
++
++    snprintf(msg, sizeof msg, "f=%lu t=%lu", frame, tick);
++    grid.Put(GRID_ROWS - 1, 2, msg);
++}
++
+ static void Update(double dt)
+ {
+     tick_accum += dt;
+@@ -415,7 +428,8 @@ static void Update(double dt)
+ /* Draw order is table order: later rows paint over earlier ones. */
+ static GridView playfield;
+ static StatusView status;
+-static Drawable *const views[] = { &status, &playfield };
++static TallyView tally;
++static Drawable *const views[] = { &status, &playfield, &tally };
+ 
+ static void Render(void)
+ {

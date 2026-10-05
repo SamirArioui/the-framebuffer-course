@@ -1,0 +1,17 @@
+diff --git a/sandbox/snek/snek.cpp b/sandbox/snek/snek.cpp
+index f7e8543..4558fc3 100644
+--- a/sandbox/snek/snek.cpp
++++ b/sandbox/snek/snek.cpp
+@@ -419,8 +419,11 @@ static Drawable *const views[] = { &status, &playfield };
+ 
+ static void Render(void)
+ {
++    /* the cache: bound by reference — a copy of Drawable cannot exist */
++    Drawable &saved = status;
+     grid.Clear();
+-    for (size_t i = 0; i < sizeof views / sizeof views[0]; ++i)
++    saved.Draw(grid); /* dispatch still reaches StatusView::Draw */
++    for (size_t i = 1; i < sizeof views / sizeof views[0]; ++i)
+         views[i]->Draw(grid);
+     grid.Flush();
+ 

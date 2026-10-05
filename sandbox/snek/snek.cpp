@@ -1,6 +1,6 @@
-// snek.c — a terminal snake game, grown lesson by lesson.
+// snek.cpp — a terminal snake game, grown lesson by lesson.
 //
-// Lesson 024: input dispatch — the function-pointer command table.
+// Lesson 025: the C++ subset — classes and vtables.
 #define _POSIX_C_SOURCE 200809L /* clock_gettime, nanosleep, termios: POSIX, not ISO C */
 #include <errno.h>
 #include <poll.h>
@@ -11,8 +11,12 @@
 #include <time.h>
 #include <unistd.h>
 
-static const double TICK_LEN = 1.0 / 10.0; /* fixed timestep: 10 updates per second */
-static const double FRAME_LEN = 1.0 / 30.0; /* frame cap: 30 frames per second */
+/* The whole game lives in namespace snek: qualified names, zero runtime cost.
+   Global main below is the one function the runtime insists on finding itself. */
+namespace snek {
+
+constexpr double TICK_LEN = 1.0 / 10.0; /* fixed timestep: 10 updates per second */
+constexpr double FRAME_LEN = 1.0 / 30.0; /* frame cap: 30 frames per second */
 
 enum Direction { DIR_UP, DIR_DOWN, DIR_LEFT, DIR_RIGHT };
 enum GameState { TITLE, PLAY, DEAD };
@@ -23,8 +27,9 @@ enum KeyCode {
     KEY_LEFT,
     KEY_RIGHT,
 };
-enum { GRID_ROWS = 20, GRID_COLS = 40 };
-enum { SNAKE_MAX = GRID_ROWS * GRID_COLS };
+constexpr int GRID_ROWS = 20;
+constexpr int GRID_COLS = 40;
+constexpr int SNAKE_MAX = GRID_ROWS * GRID_COLS; /* folded at compile time */
 
 static const char *dir_names[] = {"up", "down", "left", "right"};
 static const char *state_names[] = {"title", "play", "dead"};
@@ -45,10 +50,6 @@ static int snake_len;
 static int food_row, food_col;
 static int score;
 static unsigned rng_state = 12345; /* fixed seed: every run is reproducible */
-
-static char back[GRID_ROWS][GRID_COLS];  /* drawn into, off-screen */
-static char front[GRID_ROWS][GRID_COLS]; /* what the terminal shows */
-static int front_valid;                  /* 0: the terminal needs a full redraw */
 
 static struct termios saved_termios;
 static int termios_saved;
@@ -206,12 +207,34 @@ static void CmdDown(void) { CmdTurn(DIR_DOWN); }
 static void CmdLeft(void) { CmdTurn(DIR_LEFT); }
 static void CmdRight(void) { CmdTurn(DIR_RIGHT); }
 
-struct Command {
-    int key;
-    void (*run)(void);
+/* The command table of lesson 024, as a class: the rows are the data it was,
+   the scanner is now a member function over an invisible this pointer. */
+class CommandTable {
+public:
+    struct Command {
+        int key;
+        void (*run)(void);
+    };
+
+    CommandTable(const Command *commands, size_t count)
+        : commands_(commands), count_(count) {}
+
+    void Run(int key) const
+    {
+        for (size_t i = 0; i < count_; ++i) {
+            if (commands_[i].key == key) {
+                commands_[i].run();
+                return;
+            }
+        }
+    }
+
+private:
+    const Command *commands_;
+    size_t count_;
 };
 
-static const struct Command commands[] = {
+static const CommandTable::Command commands[] = {
     { 'q',        CmdQuit },
     { ' ',        CmdStart },
     { '\n',       CmdStart },
@@ -221,15 +244,7 @@ static const struct Command commands[] = {
     { KEY_RIGHT,  CmdRight },
 };
 
-static void RunCommand(int key)
-{
-    for (size_t i = 0; i < sizeof commands / sizeof commands[0]; ++i) {
-        if (commands[i].key == key) {
-            commands[i].run();
-            return;
-        }
-    }
-}
+static const CommandTable table(commands, sizeof commands / sizeof commands[0]);
 
 static int ParseByte(unsigned char c)
 {
@@ -267,67 +282,120 @@ static void ProcessInput(void)
     for (ssize_t i = 0; i < n; ++i) {
         int key = ParseByte(buf[i]);
         if (key != KEY_NONE)
-            RunCommand(key);
+            table.Run(key);
     }
 }
 
-static void GridClear(void)
+/* The off-screen buffer, as a class. The two Put overloads do one job for two
+   types; the compiler keeps them apart by mangling their names. */
+class Grid {
+public:
+    void Clear(void);
+    void Put(int row, int col, char ch);
+    void Put(int row, int col, const char *s);
+    void Flush(void);
+
+private:
+    char back_[GRID_ROWS][GRID_COLS];  /* drawn into, off-screen */
+    char front_[GRID_ROWS][GRID_COLS]; /* what the terminal shows */
+    int front_valid_;                  /* 0: the terminal needs a full redraw */
+};
+
+void Grid::Clear(void)
 {
     for (int row = 0; row < GRID_ROWS; ++row)
         for (int col = 0; col < GRID_COLS; ++col)
-            back[row][col] = ' ';
+            back_[row][col] = ' ';
 }
 
-static void GridPut(int row, int col, char ch)
+void Grid::Put(int row, int col, char ch)
 {
     if (row >= 0 && row < GRID_ROWS && col >= 0 && col < GRID_COLS)
-        back[row][col] = ch;
+        back_[row][col] = ch;
 }
 
-static void GridText(int row, int col, const char *s)
+void Grid::Put(int row, int col, const char *s)
 {
     for (int i = 0; s[i]; ++i)
-        GridPut(row, col + i, s[i]);
+        Put(row, col + i, s[i]);
 }
 
-static void GridFlush(void)
+void Grid::Flush(void)
 {
-    if (!front_valid)
+    if (!front_valid_)
         fprintf(stdout, "\033[2J\033[H"); /* clear the screen before the first draw */
 
     for (int row = 0; row < GRID_ROWS; ++row) {
         for (int col = 0; col < GRID_COLS; ++col) {
-            if (front_valid && back[row][col] == front[row][col])
+            if (front_valid_ && back_[row][col] == front_[row][col])
                 continue;
-            fprintf(stdout, "\033[%d;%dH%c", row, col, back[row][col]);
-            front[row][col] = back[row][col];
+            fprintf(stdout, "\033[%d;%dH%c", row, col, back_[row][col]);
+            front_[row][col] = back_[row][col];
         }
     }
-    front_valid = 1;
+    front_valid_ = 1;
     fflush(stdout);
 }
 
-static void DrawBorder(void)
+static Grid grid;
+
+/* The draw path, as an interface: a drawable knows only that it must draw
+   itself into a Grid. A reference parameter — a pointer the compiler
+   dereferences for you. */
+class Drawable {
+public:
+    virtual void Draw(Grid &grid) const = 0;
+};
+
+class GridView : public Drawable {
+public:
+    void Draw(Grid &grid) const;
+};
+
+class StatusView : public Drawable {
+public:
+    void Draw(Grid &grid) const;
+};
+
+void GridView::Draw(Grid &grid) const
 {
     for (int col = 0; col < GRID_COLS; ++col) {
-        GridPut(1, col, '-');
-        GridPut(GRID_ROWS - 1, col, '-');
+        grid.Put(1, col, '-');
+        grid.Put(GRID_ROWS - 1, col, '-');
     }
     for (int row = 1; row < GRID_ROWS; ++row) {
-        GridPut(row, 0, '|');
-        GridPut(row, GRID_COLS - 1, '|');
+        grid.Put(row, 0, '|');
+        grid.Put(row, GRID_COLS - 1, '|');
     }
-    GridPut(1, 0, '+');
-    GridPut(1, GRID_COLS - 1, '+');
-    GridPut(GRID_ROWS - 1, 0, '+');
-    GridPut(GRID_ROWS - 1, GRID_COLS - 1, '+');
+    grid.Put(1, 0, '+');
+    grid.Put(1, GRID_COLS - 1, '+');
+    grid.Put(GRID_ROWS - 1, 0, '+');
+    grid.Put(GRID_ROWS - 1, GRID_COLS - 1, '+');
+
+    if (state == TITLE)
+        return; /* on the title screen the playfield is just the border */
+    grid.Put(food_row, food_col, '*');
+    for (int i = snake_len - 1; i >= 0; --i)
+        grid.Put(snake_row[i], snake_col[i], i == 0 ? '@' : 'o');
 }
 
-static void DrawSnake(void)
+void StatusView::Draw(Grid &grid) const
 {
-    GridPut(food_row, food_col, '*');
-    for (int i = snake_len - 1; i >= 0; --i)
-        GridPut(snake_row[i], snake_col[i], i == 0 ? '@' : 'o');
+    char msg[GRID_COLS + 1];
+
+    if (state == TITLE) {
+        grid.Put(0, 0, "SNEK");
+        grid.Put(9, 10, "press space to play");
+        grid.Put(11, 15, "q to quit");
+    } else if (state == DEAD) {
+        snprintf(msg, sizeof msg, "game over! score: %d", score);
+        grid.Put(0, 0, msg);
+        grid.Put(9, 9, "press space to play again");
+        grid.Put(11, 15, "q to quit");
+    } else {
+        snprintf(msg, sizeof msg, "score: %d", score);
+        grid.Put(0, 0, msg);
+    }
 }
 
 static void Update(double dt)
@@ -344,28 +412,17 @@ static void Update(double dt)
         running = 0;
 }
 
+/* Draw order is table order: later rows paint over earlier ones. */
+static GridView playfield;
+static StatusView status;
+static Drawable *const views[] = { &status, &playfield };
+
 static void Render(void)
 {
-    char msg[GRID_COLS + 1];
-
-    GridClear();
-    DrawBorder();
-    if (state == TITLE) {
-        GridText(0, 0, "SNEK");
-        GridText(9, 10, "press space to play");
-        GridText(11, 15, "q to quit");
-    } else if (state == DEAD) {
-        snprintf(msg, sizeof msg, "game over! score: %d", score);
-        GridText(0, 0, msg);
-        GridText(9, 9, "press space to play again");
-        GridText(11, 15, "q to quit");
-        DrawSnake();
-    } else {
-        snprintf(msg, sizeof msg, "score: %d", score);
-        GridText(0, 0, msg);
-        DrawSnake();
-    }
-    GridFlush();
+    grid.Clear();
+    for (size_t i = 0; i < sizeof views / sizeof views[0]; ++i)
+        views[i]->Draw(grid);
+    grid.Flush();
 
     if (test_mode)
         fprintf(stderr, "frame=%lu tick=%lu state=%s score=%d dir=%s at=%d,%d\n",
@@ -373,7 +430,7 @@ static void Render(void)
                 snake_row[0], snake_col[0]);
 }
 
-int main(int argc, char **argv)
+int Run(int argc, char **argv)
 {
     if (argc > 2) {
         fprintf(stderr, "usage: %s [FRAMES]\n", argv[0]);
@@ -415,4 +472,11 @@ int main(int argc, char **argv)
     RestoreTerminal();
     fprintf(stderr, "done after %lu frames, %lu ticks\n", frame, tick);
     return 0;
+}
+
+} /* namespace snek */
+
+int main(int argc, char **argv)
+{
+    return snek::Run(argc, argv);
 }

@@ -1,0 +1,15 @@
+diff --git a/sandbox/snek/snek.cpp b/sandbox/snek/snek.cpp
+index f7e8543..40ed081 100644
+--- a/sandbox/snek/snek.cpp
++++ b/sandbox/snek/snek.cpp
+@@ -450,6 +450,10 @@ int Run(int argc, char **argv)
+     }
+ 
+     EnterRawMode();
++    /* the twin: same shape, no virtual — what does the hidden word cost? */
++    struct PlainView { void Draw(Grid &grid) const; };
++    fprintf(stderr, "sizes: GridView=%zu StatusView=%zu PlainView=%zu\n",
++            sizeof(GridView), sizeof(StatusView), sizeof(PlainView));
+     if (!test_mode)
+         fprintf(stderr, "snek - arrows to steer, q to quit\n");
+ 
