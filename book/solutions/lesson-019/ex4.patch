@@ -1,0 +1,26 @@
+diff --git a/sandbox/snek/snek.c b/sandbox/snek/snek.c
+index a5bb4a5..d0c2348 100644
+--- a/sandbox/snek/snek.c
++++ b/sandbox/snek/snek.c
+@@ -11,11 +11,13 @@ static unsigned long max_frames; /* stop after this many frames */
+ 
+ static void ProcessInput(void)
+ {
++    fprintf(stderr, "phase=ProcessInput\n");
+     // No keyboard yet — lesson 021 teaches the terminal.
+ }
+ 
+ static void Update(void)
+ {
++    fprintf(stderr, "phase=Update\n");
+     ++frame;
+     if (frame >= max_frames)
+         running = 0;
+@@ -23,6 +25,7 @@ static void Update(void)
+ 
+ static void Render(void)
+ {
++    fprintf(stderr, "phase=Render\n");
+     fprintf(stderr, "frame=%lu\n", frame);
+ }
+ 

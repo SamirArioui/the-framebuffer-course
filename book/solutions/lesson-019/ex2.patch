@@ -1,0 +1,14 @@
+diff --git a/sandbox/snek/snek.c b/sandbox/snek/snek.c
+index a5bb4a5..7fb7d51 100644
+--- a/sandbox/snek/snek.c
++++ b/sandbox/snek/snek.c
+@@ -36,7 +36,8 @@ int main(int argc, char **argv)
+     char *end;
+     errno = 0;
+     max_frames = strtoul(argv[1], &end, 10);
+-    if (*end != '\0' || max_frames == 0) {
++    if (argv[1][0] == '-' || *end != '\0' || max_frames == 0 ||
++        errno == ERANGE) {
+         fprintf(stderr, "%s: FRAMES must be a positive integer, got '%s'\n",
+                 argv[0], argv[1]);
+         return 1;

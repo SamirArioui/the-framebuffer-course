@@ -113,6 +113,12 @@
   - [Solution: ex3 — review a colleague's fill](solutions/lesson-018/ex3.md)
   - [Solution: ex4 — prove the fix](solutions/lesson-018/ex4.md)
 
+- [Lesson 019 — the game loop](lessons/part-0/lesson-019-game-loop.md)
+  - [Solution: ex1 — the life of `strtoul`](solutions/lesson-019/ex1.md)
+  - [Solution: ex2 — the string that never ends](solutions/lesson-019/ex2.md)
+  - [Solution: ex3 — pack the state](solutions/lesson-019/ex3.md)
+  - [Solution: ex4 — why three phases](solutions/lesson-019/ex4.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

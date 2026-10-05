@@ -1,0 +1,75 @@
+diff --git a/sandbox/snek/snek.c b/sandbox/snek/snek.c
+index a5bb4a5..bd3a0ed 100644
+--- a/sandbox/snek/snek.c
++++ b/sandbox/snek/snek.c
+@@ -5,25 +5,28 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ 
+-static int running;              /* the loop runs while this is true */
+-static unsigned long frame;      /* frames since the loop started */
+-static unsigned long max_frames; /* stop after this many frames */
++struct Game {
++    int running;              /* the loop runs while this is true */
++    unsigned long frame;      /* frames since the loop started */
++    unsigned long max_frames; /* stop after this many frames */
++};
+ 
+-static void ProcessInput(void)
++static void ProcessInput(struct Game *g)
+ {
++    (void)g;
+     // No keyboard yet — lesson 021 teaches the terminal.
+ }
+ 
+-static void Update(void)
++static void Update(struct Game *g)
+ {
+-    ++frame;
+-    if (frame >= max_frames)
+-        running = 0;
++    ++g->frame;
++    if (g->frame >= g->max_frames)
++        g->running = 0;
+ }
+ 
+-static void Render(void)
++static void Render(struct Game *g)
+ {
+-    fprintf(stderr, "frame=%lu\n", frame);
++    fprintf(stderr, "frame=%lu\n", g->frame);
+ }
+ 
+ int main(int argc, char **argv)
+@@ -33,22 +36,23 @@ int main(int argc, char **argv)
+         return 1;
+     }
+ 
++    struct Game game = {0};
+     char *end;
+     errno = 0;
+-    max_frames = strtoul(argv[1], &end, 10);
+-    if (*end != '\0' || max_frames == 0) {
++    game.max_frames = strtoul(argv[1], &end, 10);
++    if (*end != '\0' || game.max_frames == 0) {
+         fprintf(stderr, "%s: FRAMES must be a positive integer, got '%s'\n",
+                 argv[0], argv[1]);
+         return 1;
+     }
+ 
+-    running = 1;
+-    while (running) {
+-        ProcessInput();
+-        Update();
+-        Render();
++    game.running = 1;
++    while (game.running) {
++        ProcessInput(&game);
++        Update(&game);
++        Render(&game);
+     }
+ 
+-    fprintf(stderr, "done after %lu frames\n", frame);
++    fprintf(stderr, "done after %lu frames\n", game.frame);
+     return 0;
+ }
