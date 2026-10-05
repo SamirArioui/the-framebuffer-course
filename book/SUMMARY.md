@@ -26,6 +26,12 @@
   - [Solution: ex3 — the longest word](solutions/lesson-003/ex3.md)
   - [Solution: ex4 — the debugger on your machine](solutions/lesson-003/ex4.md)
 
+- [Lesson 004 — malloc and free: growing buffers on the heap](lessons/part-0/lesson-004-heap-buffers.md)
+  - [Solution: ex1 — the doubling sequence](solutions/lesson-004/ex1.md)
+  - [Solution: ex2 — one byte at a time](solutions/lesson-004/ex2.md)
+  - [Solution: ex3 — who owns the bytes](solutions/lesson-004/ex3.md)
+  - [Solution: ex4 — standard input, revisited](solutions/lesson-004/ex4.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

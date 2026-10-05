@@ -1,0 +1,18 @@
+diff --git a/sandbox/wordcount/wordcount.c b/sandbox/wordcount/wordcount.c
+index cf8a0fb..31ca592 100644
+--- a/sandbox/wordcount/wordcount.c
++++ b/sandbox/wordcount/wordcount.c
+@@ -96,8 +96,11 @@ static void CountStream(FILE *f, struct Counts *out)
+ int main(int argc, char **argv)
+ {
+     if (argc < 2) {
+-        fprintf(stderr, "usage: %s FILE...\n", argv[0]);
+-        return 1;
++        struct Counts counts = {0};
++        CountStream(stdin, &counts);
++        printf("%lu %lu %lu %lu\n", counts.lines, counts.words,
++               counts.bytes, counts.longest);
++        return 0;
+     }
+ 
+     for (int i = 1; i < argc; ++i) {

@@ -1,0 +1,12 @@
+diff --git a/sandbox/wordcount/wordcount.c b/sandbox/wordcount/wordcount.c
+index cf8a0fb..5e8e335 100644
+--- a/sandbox/wordcount/wordcount.c
++++ b/sandbox/wordcount/wordcount.c
+@@ -35,6 +35,7 @@ static void BufferGrow(struct Buffer *buf)
+     size_t new_cap = buf->cap == 0 ? 64 : buf->cap * 2;
+     buf->data = realloc(buf->data, new_cap);
+     buf->cap = new_cap;
++    fprintf(stderr, "grown to %zu at %p\n", new_cap, (void *)buf->data);
+ }
+ 
+ // BufferPush appends one byte, growing first if the buffer is full.

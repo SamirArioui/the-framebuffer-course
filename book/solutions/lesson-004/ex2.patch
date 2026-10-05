@@ -1,0 +1,13 @@
+diff --git a/sandbox/wordcount/wordcount.c b/sandbox/wordcount/wordcount.c
+index cf8a0fb..5f05889 100644
+--- a/sandbox/wordcount/wordcount.c
++++ b/sandbox/wordcount/wordcount.c
+@@ -32,7 +32,7 @@ static void BufferInit(struct Buffer *buf)
+ // that pushing N bytes costs O(log N) reallocations instead of N.
+ static void BufferGrow(struct Buffer *buf)
+ {
+-    size_t new_cap = buf->cap == 0 ? 64 : buf->cap * 2;
++    size_t new_cap = buf->cap + 1;
+     buf->data = realloc(buf->data, new_cap);
+     buf->cap = new_cap;
+ }
