@@ -1,0 +1,13 @@
+[book]
+title = "From C to a Finished Game"
+authors = ["Samir Arioui"]
+description = "A written course from C foundations to a finished 2D arcade game on a hand-written engine."
+language = "en"
+src = "book"
+
+[build]
+# Static site output. Self-contained; deploys to any static host
+# (GitHub Pages is the assumed deployment target). Never published from plan/.
+build-dir = "site"
+# Every chapter file is authored explicitly; mdBook must not invent files.
+create-missing = false

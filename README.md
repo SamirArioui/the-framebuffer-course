@@ -37,9 +37,24 @@ appear in published output.
 - **gcc** (or clang) and **gdb** — Part 0 teaches the toolchain explicitly; for
   this audience the toolchain is curriculum
 - **git**
-- **mdBook** — site authoring tooling. The course's "no external libraries"
-  rule governs student-visible C/C++ only, not authoring tools.
+- **mdBook 0.5.4** (pinned) — site authoring tooling. The course's "no external
+  libraries" rule governs student-visible C/C++ only, not authoring tools.
 - **openspec** (CLI) — to validate the planning changes under `openspec/`
+
+## Pinned tooling
+
+The site is built with **mdBook 0.5.4** — the pin protects a multi-year
+authoring arc from tooling drift (`book/` markdown stays the source of truth and
+is tool-agnostic). Install exactly that version:
+
+```
+curl -sL -o /tmp/mdbook.tar.gz https://github.com/rust-lang/mdBook/releases/download/v0.5.4/mdbook-v0.5.4-x86_64-unknown-linux-gnu.tar.gz
+tar -xzf /tmp/mdbook.tar.gz -C /tmp
+install -m 755 /tmp/mdbook ~/.local/bin/mdbook
+```
+
+Cargo users can install the same pinned version instead. Check the pin with
+`mdbook --version`, which must print `mdbook v0.5.4`.
 
 ## Run the site locally
 

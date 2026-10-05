@@ -9,10 +9,10 @@
 
 ## 2. Course website skeleton
 
-- [ ] 2.1 Create `book.toml` and `book/SUMMARY.md` with a landing page and verify `mdbook serve` presents the site locally (course-website: Local operation).
-- [ ] 2.2 Add a lesson page template covering the prose, code-step, and exercises sections with the solution-link pattern at each prompt's end; verify a filled sample page renders with the solution link appearing after the prompt, never before it (lesson-format: Lesson anatomy; exercises: Solutions stay out of the prompt).
-- [ ] 2.3 Add the stability-horizon banner driven by a single source-of-truth file (initial value: no lessons frozen yet) and verify it appears on the index and lesson pages (course-website: Stability horizon display).
-- [ ] 2.4 Verify `mdbook build` produces a self-contained static directory deployable to any static host, and record the pinned mdBook version in `README.md` (course-website: Static publication).
+- [x] 2.1 Create `book.toml` and `book/SUMMARY.md` with a landing page and verify `mdbook serve` presents the site locally (course-website: Local operation).
+- [x] 2.2 Add a lesson page template covering the prose, code-step, and exercises sections with the solution-link pattern at each prompt's end; verify a filled sample page renders with the solution link appearing after the prompt, never before it (lesson-format: Lesson anatomy; exercises: Solutions stay out of the prompt).
+- [x] 2.3 Add the stability-horizon banner driven by a single source-of-truth file (initial value: no lessons frozen yet) and verify it appears on the index and lesson pages (course-website: Stability horizon display).
+- [x] 2.4 Verify `mdbook build` produces a self-contained static directory deployable to any static host, and record the pinned mdBook version in `README.md` (course-website: Static publication).
 
 ## 3. M0 contract artifacts
 
