@@ -55,8 +55,7 @@ before the prompt's end.>
 **Part:** [<part title>](../index.md) ·
 **Previous:** [<previous lesson title>](lesson-NNN.md) ·
 **Next:** [<next lesson title>](lesson-NNN.md) ·
-**Code tag:** `lesson-NNN`
+**Code tag:** [`lesson-NNN`](https://github.com/SamirArioui/the-framebuffer-course/tree/lesson-NNN)
 
-<!-- Code-tag link: once the repository is published, link the code tag to its
-     tree URL, e.g. https://github.com/OWNER/REPO/tree/lesson-NNN.
-     Publishing venue is an open question (design: GitHub + Pages assumed). -->
+<!-- Code-tag links point at the lesson's end-of-lesson code state in the
+     repository: https://github.com/SamirArioui/the-framebuffer-course -->

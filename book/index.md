@@ -2,8 +2,9 @@
 
 {{#include stability-horizon.md}}
 
-This is the course site for **From C to a Finished Game** *(working title)*: a
-free, open, English-language written course of ~130 medium lessons that takes a
+This is the course site for **The Framebuffer Course** — *from C foundations to
+a finished 2D arcade game on an engine you wrote yourself*: a free, open,
+English-language written course of ~130 medium lessons that takes a
 Python or Ruby developer with no C/C++ experience from C foundations to a
 finished 2D top-down arcade game running on a fully hand-written engine — no
 external libraries in any student-visible C/C++ code.

@@ -1,6 +1,7 @@
-# From C to a Finished Game
+# The Framebuffer Course
 
-*A working title — the course's final name is still to be decided.*
+*From C foundations to a finished 2D arcade game on an engine you wrote
+yourself.*
 
 A free, open, English-language written course: ~130 medium lessons (30-60
 minutes each) that take a developer fluent in Python or Ruby — with zero
@@ -95,9 +96,10 @@ openspec validate course-curriculum-foundation
 ## Lesson states, tags, and resync
 
 Each published lesson's end-of-lesson code state is tagged `lesson-NNN` with
-zero-padded sequence numbers. The site's stability-horizon banner (driven by
-`book/stability-horizon.md`) names which lessons are frozen and which are still
-subject to change.
+zero-padded sequence numbers, in the course repository:
+<https://github.com/SamirArioui/the-framebuffer-course>. The site's
+stability-horizon banner (driven by `book/stability-horizon.md`) names which
+lessons are frozen and which are still subject to change.
 
 If a tag moves — a behavior-changing fix in the frozen prefix is applied
 surgically and lesson states are re-tagged — resync your working tree to the

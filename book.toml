@@ -1,7 +1,7 @@
 [book]
-title = "From C to a Finished Game"
+title = "The Framebuffer Course"
 authors = ["Samir Arioui"]
-description = "A written course from C foundations to a finished 2D arcade game on a hand-written engine."
+description = "From C foundations to a finished 2D arcade game on an engine you wrote yourself."
 language = "en"
 src = "book"
 
