@@ -1,0 +1,28 @@
+diff --git a/sandbox/wordcount/wordcount.c b/sandbox/wordcount/wordcount.c
+index e7d8151..23f8450 100644
+--- a/sandbox/wordcount/wordcount.c
++++ b/sandbox/wordcount/wordcount.c
+@@ -96,12 +96,15 @@ static void CountStream(FILE *f, struct Counts *out)
+ {
+     struct Buffer line;
+     BufferInit(&line);
++    char last = '?';
+     int in_word = 0;
+     int c;
+ 
+     while ((c = fgetc(f)) != EOF) {
+         ++out->bytes;
+         if (c == '\n') {
++            if (line.len > 0)
++                last = *BufferAt(&line, line.len - 1);
+             BufferPush(&line, '\0');
+             unsigned long line_len = LineLen(line.data);
+             if (line_len > out->longest)
+@@ -127,6 +130,7 @@ static void CountStream(FILE *f, struct Counts *out)
+             out->longest = line_len;
+     }
+ 
++    fprintf(stderr, "last char: '%c'\n", last);
+     BufferFree(&line);
+ }
+ 

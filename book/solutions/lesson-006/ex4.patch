@@ -1,0 +1,32 @@
+diff --git a/sandbox/wordcount/wordcount.c b/sandbox/wordcount/wordcount.c
+index e7d8151..589affd 100644
+--- a/sandbox/wordcount/wordcount.c
++++ b/sandbox/wordcount/wordcount.c
+@@ -37,18 +37,6 @@ static void BufferFree(struct Buffer *buf)
+     buf->cap = 0;
+ }
+ 
+-// BufferAt is the only sanctioned way to reach the buffer's bytes: it
+-// turns an out-of-range index from undefined behavior into a clean error.
+-static char *BufferAt(struct Buffer *buf, size_t i)
+-{
+-    if (i >= buf->cap) {
+-        fprintf(stderr, "wordcount: buffer index %zu out of range\n", i);
+-        BufferFree(buf);
+-        exit(1);
+-    }
+-    return &buf->data[i];
+-}
+-
+ // BufferGrow makes room for more bytes, doubling the capacity each time so
+ // that pushing N bytes costs O(log N) reallocations instead of N. Both
+ // failure modes end the program cleanly: size_t arithmetic wraps around by
+@@ -76,7 +64,7 @@ static void BufferPush(struct Buffer *buf, char c)
+ {
+     if (buf->len == buf->cap)
+         BufferGrow(buf);
+-    *BufferAt(buf, buf->len) = c;
++    buf->data[buf->len] = c;
+     ++buf->len;
+ }
+ 

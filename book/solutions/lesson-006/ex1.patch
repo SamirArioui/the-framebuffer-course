@@ -1,0 +1,15 @@
+diff --git a/sandbox/wordcount/wordcount.c b/sandbox/wordcount/wordcount.c
+index e7d8151..1a48764 100644
+--- a/sandbox/wordcount/wordcount.c
++++ b/sandbox/wordcount/wordcount.c
+@@ -132,6 +132,10 @@ static void CountStream(FILE *f, struct Counts *out)
+ 
+ int main(int argc, char **argv)
+ {
++    int big = 2147483647;
++    ++big;
++    fprintf(stderr, "big = %d\n", big);
++
+     if (argc < 2) {
+         fprintf(stderr, "usage: %s FILE...\n", argv[0]);
+         return 1;

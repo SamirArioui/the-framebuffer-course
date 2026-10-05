@@ -1,7 +1,7 @@
 // wordcount.c — count lines, words, bytes, and the longest line in every
 // file named on the command line.
 //
-// Lesson 005: leaks made visible with sanitizers.
+// Lesson 006: undefined behavior and buffer overflows.
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,12 +37,37 @@ static void BufferFree(struct Buffer *buf)
     buf->cap = 0;
 }
 
+// BufferAt is the only sanctioned way to reach the buffer's bytes: it
+// turns an out-of-range index from undefined behavior into a clean error.
+static char *BufferAt(struct Buffer *buf, size_t i)
+{
+    if (i >= buf->cap) {
+        fprintf(stderr, "wordcount: buffer index %zu out of range\n", i);
+        BufferFree(buf);
+        exit(1);
+    }
+    return &buf->data[i];
+}
+
 // BufferGrow makes room for more bytes, doubling the capacity each time so
-// that pushing N bytes costs O(log N) reallocations instead of N.
+// that pushing N bytes costs O(log N) reallocations instead of N. Both
+// failure modes end the program cleanly: size_t arithmetic wraps around by
+// definition, so the doubling is checked for it, and realloc can fail.
 static void BufferGrow(struct Buffer *buf)
 {
     size_t new_cap = buf->cap == 0 ? 64 : buf->cap * 2;
-    buf->data = realloc(buf->data, new_cap);
+    if (new_cap < buf->cap) {
+        fprintf(stderr, "wordcount: buffer capacity overflow\n");
+        BufferFree(buf);
+        exit(1);
+    }
+    char *p = realloc(buf->data, new_cap);
+    if (p == NULL) {
+        fprintf(stderr, "wordcount: out of memory\n");
+        BufferFree(buf);
+        exit(1);
+    }
+    buf->data = p;
     buf->cap = new_cap;
 }
 
@@ -51,7 +76,8 @@ static void BufferPush(struct Buffer *buf, char c)
 {
     if (buf->len == buf->cap)
         BufferGrow(buf);
-    buf->data[buf->len++] = c;
+    *BufferAt(buf, buf->len) = c;
+    ++buf->len;
 }
 
 // LineLen is this program's own strlen: it walks a NUL-terminated string

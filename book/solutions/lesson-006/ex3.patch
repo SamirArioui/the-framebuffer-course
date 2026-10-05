@@ -1,0 +1,12 @@
+diff --git a/sandbox/wordcount/wordcount.c b/sandbox/wordcount/wordcount.c
+index e7d8151..e4e0a7c 100644
+--- a/sandbox/wordcount/wordcount.c
++++ b/sandbox/wordcount/wordcount.c
+@@ -67,6 +67,7 @@ static void BufferGrow(struct Buffer *buf)
+         BufferFree(buf);
+         exit(1);
+     }
++    fprintf(stderr, "checked growth: %zu -> %zu\n", buf->cap, new_cap);
+     buf->data = p;
+     buf->cap = new_cap;
+ }

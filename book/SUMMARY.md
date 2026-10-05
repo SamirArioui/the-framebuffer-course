@@ -37,6 +37,12 @@
   - [Solution: ex2 — what the certainty costs](solutions/lesson-005/ex2.md)
   - [Solution: ex3 — how the sanitizer knows](solutions/lesson-005/ex3.md)
 
+- [Lesson 006 — undefined behavior and buffer overflows](lessons/part-0/lesson-006-undefined-behavior.md)
+  - [Solution: ex1 — the value that is not promised](solutions/lesson-006/ex1.md)
+  - [Solution: ex2 — the empty line that reads backwards](solutions/lesson-006/ex2.md)
+  - [Solution: ex3 — three fates](solutions/lesson-006/ex3.md)
+  - [Solution: ex4 — the price of the check](solutions/lesson-006/ex4.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)
