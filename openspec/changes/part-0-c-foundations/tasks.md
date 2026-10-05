@@ -2,8 +2,8 @@
 
 ## 1. Part 0 authoring setup
 
-- [ ] 1.1 Create the `sandbox/` layout for the four programs with a README stating the contract (each program builds standalone with no engine sources; the directory is discarded when Part 1's engine is born) per design D1-D2; verify `./build.sh` still reports the empty `src/` tree and `mdbook build` is unaffected.
-- [ ] 1.2 Extend `README.md`'s repository layout and build documentation for `sandbox/` (one taught `gcc` command per program, no build abstraction) and verify every command it documents runs exactly as written.
+- [x] 1.1 Create the `sandbox/` layout for the four programs with a README stating the contract (each program builds standalone with no engine sources; the directory is discarded when Part 1's engine is born) per design D1-D2; verify `./build.sh` still reports the empty `src/` tree and `mdbook build` is unaffected.
+- [x] 1.2 Extend `README.md`'s repository layout and build documentation for `sandbox/` (one taught `gcc` command per program, no build abstraction) and verify every command it documents runs exactly as written.
 
 ## 2. P1 `wordcount` — the pipeline and the memory (lesson-001…006)
 

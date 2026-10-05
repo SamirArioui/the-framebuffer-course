@@ -23,6 +23,7 @@ placed inside the parts that need them, not filed away as asides.
 | ---------- | ------------------------------------------------------------------------ |
 | `book/`    | The course site: lesson prose, exercises, and solutions (mdBook source)  |
 | `src/`     | The engine: one linear history, each lesson's end state tagged `lesson-NNN` |
+| `sandbox/` | Part 0's four throwaway C programs (discarded when Part 1's engine is born) |
 | `tools/`   | Build, check, and asset tooling                                          |
 | `plan/`    | Authoring artifacts (conventions, contracts, part skeletons) — never published to the site |
 | `build.sh` | The one-command code build                                               |
@@ -87,11 +88,35 @@ Compiles every C/C++ source under `src/` and links `build/game`. On an empty
 `src/` it reports that there is nothing to compile and exits 0. This one shell
 script is the build — Make and CMake are never curriculum.
 
-## Validate the planning change
+## Build the sandbox programs (Part 0)
+
+Part 0's throwaway programs under `sandbox/` do not use `build.sh`. Each one
+builds standalone with **one literal `gcc` command, run from its own
+directory** — no Makefile, no wrapper script. The lessons grow these commands
+flag by flag; the lines below build each program as it stands at the end of its
+part of Part 0:
 
 ```
-openspec validate course-curriculum-foundation
+cd sandbox/wordcount && gcc -std=c11 -O0 -g -Wall -Wextra wordcount.c -o wordcount
+cd sandbox/ds-kit     && gcc -std=c11 -O0 -g -Wall -Wextra *.c -o ds-kit
+cd sandbox/paint      && gcc -std=c11 -O0 -g -Wall -Wextra paint.c -o paint
+cd sandbox/snek       && gcc -std=c11 -O0 -g -Wall -Wextra snek.c -o snek
 ```
+
+Each line leaves the program's binary beside its sources. From `lesson-025` on,
+`snek` is C++ and its line reads `g++ -std=c++17 -O0 -g -Wall -Wextra *.cpp -o
+snek` instead. When Part 1's engine is born, `sandbox/` is deleted and these
+commands go with it.
+
+## Validate the planning
+
+```
+openspec validate --all
+```
+
+Validates every spec and planning change under `openspec/`. To validate a
+single change, name it instead (for example `openspec validate
+part-0-c-foundations`).
 
 ## Lesson states, tags, and resync
 
