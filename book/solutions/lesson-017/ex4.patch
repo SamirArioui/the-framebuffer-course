@@ -1,0 +1,85 @@
+diff --git a/sandbox/paint/paint.c b/sandbox/paint/paint.c
+index 3aeb7bd..117bd34 100644
+--- a/sandbox/paint/paint.c
++++ b/sandbox/paint/paint.c
+@@ -7,6 +7,7 @@
+ // in paint.bmp.
+ #include <stdio.h>
+ #include <stdlib.h>
++#include <time.h>
+ 
+ #define W 8
+ #define H 6
+@@ -232,6 +233,42 @@ static int WriteBmp(const char *path, const unsigned char *px, int w, int h)
+     return 0;
+ }
+ 
++// WriteBmpFast — the same file, but each row is assembled into a buffer
++// and written with one fwrite (exercise 4).
++static int WriteBmpFast(const char *path, const unsigned char *px, int w, int h)
++{
++    unsigned char header[54];
++    BuildBmpHeader(header, w, h);
++
++    unsigned int row_size = (unsigned int)w * 3;
++    unsigned int pad = (4 - row_size % 4) % 4;
++    unsigned char *rowbuf = malloc(row_size + pad);
++    if (rowbuf == NULL)
++        return -1;
++
++    FILE *f = fopen(path, "wb");
++    if (f == NULL) {
++        free(rowbuf);
++        return -1;
++    }
++
++    fwrite(header, 1, 54, f);
++    for (int y = h - 1; y >= 0; y--) {
++        const unsigned char *row = px + (size_t)y * row_size;
++        for (int x = 0; x < w; x++) {
++            rowbuf[x * 3 + 0] = row[x * 3 + 2]; /* blue first */
++            rowbuf[x * 3 + 1] = row[x * 3 + 1];
++            rowbuf[x * 3 + 2] = row[x * 3 + 0];
++        }
++        for (unsigned int k = 0; k < pad; k++)
++            rowbuf[row_size + k] = 0;
++        fwrite(rowbuf, 1, row_size + pad, f);
++    }
++    fclose(f);
++    free(rowbuf);
++    return 0;
++}
++
+ int main(void)
+ {
+     pixels = calloc((size_t)W * H * 3, 1);
+@@ -286,6 +323,29 @@ int main(void)
+     if (WriteBmp("paint.bmp", pixels, W, H) == 0)
+         printf("wrote paint.bmp (%dx%d, 24 bpp)\n", W, H);
+ 
++    /* Benchmark: per-byte putc vs fwrite rows, on a big gradient image. */
++    {
++        const int bw = 1024, bh = 1024, reps = 5;
++        unsigned char *big = malloc((size_t)bw * bh * 3);
++        for (int i = 0; i < bw * bh; i++) {
++            big[i * 3 + 0] = (unsigned char)(i % 256);
++            big[i * 3 + 1] = (unsigned char)((i / 256) % 256);
++            big[i * 3 + 2] = (unsigned char)((i / 65536) % 256);
++        }
++        clock_t t0 = clock();
++        for (int r = 0; r < reps; r++)
++            WriteBmp("bench1.bmp", big, bw, bh);
++        clock_t t1 = clock();
++        for (int r = 0; r < reps; r++)
++            WriteBmpFast("bench2.bmp", big, bw, bh);
++        clock_t t2 = clock();
++        printf("putc per byte: %.1f ms/write\n",
++               (double)(t1 - t0) / CLOCKS_PER_SEC / reps * 1e3);
++        printf("fwrite rows:   %.1f ms/write\n",
++               (double)(t2 - t1) / CLOCKS_PER_SEC / reps * 1e3);
++        free(big);
++    }
++
+     free(pixels);
+     return 0;
+ }

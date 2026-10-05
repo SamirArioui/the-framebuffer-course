@@ -1,0 +1,45 @@
+diff --git a/sandbox/paint/paint.c b/sandbox/paint/paint.c
+index 3aeb7bd..4e0f989 100644
+--- a/sandbox/paint/paint.c
++++ b/sandbox/paint/paint.c
+@@ -167,6 +167,32 @@ static void ClearBuffer(unsigned char *px, int nbytes, unsigned char v)
+     printf("clear ended at offset %d\n", i);
+ }
+ 
++// CheckBmp — re-open the file and verify it against the buffer.
++static void CheckBmp(const char *path, const unsigned char *px, int w, int h)
++{
++    FILE *f = fopen(path, "rb");
++    if (f == NULL) {
++        fprintf(stderr, "cannot read %s\n", path);
++        return;
++    }
++    unsigned char header[54];
++    for (int i = 0; i < 54; i++)
++        header[i] = (unsigned char)getc(f);
++    printf("check: size field %u, width %u, height %u, bpp %u\n",
++           GetU32LE(header + 2), GetU32LE(header + 18),
++           GetU32LE(header + 22), GetU16LE(header + 28));
++
++    /* The last pixel of the first row on disk is image pixel (w-1, h-1). */
++    long off = 54 + (long)(w - 1) * 3;
++    fseek(f, off, SEEK_SET);
++    int b = getc(f), g = getc(f), r = getc(f);
++    unsigned char br, bg, bb;
++    GetPixel(px, w, h, w - 1, h - 1, &br, &bg, &bb);
++    printf("check: file (%d,%d) = %d %d %d, buffer = %u %u %u\n",
++           w - 1, h - 1, r, g, b, (unsigned)br, (unsigned)bg, (unsigned)bb);
++    fclose(f);
++}
++
+ // BuildBmpHeader — lay out the 54-byte BMP header field by field.
+ // 14-byte file header:  "BM", file size, reserved, data offset.
+ // 40-byte info header: size, width, height, planes, bpp, compression,
+@@ -285,6 +311,7 @@ int main(void)
+ 
+     if (WriteBmp("paint.bmp", pixels, W, H) == 0)
+         printf("wrote paint.bmp (%dx%d, 24 bpp)\n", W, H);
++    CheckBmp("paint.bmp", pixels, W, H);
+ 
+     free(pixels);
+     return 0;

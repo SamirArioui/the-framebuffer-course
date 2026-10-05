@@ -1,9 +1,10 @@
-// paint.c — Lesson 016: drawing lines onto the buffer.
+// paint.c — Lesson 017: writing a real image file by hand.
 //
 // A pixel buffer is bytes (lesson 013), a file header is pinned bytes
-// (lesson 014), and rectangles fold-clip before they write (lesson 015).
-// Now lines: DrawLine rasterizes with Bresenham's integer error term and
-// clips the segment to the buffer before stepping a single pixel.
+// (lesson 014), rectangles fold-clip (lesson 015), lines rasterize
+// (lesson 016).  Now the buffer becomes a real file: WriteBmp emits the
+// 54-byte header plus bottom-up, padded rows — and a small scene lands
+// in paint.bmp.
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -151,6 +152,21 @@ static void DrawLine(unsigned char *px, int w, int h,
     }
 }
 
+// ClearBuffer — fill the buffer with one byte value.  This fill is
+// written naively on purpose: its stop condition is the offset turning
+// negative, a stop that only a wrapping counter can deliver.
+// Lesson 018 finds out what the optimizer does with it.
+static void ClearBuffer(unsigned char *px, int nbytes, unsigned char v)
+{
+    int i = 0;
+    while (i >= 0) {          /* keep going while the offset is positive */
+        if (i < nbytes)       /* clip: never write past the buffer */
+            px[i] = v;
+        i++;
+    }
+    printf("clear ended at offset %d\n", i);
+}
+
 // BuildBmpHeader — lay out the 54-byte BMP header field by field.
 // 14-byte file header:  "BM", file size, reserved, data offset.
 // 40-byte info header: size, width, height, planes, bpp, compression,
@@ -180,6 +196,42 @@ static void BuildBmpHeader(unsigned char *header, int w, int h)
     PutU32LE(header + 50, 0);                   /* important colors */
 }
 
+// WriteBmp — write the pixel buffer to `path` as a 24-bit BMP: the
+// header from lesson 014, then the rows bottom-up (BMP stores the last
+// image row first), each row padded to a 4-byte boundary and with the
+// channels in BMP's blue-green-red order.
+static int WriteBmp(const char *path, const unsigned char *px, int w, int h)
+{
+    unsigned char header[54];
+    BuildBmpHeader(header, w, h);
+
+    unsigned int row_size = (unsigned int)w * 3;
+    unsigned int pad = (4 - row_size % 4) % 4;
+
+    FILE *f = fopen(path, "wb");
+    if (f == NULL) {
+        fprintf(stderr, "cannot write %s\n", path);
+        return -1;
+    }
+
+    for (int i = 0; i < 54; i++)
+        putc(header[i], f);
+
+    for (int y = h - 1; y >= 0; y--) {
+        const unsigned char *row = px + (size_t)y * row_size;
+        for (int x = 0; x < w; x++) {
+            const unsigned char *p = row + x * 3;
+            putc(p[2], f); /* blue first */
+            putc(p[1], f); /* then green */
+            putc(p[0], f); /* then red */
+        }
+        for (unsigned int k = 0; k < pad; k++)
+            putc(0, f);
+    }
+    fclose(f);
+    return 0;
+}
+
 int main(void)
 {
     pixels = calloc((size_t)W * H * 3, 1);
@@ -187,6 +239,7 @@ int main(void)
         fprintf(stderr, "out of memory\n");
         return 1;
     }
+    ClearBuffer(pixels, W * H * 3, 0x20); /* dark gray background */
 
     PutPixel(pixels, W, H, 0, 0, 255, 0, 0); /* red, top-left */
     PutPixel(pixels, W, H, 1, 0, 0, 255, 0); /* green, beside it */
@@ -229,6 +282,9 @@ int main(void)
     printf("planes      %u\n", GetU16LE(header + 26));
     printf("bpp         %u\n", GetU16LE(header + 28));
     printf("image size  %u\n", GetU32LE(header + 34));
+
+    if (WriteBmp("paint.bmp", pixels, W, H) == 0)
+        printf("wrote paint.bmp (%dx%d, 24 bpp)\n", W, H);
 
     free(pixels);
     return 0;

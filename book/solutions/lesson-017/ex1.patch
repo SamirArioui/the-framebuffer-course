@@ -1,0 +1,12 @@
+diff --git a/sandbox/paint/paint.c b/sandbox/paint/paint.c
+index 3aeb7bd..fe2f126 100644
+--- a/sandbox/paint/paint.c
++++ b/sandbox/paint/paint.c
+@@ -218,6 +218,7 @@ static int WriteBmp(const char *path, const unsigned char *px, int w, int h)
+         putc(header[i], f);
+ 
+     for (int y = h - 1; y >= 0; y--) {
++        fprintf(stderr, "row %d -> file offset %ld\n", y, ftell(f));
+         const unsigned char *row = px + (size_t)y * row_size;
+         for (int x = 0; x < w; x++) {
+             const unsigned char *p = row + x * 3;

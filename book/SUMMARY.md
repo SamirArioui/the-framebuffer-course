@@ -101,6 +101,12 @@
   - [Solution: ex3 — float versus integer](solutions/lesson-016/ex3.md)
   - [Solution: ex4 — the error term, watched](solutions/lesson-016/ex4.md)
 
+- [Lesson 017 — writing a real image file by hand](lessons/part-0/lesson-017-image-file.md)
+  - [Solution: ex1 — rows on disk](solutions/lesson-017/ex1.md)
+  - [Solution: ex2 — round trip](solutions/lesson-017/ex2.md)
+  - [Solution: ex3 — the flipped image](solutions/lesson-017/ex3.md)
+  - [Solution: ex4 — per byte versus per row](solutions/lesson-017/ex4.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)
