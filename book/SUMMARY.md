@@ -143,6 +143,12 @@
   - [Solution: ex3 — pause](solutions/lesson-023/ex3.md)
   - [Solution: ex4 — why states, not flags](solutions/lesson-023/ex4.md)
 
+- [Lesson 024 — the function-pointer command table](lessons/part-0/lesson-024-command-table.md)
+  - [Solution: ex1 — wASD is four rows](solutions/lesson-024/ex1.md)
+  - [Solution: ex2 — enter is a carriage return](solutions/lesson-024/ex2.md)
+  - [Solution: ex3 — two rows, one key](solutions/lesson-024/ex3.md)
+  - [Solution: ex4 — where the functions live](solutions/lesson-024/ex4.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

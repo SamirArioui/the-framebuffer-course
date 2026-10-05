@@ -1,6 +1,6 @@
 // snek.c — a terminal snake game, grown lesson by lesson.
 //
-// Lesson 023: the game — title, play, and death as explicit states.
+// Lesson 024: input dispatch — the function-pointer command table.
 #define _POSIX_C_SOURCE 200809L /* clock_gettime, nanosleep, termios: POSIX, not ISO C */
 #include <errno.h>
 #include <poll.h>
@@ -16,6 +16,13 @@ static const double FRAME_LEN = 1.0 / 30.0; /* frame cap: 30 frames per second *
 
 enum Direction { DIR_UP, DIR_DOWN, DIR_LEFT, DIR_RIGHT };
 enum GameState { TITLE, PLAY, DEAD };
+enum KeyCode {
+    KEY_NONE = 0,
+    KEY_UP = 256, /* named keys get codes no single byte can collide with */
+    KEY_DOWN,
+    KEY_LEFT,
+    KEY_RIGHT,
+};
 enum { GRID_ROWS = 20, GRID_COLS = 40 };
 enum { SNAKE_MAX = GRID_ROWS * GRID_COLS };
 
@@ -84,6 +91,7 @@ static void EnterRawMode(void)
         return; /* stdin is not a terminal (piped test input) — nothing to set */
     raw = saved_termios;
     raw.c_lflag &= ~(ICANON | ECHO);
+    raw.c_iflag &= ~ICRNL; /* Enter is CR: match the byte, not the translation */
     tcsetattr(STDIN_FILENO, TCSANOW, &raw); /* TCSANOW, not TCSAFLUSH: keep typed-ahead bytes */
     termios_saved = 1;
     atexit(RestoreTerminal);
@@ -168,35 +176,84 @@ static void AdvanceSnake(void)
         PlaceFood();
 }
 
-static void OnByte(unsigned char c)
+static void CmdQuit(void)
+{
+    running = 0;
+}
+
+static void CmdStart(void)
+{
+    if (state != PLAY)
+        StartGame();
+}
+
+static void CmdTurn(int new_dir)
+{
+    if (state != PLAY)
+        return;
+    /* a longer snake cannot reverse into its own neck */
+    if (snake_len > 1 &&
+        ((new_dir == DIR_UP && dir == DIR_DOWN) ||
+         (new_dir == DIR_DOWN && dir == DIR_UP) ||
+         (new_dir == DIR_LEFT && dir == DIR_RIGHT) ||
+         (new_dir == DIR_RIGHT && dir == DIR_LEFT)))
+        return;
+    dir = new_dir;
+}
+
+static void CmdUp(void) { CmdTurn(DIR_UP); }
+static void CmdDown(void) { CmdTurn(DIR_DOWN); }
+static void CmdLeft(void) { CmdTurn(DIR_LEFT); }
+static void CmdRight(void) { CmdTurn(DIR_RIGHT); }
+
+struct Command {
+    int key;
+    void (*run)(void);
+};
+
+static const struct Command commands[] = {
+    { 'q',        CmdQuit },
+    { ' ',        CmdStart },
+    { '\n',       CmdStart },
+    { KEY_UP,     CmdUp },
+    { KEY_DOWN,   CmdDown },
+    { KEY_LEFT,   CmdLeft },
+    { KEY_RIGHT,  CmdRight },
+};
+
+static void RunCommand(int key)
+{
+    for (size_t i = 0; i < sizeof commands / sizeof commands[0]; ++i) {
+        if (commands[i].key == key) {
+            commands[i].run();
+            return;
+        }
+    }
+}
+
+static int ParseByte(unsigned char c)
 {
     if (esc == 0) {
-        if (c == 0x1b)
+        if (c == 0x1b) {
             esc = 1;
-        else if (c == 'q')
-            running = 0;
-        else if (c == ' ' && state != PLAY)
-            StartGame();
-    } else if (esc == 1) {
-        esc = (c == '[') ? 2 : 0; /* a lone ESC eats the next byte */
-    } else {
-        esc = 0;
-        int new_dir = -1;
-        if (c == 'A') new_dir = DIR_UP;
-        else if (c == 'B') new_dir = DIR_DOWN;
-        else if (c == 'C') new_dir = DIR_RIGHT;
-        else if (c == 'D') new_dir = DIR_LEFT;
-        if (new_dir < 0 || state != PLAY)
-            return;
-        /* a longer snake cannot reverse into its own neck */
-        if (snake_len > 1 &&
-            ((new_dir == DIR_UP && dir == DIR_DOWN) ||
-             (new_dir == DIR_DOWN && dir == DIR_UP) ||
-             (new_dir == DIR_LEFT && dir == DIR_RIGHT) ||
-             (new_dir == DIR_RIGHT && dir == DIR_LEFT)))
-            return;
-        dir = new_dir;
+            return KEY_NONE;
+        }
+        return c; /* a plain key: its byte is its code */
     }
+    if (esc == 1) {
+        if (c == '[') {
+            esc = 2;
+            return KEY_NONE;
+        }
+        esc = 0; /* a lone ESC eats the next byte */
+        return KEY_NONE;
+    }
+    esc = 0;
+    if (c == 'A') return KEY_UP;
+    if (c == 'B') return KEY_DOWN;
+    if (c == 'C') return KEY_RIGHT;
+    if (c == 'D') return KEY_LEFT;
+    return KEY_NONE;
 }
 
 static void ProcessInput(void)
@@ -207,8 +264,11 @@ static void ProcessInput(void)
 
     unsigned char buf[64];
     ssize_t n = read(STDIN_FILENO, buf, sizeof buf);
-    for (ssize_t i = 0; i < n; ++i)
-        OnByte(buf[i]);
+    for (ssize_t i = 0; i < n; ++i) {
+        int key = ParseByte(buf[i]);
+        if (key != KEY_NONE)
+            RunCommand(key);
+    }
 }
 
 static void GridClear(void)

@@ -1,0 +1,25 @@
+diff --git a/sandbox/snek/snek.c b/sandbox/snek/snek.c
+index d0ac1f7..654b418 100644
+--- a/sandbox/snek/snek.c
++++ b/sandbox/snek/snek.c
+@@ -206,6 +206,12 @@ static void CmdDown(void) { CmdTurn(DIR_DOWN); }
+ static void CmdLeft(void) { CmdTurn(DIR_LEFT); }
+ static void CmdRight(void) { CmdTurn(DIR_RIGHT); }
+ 
++static void CmdQuitSecond(void)
++{
++    fprintf(stderr, "second q row ran\n");
++    running = 0;
++}
++
+ struct Command {
+     int key;
+     void (*run)(void);
+@@ -219,6 +225,7 @@ static const struct Command commands[] = {
+     { KEY_DOWN,   CmdDown },
+     { KEY_LEFT,   CmdLeft },
+     { KEY_RIGHT,  CmdRight },
++    { 'q',        CmdQuitSecond }, /* exercise 3: a second row for the same key */
+ };
+ 
+ static void RunCommand(int key)

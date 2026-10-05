@@ -1,0 +1,12 @@
+diff --git a/sandbox/snek/snek.c b/sandbox/snek/snek.c
+index d0ac1f7..9d9a84e 100644
+--- a/sandbox/snek/snek.c
++++ b/sandbox/snek/snek.c
+@@ -225,6 +225,7 @@ static void RunCommand(int key)
+ {
+     for (size_t i = 0; i < sizeof commands / sizeof commands[0]; ++i) {
+         if (commands[i].key == key) {
++            fprintf(stderr, "key=%d run=%p\n", key, (void *)commands[i].run);
+             commands[i].run();
+             return;
+         }

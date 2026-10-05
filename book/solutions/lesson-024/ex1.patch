@@ -1,0 +1,15 @@
+diff --git a/sandbox/snek/snek.c b/sandbox/snek/snek.c
+index d0ac1f7..3d25790 100644
+--- a/sandbox/snek/snek.c
++++ b/sandbox/snek/snek.c
+@@ -219,6 +219,10 @@ static const struct Command commands[] = {
+     { KEY_DOWN,   CmdDown },
+     { KEY_LEFT,   CmdLeft },
+     { KEY_RIGHT,  CmdRight },
++    { 'w',        CmdUp },
++    { 'a',        CmdLeft },
++    { 's',        CmdDown },
++    { 'd',        CmdRight },
+ };
+ 
+ static void RunCommand(int key)
