@@ -43,6 +43,12 @@
   - [Solution: ex3 — three fates](solutions/lesson-006/ex3.md)
   - [Solution: ex4 — the price of the check](solutions/lesson-006/ex4.md)
 
+- [Lesson 007 — structs: sizeof, alignment, and padding](lessons/part-0/lesson-007-struct-layout.md)
+  - [Solution: ex1 — padding in a fresh struct](solutions/lesson-007/ex1.md)
+  - [Solution: ex2 — the padding is real memory](solutions/lesson-007/ex2.md)
+  - [Solution: ex3 — why the machine insists](solutions/lesson-007/ex3.md)
+  - [Solution: ex4 — the other machine's layout](solutions/lesson-007/ex4.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

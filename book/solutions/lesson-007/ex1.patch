@@ -1,0 +1,29 @@
+diff --git a/sandbox/ds-kit/ds-kit.c b/sandbox/ds-kit/ds-kit.c
+index 455e975..3db89a8 100644
+--- a/sandbox/ds-kit/ds-kit.c
++++ b/sandbox/ds-kit/ds-kit.c
+@@ -24,6 +24,12 @@ struct Compact {
+     long score;
+ };
+ 
++struct Triple {
++    char a;
++    int b;
++    char c;
++};
++
+ int main(void)
+ {
+     printf("== scalars ==\n");
+@@ -53,5 +59,11 @@ int main(void)
+     printf("Scattered[10] = %zu bytes, Compact[10] = %zu bytes\n",
+            sizeof(struct Scattered[10]), sizeof(struct Compact[10]));
+ 
++    printf("== struct Triple ==\n");
++    printf("sizeof(struct Triple) = %zu\n", sizeof(struct Triple));
++    printf("  a offset %zu\n", offsetof(struct Triple, a));
++    printf("  b offset %zu\n", offsetof(struct Triple, b));
++    printf("  c offset %zu\n", offsetof(struct Triple, c));
++
+     return 0;
+ }

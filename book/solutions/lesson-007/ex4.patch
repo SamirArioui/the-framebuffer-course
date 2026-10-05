@@ -1,0 +1,14 @@
+diff --git a/sandbox/ds-kit/ds-kit.c b/sandbox/ds-kit/ds-kit.c
+index 455e975..3255b35 100644
+--- a/sandbox/ds-kit/ds-kit.c
++++ b/sandbox/ds-kit/ds-kit.c
+@@ -53,5 +53,9 @@ int main(void)
+     printf("Scattered[10] = %zu bytes, Compact[10] = %zu bytes\n",
+            sizeof(struct Scattered[10]), sizeof(struct Compact[10]));
+ 
++    printf("fingerprint: char=%zu int=%zu long=%zu ptr=%zu item=%zu\n",
++           sizeof(char), sizeof(int), sizeof(long), sizeof(void *),
++           sizeof(struct Item));
++
+     return 0;
+ }

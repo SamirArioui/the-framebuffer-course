@@ -1,0 +1,13 @@
+diff --git a/sandbox/ds-kit/ds-kit.c b/sandbox/ds-kit/ds-kit.c
+index 455e975..be231bc 100644
+--- a/sandbox/ds-kit/ds-kit.c
++++ b/sandbox/ds-kit/ds-kit.c
+@@ -53,5 +53,8 @@ int main(void)
+     printf("Scattered[10] = %zu bytes, Compact[10] = %zu bytes\n",
+            sizeof(struct Scattered[10]), sizeof(struct Compact[10]));
+ 
++    printf("alignof(char) = %zu, alignof(int) = %zu, alignof(long) = %zu\n",
++           alignof(char), alignof(int), alignof(long));
++
+     return 0;
+ }

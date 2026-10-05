@@ -1,0 +1,45 @@
+diff --git a/sandbox/ds-kit/ds-kit.c b/sandbox/ds-kit/ds-kit.c
+index 455e975..e67f9d7 100644
+--- a/sandbox/ds-kit/ds-kit.c
++++ b/sandbox/ds-kit/ds-kit.c
+@@ -5,6 +5,7 @@
+ #include <stdio.h>
+ #include <stddef.h>   // offsetof
+ #include <stdalign.h> // alignof (C11)
++#include <string.h>   // memset
+ 
+ struct Item {
+     char key[16];
+@@ -24,6 +25,13 @@ struct Compact {
+     long score;
+ };
+ 
++static void DumpBytes(const void *p, size_t n)
++{
++    const unsigned char *b = p;
++    for (size_t i = 0; i < n; ++i)
++        printf("%02x%s", b[i], i + 1 < n ? " " : "\n");
++}
++
+ int main(void)
+ {
+     printf("== scalars ==\n");
+@@ -53,5 +61,18 @@ int main(void)
+     printf("Scattered[10] = %zu bytes, Compact[10] = %zu bytes\n",
+            sizeof(struct Scattered[10]), sizeof(struct Compact[10]));
+ 
++    printf("== raw bytes of a Scattered ==\n");
++    struct Scattered s;
++    s.tag = 'A';
++    s.score = 42;
++    s.flag = 'Z';
++    DumpBytes(&s, sizeof s);
++
++    memset(&s, 0, sizeof s);
++    s.tag = 'A';
++    s.score = 42;
++    s.flag = 'Z';
++    DumpBytes(&s, sizeof s);
++
+     return 0;
+ }
