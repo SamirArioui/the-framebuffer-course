@@ -22,5 +22,5 @@
 
 ## 4. Integration checks
 
-- [ ] 4.1 From a clean checkout following only `README.md`: run `openspec validate` on the change, build the site, and run `build.sh`; verify all three succeed.
-- [ ] 4.2 Dry-run the lesson-tag and resync workflow on scratch commits (create a scratch lesson tag, move it via a simulated surgical fix, run the documented resync procedure, then remove the scratch tags); verify `plan/conventions.md`'s recovery procedure restores the tree to the current lesson state.
+- [x] 4.1 From a clean checkout following only `README.md`: run `openspec validate` on the change, build the site, and run `build.sh`; verify all three succeed.
+- [x] 4.2 Dry-run the lesson-tag and resync workflow on scratch commits (create a scratch lesson tag, move it via a simulated surgical fix, run the documented resync procedure, then remove the scratch tags); verify `plan/conventions.md`'s recovery procedure restores the tree to the current lesson state.
