@@ -1,0 +1,12 @@
+diff --git a/sandbox/paint/paint.c b/sandbox/paint/paint.c
+index e42ce65..947b14a 100644
+--- a/sandbox/paint/paint.c
++++ b/sandbox/paint/paint.c
+@@ -89,6 +89,7 @@ static void FillRect(unsigned char *px, int w, int h,
+     if (y < 0) { rh += y; y = 0; }
+     if (x + rw > w) rw = w - x;
+     if (y + rh > h) rh = h - y;
++    fprintf(stderr, "FillRect visible part: x=%d y=%d w=%d h=%d\n", x, y, rw, rh);
+     if (rw <= 0 || rh <= 0) return;
+ 
+     for (int j = 0; j < rh; j++)

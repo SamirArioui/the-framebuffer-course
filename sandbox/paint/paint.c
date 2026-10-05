@@ -1,9 +1,9 @@
-// paint.c — Lesson 014: endianness and image-header layout.
+// paint.c — Lesson 015: fill-rect onto a memory buffer.
 //
-// A pixel buffer is bytes (lesson 013); an image FILE is bytes too, with a
-// header whose field order and byte order the format pins down.  PutU16LE
-// and PutU32LE write integers byte by byte in little-endian order, and
-// BuildBmpHeader lays out the 54-byte BMP header field by field.
+// A pixel buffer is bytes (lesson 013) and a file header is pinned bytes
+// (lesson 014).  Now we draw: FillRect fills a rectangle of the buffer,
+// clipping it to the buffer first — fold the rectangle to the visible
+// region BEFORE writing, never pixel by pixel.
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -78,6 +78,24 @@ static unsigned int GetU32LE(const unsigned char *src)
          | ((unsigned int)src[3] << 24);
 }
 
+// FillRect — fill a rectangle, clipping it to the buffer first.
+// The clip is a fold: shrink (x, y, rw, rh) to the visible part once,
+// up front, and then write only pixels that are known to be inside.
+static void FillRect(unsigned char *px, int w, int h,
+                     int x, int y, int rw, int rh,
+                     unsigned char r, unsigned char g, unsigned char b)
+{
+    if (x < 0) { rw += x; x = 0; }
+    if (y < 0) { rh += y; y = 0; }
+    if (x + rw > w) rw = w - x;
+    if (y + rh > h) rh = h - y;
+    if (rw <= 0 || rh <= 0) return;
+
+    for (int j = 0; j < rh; j++)
+        for (int i = 0; i < rw; i++)
+            PutPixel(px, w, h, x + i, y + j, r, g, b);
+}
+
 // BuildBmpHeader — lay out the 54-byte BMP header field by field.
 // 14-byte file header:  "BM", file size, reserved, data offset.
 // 40-byte info header: size, width, height, planes, bpp, compression,
@@ -118,6 +136,12 @@ int main(void)
     PutPixel(pixels, W, H, 0, 0, 255, 0, 0); /* red, top-left */
     PutPixel(pixels, W, H, 1, 0, 0, 255, 0); /* green, beside it */
     PutPixel(pixels, W, H, 7, 5, 0, 0, 255); /* blue, bottom-right */
+
+    /* Rectangles that hang off the edges — only the visible part lands. */
+    FillRect(pixels, W, H, -3, 1, 6, 3, 255, 128, 0);  /* off the left */
+    FillRect(pixels, W, H, 6, -2, 4, 4, 0, 128, 255);  /* off the top-right */
+    FillRect(pixels, W, H, 5, 4, 10, 10, 128, 0, 255); /* off the bottom-right */
+    FillRect(pixels, W, H, 2, 2, 3, 2, 255, 255, 255); /* fully inside */
 
     unsigned char r, g, b;
     GetPixel(pixels, W, H, 1, 0, &r, &g, &b);

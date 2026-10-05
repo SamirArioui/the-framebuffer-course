@@ -89,6 +89,12 @@
   - [Solution: ex3 — structs do not make files](solutions/lesson-014/ex3.md)
   - [Solution: ex4 — ask your own machine](solutions/lesson-014/ex4.md)
 
+- [Lesson 015 — fill-rect onto a memory buffer](lessons/part-0/lesson-015-fill-rect.md)
+  - [Solution: ex1 — the rectangle off the left](solutions/lesson-015/ex1.md)
+  - [Solution: ex2 — counting what survived](solutions/lesson-015/ex2.md)
+  - [Solution: ex3 — the addition that ate the clip](solutions/lesson-015/ex3.md)
+  - [Solution: ex4 — why fold first](solutions/lesson-015/ex4.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

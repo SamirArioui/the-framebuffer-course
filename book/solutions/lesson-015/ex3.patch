@@ -1,0 +1,23 @@
+diff --git a/sandbox/paint/paint.c b/sandbox/paint/paint.c
+index e42ce65..5503b69 100644
+--- a/sandbox/paint/paint.c
++++ b/sandbox/paint/paint.c
+@@ -87,8 +87,8 @@ static void FillRect(unsigned char *px, int w, int h,
+ {
+     if (x < 0) { rw += x; x = 0; }
+     if (y < 0) { rh += y; y = 0; }
+-    if (x + rw > w) rw = w - x;
+-    if (y + rh > h) rh = h - y;
++    if (rw > w - x) rw = w - x;
++    if (rh > h - y) rh = h - y;
+     if (rw <= 0 || rh <= 0) return;
+ 
+     for (int j = 0; j < rh; j++)
+@@ -142,6 +142,7 @@ int main(void)
+     FillRect(pixels, W, H, 6, -2, 4, 4, 0, 128, 255);  /* off the top-right */
+     FillRect(pixels, W, H, 5, 4, 10, 10, 128, 0, 255); /* off the bottom-right */
+     FillRect(pixels, W, H, 2, 2, 3, 2, 255, 255, 255); /* fully inside */
++    FillRect(pixels, W, H, 2147483640, 0, 100, 1, 255, 0, 0); /* x near INT_MAX */
+ 
+     unsigned char r, g, b;
+     GetPixel(pixels, W, H, 1, 0, &r, &g, &b);

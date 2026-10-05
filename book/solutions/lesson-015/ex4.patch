@@ -1,0 +1,19 @@
+diff --git a/sandbox/paint/paint.c b/sandbox/paint/paint.c
+index e42ce65..87e5b7c 100644
+--- a/sandbox/paint/paint.c
++++ b/sandbox/paint/paint.c
+@@ -85,10 +85,10 @@ static void FillRect(unsigned char *px, int w, int h,
+                      int x, int y, int rw, int rh,
+                      unsigned char r, unsigned char g, unsigned char b)
+ {
+-    if (x < 0) { rw += x; x = 0; }
+-    if (y < 0) { rh += y; y = 0; }
+-    if (x + rw > w) rw = w - x;
+-    if (y + rh > h) rh = h - y;
++    if (x < 0) { rw += x; x = 0; fprintf(stderr, "fold left:   x=%d rw=%d\n", x, rw); }
++    if (y < 0) { rh += y; y = 0; fprintf(stderr, "fold top:    y=%d rh=%d\n", y, rh); }
++    if (x + rw > w) { rw = w - x; fprintf(stderr, "fold right:  rw=%d\n", rw); }
++    if (y + rh > h) { rh = h - y; fprintf(stderr, "fold bottom: rh=%d\n", rh); }
+     if (rw <= 0 || rh <= 0) return;
+ 
+     for (int j = 0; j < rh; j++)
