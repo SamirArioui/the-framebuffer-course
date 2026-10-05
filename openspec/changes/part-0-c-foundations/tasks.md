@@ -48,4 +48,4 @@
 ## 7. M1 boundary review and integration checks
 
 - [x] 7.1 Write `plan/part0-review.md` recording authoring velocity against the 10-20 h/week estimate, exercise counts per lesson against the conventions density table (3-4 drills), the gcc/gdb versions used, and a recommendation on freezing a first prefix; verify every Part 0 lesson is counted and every Part 0 density expectation is checked.
-- [ ] 7.2 From a clean checkout following only `README.md`: build all four sandbox programs with their documented commands, run `mdbook build`, run `./build.sh`, and run `openspec validate`; verify all succeed and `git tag` shows consecutive `lesson-001`…`lesson-025` where each consecutive tag diff equals that lesson's code step.
+- [x] 7.2 From a clean checkout following only `README.md`: build all four sandbox programs with their documented commands, run `mdbook build`, run `./build.sh`, and run `openspec validate`; verify all succeed and `git tag` shows consecutive `lesson-001`…`lesson-025` where each consecutive tag diff equals that lesson's code step.
