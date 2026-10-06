@@ -1,0 +1,42 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 91be4f0..e981c32 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -15,6 +15,7 @@ namespace engine {
+ /* The seam's keys, by name — for the report below. */
+ static const char *const key_names[platform::KEY_COUNT] = {
+     "up", "down", "left", "right", "space", "enter", "escape",
++    "w", "a", "s", "d",
+ };
+ 
+ int Run(void)
+diff --git a/src/platform.h b/src/platform.h
+index aac8d48..41e6ad7 100644
+--- a/src/platform.h
++++ b/src/platform.h
+@@ -39,6 +39,10 @@ enum Key {
+     KEY_SPACE,
+     KEY_ENTER,
+     KEY_ESCAPE,
++    KEY_W,
++    KEY_A,
++    KEY_S,
++    KEY_D,
+     KEY_COUNT
+ };
+ 
+diff --git a/src/platform_x11.cpp b/src/platform_x11.cpp
+index 22f4c19..1b92f74 100644
+--- a/src/platform_x11.cpp
++++ b/src/platform_x11.cpp
+@@ -138,6 +138,10 @@ static int KeyIndex(KeySym sym)
+     case XK_space:  return KEY_SPACE;
+     case XK_Return: return KEY_ENTER;
+     case XK_Escape: return KEY_ESCAPE;
++    case XK_w:      return KEY_W;
++    case XK_a:      return KEY_A;
++    case XK_s:      return KEY_S;
++    case XK_d:      return KEY_D;
+     default:        return -1;
+     }
+ }

@@ -1,0 +1,25 @@
+diff --git a/src/platform_x11.cpp b/src/platform_x11.cpp
+index 22f4c19..1420740 100644
+--- a/src/platform_x11.cpp
++++ b/src/platform_x11.cpp
+@@ -15,6 +15,7 @@
+ #include <X11/Xutil.h>
+ #include <X11/keysym.h>
+ 
++#include <cstdio>
+ #include <cstdio>
+ #include <poll.h>
+ #include <signal.h>
+@@ -153,7 +154,11 @@ static void HandleEvent(Window *window, XEvent &event)
+         window->close_requested = true; /* the window is already gone */
+         window->xwindow = 0;
+     } else if (event.type == KeyPress || event.type == KeyRelease) {
+-        int key = KeyIndex(XLookupKeysym(&event.xkey, 0));
++        KeySym sym = XLookupKeysym(&event.xkey, 0);
++        int key = KeyIndex(sym);
++        std::fprintf(stderr, "platform: fold %s keysym=%lu\n",
++                     event.type == KeyPress ? "press  " : "release",
++                     (unsigned long)sym);
+         if (key >= 0)
+             window->keys[key] = (event.type == KeyPress);
+     }

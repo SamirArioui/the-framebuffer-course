@@ -29,6 +29,23 @@ struct WindowResult {
 /* Opens a window of exactly the requested size on the OS's display. */
 WindowResult OpenWindow(int width, int height);
 
+/* The keys the engine tracks. Plain values — no OS key code ever crosses
+   the seam. */
+enum Key {
+    KEY_UP = 0,
+    KEY_DOWN,
+    KEY_LEFT,
+    KEY_RIGHT,
+    KEY_SPACE,
+    KEY_ENTER,
+    KEY_ESCAPE,
+    KEY_COUNT
+};
+
+/* The polled input state: true while the key is down at the moment of the
+   call. State, not events — the engine asks, it never consumes a stream. */
+bool KeyDown(const Window *window, Key key);
+
 /* Reads whatever news the OS has about this window and folds it into the
    platform layer's state. The engine never sees an event object — it polls
    state afterwards. Blocks until there is news or the run is interrupted. */

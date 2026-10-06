@@ -10,8 +10,10 @@
 
 #include "platform.h"
 
+#include <X11/XKBlib.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/keysym.h>
 
 #include <cstdio>
 #include <poll.h>
@@ -26,6 +28,7 @@ struct Window {
     Display *display;
     ::Window xwindow;
     bool close_requested;
+    bool keys[KEY_COUNT];
 };
 
 /* The OS state for one window, in static storage: no new, no delete — the
@@ -89,11 +92,20 @@ WindowResult OpenWindow(int width, int height)
 
     /* Register the close request as the way to go, and subscribe to the
        window's lifecycle news (map, configure, destroy) — plus Expose, the
-       "your pixels are gone" news. The engine handles Expose by doing the
-       only thing that repairs a window: presenting again. */
+       "your pixels are gone" news, and the keyboard. The engine handles
+       Expose by doing the only thing that repairs a window: presenting
+       again. */
     wm_delete_window = XInternAtom(display, "WM_DELETE_WINDOW", False);
     XSetWMProtocols(display, xwindow, &wm_delete_window, 1);
-    XSelectInput(display, xwindow, StructureNotifyMask | ExposureMask);
+    XSelectInput(display, xwindow,
+                 StructureNotifyMask | ExposureMask | KeyPressMask |
+                     KeyReleaseMask);
+
+    /* Auto-repeat would otherwise look like release-then-press every
+       repeat: a held key would flicker in polled state. Detectable
+       auto-repeat makes repeats arrive as presses only, so "held" stays
+       held. */
+    XkbSetDetectableAutoRepeat(display, True, 0);
 
     XStoreName(display, xwindow, "the framebuffer engine");
     XMapWindow(display, xwindow);
@@ -102,6 +114,8 @@ WindowResult OpenWindow(int width, int height)
     window_state.display = display;
     window_state.xwindow = xwindow;
     window_state.close_requested = false;
+    for (int i = 0; i < KEY_COUNT; ++i)
+        window_state.keys[i] = false;
 
     /* The interrupt is part of the window's take: from here on, Ctrl+C is
        news like any other — and X errors are recorded, not fatal. */
@@ -109,6 +123,23 @@ WindowResult OpenWindow(int width, int height)
     signal(SIGINT, OnInterrupt);
     XSetErrorHandler(OnXError);
     return result;
+}
+
+/* Which of our keys an OS key event is about, or -1 for keys we do not
+   track. The translation from OS key codes to the seam's Key lives here
+   and nowhere else. */
+static int KeyIndex(KeySym sym)
+{
+    switch (sym) {
+    case XK_Up:     return KEY_UP;
+    case XK_Down:   return KEY_DOWN;
+    case XK_Left:   return KEY_LEFT;
+    case XK_Right:  return KEY_RIGHT;
+    case XK_space:  return KEY_SPACE;
+    case XK_Return: return KEY_ENTER;
+    case XK_Escape: return KEY_ESCAPE;
+    default:        return -1;
+    }
 }
 
 /* One piece of news, folded into state. The request and the deed both mean
@@ -121,7 +152,16 @@ static void HandleEvent(Window *window, XEvent &event)
     } else if (event.type == DestroyNotify) {
         window->close_requested = true; /* the window is already gone */
         window->xwindow = 0;
+    } else if (event.type == KeyPress || event.type == KeyRelease) {
+        int key = KeyIndex(XLookupKeysym(&event.xkey, 0));
+        if (key >= 0)
+            window->keys[key] = (event.type == KeyPress);
     }
+}
+
+bool KeyDown(const Window *window, Key key)
+{
+    return window && key >= 0 && key < KEY_COUNT && window->keys[key];
 }
 
 void PumpEvents(Window *window)

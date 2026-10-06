@@ -12,6 +12,11 @@
 
 namespace engine {
 
+/* The seam's keys, by name — for the report below. */
+static const char *const key_names[platform::KEY_COUNT] = {
+    "up", "down", "left", "right", "space", "enter", "escape",
+};
+
 int Run(void)
 {
     platform::WindowResult opened =
@@ -73,6 +78,18 @@ int Run(void)
         platform::PumpEvents(opened.window);
         if (platform::CloseRequested(opened.window))
             break;
+
+        /* The polled state: what is down right now, as of this poll. */
+        std::printf("engine: polled:");
+        bool any = false;
+        for (int k = 0; k < platform::KEY_COUNT; ++k) {
+            if (platform::KeyDown(opened.window, (platform::Key)k)) {
+                std::printf(" %s", key_names[k]);
+                any = true;
+            }
+        }
+        std::printf(any ? "\n" : " -\n");
+
         if (!platform::Present(opened.window, fb->pixels, fb->width,
                                fb->height)) {
             /* A present can fail because the window died mid-copy — that

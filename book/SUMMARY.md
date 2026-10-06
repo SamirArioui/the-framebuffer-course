@@ -180,6 +180,10 @@
   - [Solution: ex1 — the presentation check](solutions/lesson-031/ex1.md)
   - [Solution: ex2 — cover and reveal](solutions/lesson-031/ex2.md)
 
+- [Lesson 032 — polled input state](lessons/part-1/lesson-032-polled-input.md)
+  - [Solution: ex1 — your own keys](solutions/lesson-032/ex1.md)
+  - [Solution: ex2 — the press that vanished](solutions/lesson-032/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)
