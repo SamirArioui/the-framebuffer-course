@@ -21,6 +21,72 @@ namespace engine {
    per-frame step. */
 constexpr double SPRITE_SPEED = 240.0; /* pixels per second */
 
+/* Lesson 047: the caches deep dive's evidence — a copy walk over arena
+   memory at two strides, timed at working-set sizes that cross this
+   machine's caches. The walk is the blit's inner copy with the
+   bookkeeping removed: source bytes into destination bytes, nothing
+   else — so what it costs is what the blitter's copy costs. */
+
+static void CopySequential(unsigned char *dst, const unsigned char *src,
+                           size_t n)
+{
+    for (size_t i = 0; i < n; ++i)
+        dst[i] = src[i];
+}
+
+static void CopyStrided(unsigned char *dst, const unsigned char *src,
+                        size_t n, size_t stride)
+{
+    for (size_t i = 0; i < n; i += stride)
+        dst[i] = src[i];
+}
+
+static void CacheProbe(Arena &arena)
+{
+    const size_t sizes[] = { 4096, 65536, 524288, 4194304, 8388608,
+                             12582912 };
+    const size_t biggest = 12582912;
+
+    /* Two allocations the compiler cannot connect: source and destination
+       are separate arena blocks — 2 × size bytes of working set per walk,
+       and the copy loop is free to run wide. */
+    unsigned char *src = (unsigned char *)ArenaAlloc(arena, biggest, 64);
+    unsigned char *dst = (unsigned char *)ArenaAlloc(arena, biggest, 64);
+    if (!src || !dst) {
+        std::printf("engine: cache probe: no room in the arena\n");
+        return;
+    }
+    for (size_t i = 0; i < biggest; i += 4096) {
+        src[i] = (unsigned char)(i * 7); /* touch every page first */
+        dst[i] = 0;
+    }
+
+    std::printf("engine: cache probe — copy walk, useful GB/s per stride\n");
+    std::printf("engine: %10s %12s %12s\n", "working set", "sequential",
+                "stride 64");
+    for (unsigned s = 0; s < sizeof sizes / sizeof sizes[0]; ++s) {
+        double gbs[2];
+        for (unsigned mode = 0; mode < 2; ++mode) {
+            size_t stride = mode == 0 ? 1 : 64;
+            size_t per_rep = sizes[s] / stride;
+            long reps = (long)(8000000 / per_rep);
+            if (reps < 1)
+                reps = 1;
+            double t0 = platform::Now();
+            for (long r = 0; r < reps; ++r) {
+                if (mode == 0)
+                    CopySequential(dst, src, sizes[s]);
+                else
+                    CopyStrided(dst, src, sizes[s], 64);
+            }
+            double seconds = platform::Now() - t0;
+            gbs[mode] = (double)per_rep * reps / seconds / 1e9;
+        }
+        std::printf("engine: %7zu KB %12.1f %12.1f\n", sizes[s] / 1024,
+                    gbs[0], gbs[1]);
+    }
+}
+
 int Run(void)
 {
     platform::WindowResult opened =
@@ -44,9 +110,11 @@ int Run(void)
     }
 
     /* The engine's memory: one arena over one reservation. Everything the
-       engine allocates lives in here and is released together. */
+       engine allocates lives in here and is released together. Lesson 047
+       grows it past every cache this machine has, so the cache probe can
+       walk working sets bigger than all of them. */
     Arena arena;
-    ArenaInit(arena, 4 * 1024 * 1024);
+    ArenaInit(arena, 32 * 1024 * 1024);
     Framebuffer *fb = GetFramebuffer(arena);
 
     /* Lesson 044: the sprite is a file's bytes. It is loaded once, at
@@ -151,6 +219,9 @@ int Run(void)
         }
     std::printf("engine: blit check: clip at -4,-4 landed %d pixels, %d wrong, %d touched outside\n",
                 landed, wrong, wrapped);
+
+    /* Lesson 047's evidence, measured before the loop starts. */
+    CacheProbe(arena);
 
     double sprite_x = (FRAME_WIDTH - sprite.width) / 2.0;
     double sprite_y = (FRAME_HEIGHT - sprite.height) / 2.0;

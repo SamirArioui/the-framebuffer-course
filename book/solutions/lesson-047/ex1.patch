@@ -1,0 +1,15 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 18747c7..06bdd57 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -43,8 +43,8 @@ static void CopyStrided(unsigned char *dst, const unsigned char *src,
+ 
+ static void CacheProbe(Arena &arena)
+ {
+-    const size_t sizes[] = { 4096, 65536, 524288, 4194304, 8388608,
+-                             12582912 };
++    const size_t sizes[] = { 4096, 16384, 49152, 65536, 131072, 524288,
++                             1048576, 2097152, 4194304, 8388608, 12582912 };
+     const size_t biggest = 12582912;
+ 
+     /* Two allocations the compiler cannot connect: source and destination

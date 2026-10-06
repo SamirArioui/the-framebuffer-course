@@ -242,6 +242,10 @@
   - [Solution: ex1 — where does render go?](solutions/lesson-046/ex1.md)
   - [Solution: ex2 — the sprite that wraps](solutions/lesson-046/ex2.md)
 
+- [Lesson 047 — the caches deep dive](lessons/part-2/lesson-047-caches.md)
+  - [Solution: ex1 — your machine's knees](solutions/lesson-047/ex1.md)
+  - [Solution: ex2 — the stride that doesn't fit the line](solutions/lesson-047/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

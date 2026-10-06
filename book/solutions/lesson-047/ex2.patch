@@ -1,0 +1,40 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 18747c7..6f75f18 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -62,12 +62,13 @@ static void CacheProbe(Arena &arena)
+     }
+ 
+     std::printf("engine: cache probe — copy walk, useful GB/s per stride\n");
+-    std::printf("engine: %10s %12s %12s\n", "working set", "sequential",
+-                "stride 64");
++    std::printf("engine: %10s %12s %12s %12s\n", "working set", "sequential",
++                "stride 64", "stride 60");
++    const size_t strides[] = { 1, 64, 60 };
+     for (unsigned s = 0; s < sizeof sizes / sizeof sizes[0]; ++s) {
+-        double gbs[2];
+-        for (unsigned mode = 0; mode < 2; ++mode) {
+-            size_t stride = mode == 0 ? 1 : 64;
++        double gbs[3];
++        for (unsigned mode = 0; mode < 3; ++mode) {
++            size_t stride = strides[mode];
+             size_t per_rep = sizes[s] / stride;
+             long reps = (long)(8000000 / per_rep);
+             if (reps < 1)
+@@ -77,13 +78,13 @@ static void CacheProbe(Arena &arena)
+                 if (mode == 0)
+                     CopySequential(dst, src, sizes[s]);
+                 else
+-                    CopyStrided(dst, src, sizes[s], 64);
++                    CopyStrided(dst, src, sizes[s], stride);
+             }
+             double seconds = platform::Now() - t0;
+             gbs[mode] = (double)per_rep * reps / seconds / 1e9;
+         }
+-        std::printf("engine: %7zu KB %12.1f %12.1f\n", sizes[s] / 1024,
+-                    gbs[0], gbs[1]);
++        std::printf("engine: %7zu KB %12.1f %12.1f %12.1f\n", sizes[s] / 1024,
++                    gbs[0], gbs[1], gbs[2]);
+     }
+ }
+ 
