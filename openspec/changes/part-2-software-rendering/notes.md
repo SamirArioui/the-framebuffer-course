@@ -227,3 +227,38 @@ tags may move for correctness fixes):
 *Verified: the asset reads correctly at each tag; the full check suite
 (blit, font, text, map, tiles, tilemap, camera, collision) passes at the
 rebased tip.*
+
+## Part 2 integration checks (task 9.2)
+
+**Date:** 2026-10-06 · From a **clean clone** of the repository (the
+README's commands only, on the headless authoring machine):
+
+1. **`./build.sh`** — `build: OK (12 source(s) compiled -> build/game)`.
+2. **`mdbook build`** — the site builds, all 15 Part 2 lesson pages and
+   30 solution pages render, no warnings.
+3. **`openspec validate --all`** — `Totals: 8 passed, 0 failed` (the
+   curriculum, platform-layer, and target-game specs plus the
+   `part-2-software-rendering` change with its three delta specs).
+4. **The closing demo, headless** — scripted input drove the sprite
+   across the world (camera following, the shake hook exercised), the
+   frame-budget table printed with its measured attribution, the run
+   closed cleanly — and the pixel readback at the reported position
+   (`sprite at 679,21`, camera `128,0` → screen `559,29`) read
+   `(220,40,40)`, the sprite's own center color.
+5. **The tag chain** — `lesson-044` … `lesson-058` all present and
+   consecutive (15 lesson commits at the tip of the branch), and for
+   every pair, the consecutive tag diff limited to the code paths
+   (`src/`, `assets/`, `tools/`, `.gitattributes`) **equals that
+   lesson's code step exactly** — the pages' embedded diffs included,
+   15 of 15.
+
+The check found one class-1 drift, fixed in the following commit: four
+lesson pages' embedded code-step diffs had stale blob hashes (044, 053)
+or hand-transcription whitespace drift (045, 047) against the real tag
+output. The blocks are now generated verbatim from git and the invariant
+is machine-checked (the checker used above is the recipe: extract each
+page's ` ```diff ` block, compare against
+`git diff lesson-N-1 lesson-N -- src assets tools .gitattributes`).
+
+*Verified: all four commands and the tag chain run green from the clean
+checkout at the close of the change.*
