@@ -74,17 +74,25 @@ constexpr int AUDIO_VOLUME_FULL = 256;
 
 /* Lesson 063: one channel — the unit of playback. What it is playing,
    where it is in the sample, and how loud: three plain values, not a
-   device. A channel plays its sample to its end and then is free again. */
+   device. A channel plays its sample to its end and then is free again.
+   Lesson 066: or it loops — its cursor returns to the sample's first
+   frame at the sample's end and the channel plays on until the run
+   stops it. */
 struct Channel {
     const Sample *sample; /* what it is playing, or 0 */
     int cursor;           /* the next sample frame to read */
     int volume;           /* 0..AUDIO_VOLUME_FULL, fixed point */
     bool active;          /* playing now */
+    bool loop;            /* lesson 066: wrap to the sample's first frame
+                             at its end instead of ending */
     long started;         /* when this channel began, in the mixer's order */
 };
 
 /* Starts `sample` playing on this channel at `volume`, from its first
-   frame. Playing on one channel leaves every other channel alone. */
+   frame. Playing on one channel leaves every other channel alone. The
+   channel starts unlooped: looping is a decision made where a sound is
+   routed — `MixerPlayMusic` makes it — never something carried over from
+   whatever played on the channel before. */
 void ChannelPlay(Channel &channel, const Sample &sample, int volume);
 
 /* The mixer's fixed set of channels. */
@@ -111,6 +119,19 @@ void MixerInit(Mixer &mixer);
    so the sound that has had the longest hearing is the one dropped. The
    music channel is never stolen. */
 int MixerPlay(Mixer &mixer, const Sample &sample, int volume);
+
+/* Starts `sample` playing as the run's music: on the music channel,
+   looping, at `volume`. That is what the reserved channel was reserved
+   for — a looping sound under everything else, one that no effect ever
+   takes or steals. The music runs until the run stops it with
+   `MixerStop`; its sample never ends it. */
+void MixerPlayMusic(Mixer &mixer, const Sample &sample, int volume);
+
+/* Stops the sound on `channel` now — the run's decision, because a
+   looping channel does not end on its own. The channel keeps the place
+   it stopped at, goes inactive, and whatever plays on it next starts
+   from the sample's first frame. */
+void MixerStop(Mixer &mixer, int channel);
 
 /* The mix: `frame_count` frames of stream, each one the sum of every
    active channel's next frame at its volume, clamped to the format's

@@ -57,6 +57,53 @@ static void DrawScene(Framebuffer &fb, const TileMap &map,
     BlitSprite(fb, sprite, sprite_x - x, sprite_y - y);
 }
 
+/* Lesson 066: a loaded sample's facts, printed — the run's byte-level
+   check on its two sounds. The peak is the largest frame the sample
+   holds, and it is what says how much room the format still has above
+   the sound. */
+static void PrintSample(const char *name, const Sample &sample)
+{
+    int peak = 0;
+    for (int i = 0; i < sample.frame_count; ++i) {
+        int v = sample.frames[i * sample.channels];
+        if (v < 0)
+            v = -v;
+        if (v > peak)
+            peak = v;
+    }
+    std::printf("engine: %s: %d frames at %d Hz, %d channel%s, peak %d, first frames:",
+                name, sample.frame_count, sample.rate, sample.channels,
+                sample.channels == 1 ? "" : "s", peak);
+    for (int i = 0; i < 8 && i < sample.frame_count; ++i)
+        std::printf(" %d", (int)sample.frames[i]);
+    std::printf(", last frame %d\n",
+                sample.frame_count ? (int)sample.frames[sample.frame_count - 1]
+                                   : 0);
+}
+
+/* Lesson 066: one asset load's whole failure path — a failed load is
+   named typed and ends the run by name, exactly like the loads above it. */
+static bool LoadRunSample(Arena &arena, const char *path, Sample &into)
+{
+    SampleResult loaded = LoadSample(arena, path);
+    if (loaded.error == SAMPLE_OK) {
+        into = loaded.sample;
+        return true;
+    }
+    switch (loaded.error) {
+    case SAMPLE_MISSING:
+        std::fprintf(stderr, "engine: %s: could not load (missing)\n", path);
+        break;
+    case SAMPLE_MALFORMED:
+        std::fprintf(stderr, "engine: %s: could not load (malformed)\n", path);
+        break;
+    default:
+        std::fprintf(stderr, "engine: %s: could not load (no room)\n", path);
+        break;
+    }
+    return false;
+}
+
 int Run(void)
 {
     platform::WindowResult opened =
@@ -126,58 +173,48 @@ int Run(void)
     }
     TileSheet &sheet = tiles_loaded.sheet;
 
-    /* Lesson 061: the run's sound as a file's bytes. A sample is frames
-       of amplitude in a container, and the load either yields the
-       complete sample or names what went wrong — like every asset above.
-       A failure ends the run by name, like every asset above. */
-    SampleResult sample_loaded = LoadSample(arena, "assets/tone.wav");
-    if (sample_loaded.error != SAMPLE_OK) {
-        switch (sample_loaded.error) {
-        case SAMPLE_MISSING:
-            std::fprintf(stderr,
-                         "engine: assets/tone.wav: could not load (missing)\n");
-            break;
-        case SAMPLE_MALFORMED:
-            std::fprintf(stderr,
-                         "engine: assets/tone.wav: could not load (malformed)\n");
-            break;
-        default:
-            std::fprintf(stderr,
-                         "engine: assets/tone.wav: could not load (no room)\n");
-            break;
-        }
+    /* Lesson 066: the run's two sounds as files' bytes — the music that
+       loops and the effect that plays once. Lesson 061's tone leaves the
+       run here (it stays on disk: the file lessons 059-065 were built
+       on); the game's own sounds are these two. Each load either yields
+       the complete sample or names what went wrong, and a failure ends
+       the run by name — like every asset above. */
+    Sample music = {}, effect = {};
+    if (!LoadRunSample(arena, "assets/music.wav", music) ||
+        !LoadRunSample(arena, "assets/effect.wav", effect)) {
         platform::CloseWindow(opened.window);
         ArenaRelease(arena);
         return 1;
     }
-    Sample &sample = sample_loaded.sample;
 
-    /* The byte-level check, before anything is played: the sample's facts
-       and its first frames — the same bytes lesson 059 computed, now read
-       from a file instead. */
-    std::printf("engine: sample: %d frames at %d Hz, %d channel%s, first frames:",
-                sample.frame_count, sample.rate, sample.channels,
-                sample.channels == 1 ? "" : "s");
-    for (int i = 0; i < 8 && i < sample.frame_count; ++i)
-        std::printf(" %d", (int)sample.frames[i]);
-    std::printf("\n");
+    /* The byte-level check, before anything is played: each sound's facts,
+       its peak, and its first frames — the same check lesson 061 made on
+       its one file, now on both. */
+    PrintSample("music", music);
+    PrintSample("effect", effect);
 
-    /* Lesson 065: a scripted burst of effects — one more than the pool's
-       effect channels — so the allocation policy runs in front of the
-       reader: the first free channel for each sound, and then the oldest
-       effect channel stolen. Volume is low so sixteen of them still sum
-       inside the format. */
+    /* Lesson 066: the music as a loop and one effect as a one-shot in the
+       same run — the difference this lesson is about. The music takes the
+       music channel and runs until the run stops it; the effect takes a
+       pool channel and runs to its end. Both are the engine's format and
+       sum through the same mix. */
     Mixer mixer;
     MixerInit(mixer);
-    const int EFFECT_CHANNELS =
-        AUDIO_MIXER_CHANNELS - AUDIO_MUSIC_CHANNEL - 1;
-    for (int i = 0; i <= EFFECT_CHANNELS; ++i) {
-        int ch = MixerPlay(mixer, sample, AUDIO_VOLUME_FULL / 16);
-        std::printf("engine: mix: effect %2d -> channel %2d%s\n", i + 1, ch,
-                    i < EFFECT_CHANNELS ? "" : " (the oldest was stolen)");
-    }
-    std::printf("engine: mix: music channel %d is reserved and was never stolen\n",
-                AUDIO_MUSIC_CHANNEL);
+    MixerPlayMusic(mixer, music, AUDIO_VOLUME_FULL);
+    std::printf("engine: mix: music  -> channel %2d (looping, volume %d of %d)\n",
+                AUDIO_MUSIC_CHANNEL, mixer.channels[AUDIO_MUSIC_CHANNEL].volume,
+                AUDIO_VOLUME_FULL);
+    int effect_channel = MixerPlay(mixer, effect, AUDIO_VOLUME_FULL);
+    std::printf("engine: mix: effect -> channel %2d (one-shot, volume %d of %d)\n",
+                effect_channel, mixer.channels[effect_channel].volume,
+                AUDIO_VOLUME_FULL);
+    std::printf("engine: mix: the effect plays to its end; the music plays until the run stops it\n");
+
+    /* The run's script: the music stops after this many buffers. 600
+       buffers of 735 frames are 441000 frames of music — three and a
+       third times around its 132300-frame loop. The stop is the run's
+       decision; the loop itself would go on. */
+    constexpr int MUSIC_STOP_FEEDS = 600;
 
     double sprite_x = 312.0, sprite_y = 232.0;
     double started = platform::Now();
@@ -219,7 +256,7 @@ int Run(void)
            feed — the horizon the paced wait keeps queued. The buffer's
            length in time is the sample's own rate answering. */
         std::printf("engine: stream: %d-frame buffers, horizon %.1f ms; the loop feeds one when it is due\n",
-                    CHUNK_FRAMES, 1e3 * CHUNK_FRAMES / sample.rate);
+                    CHUNK_FRAMES, 1e3 * CHUNK_FRAMES / music.rate);
     }
 
     /* The frame step: read news, update from polled state, feed the
@@ -235,12 +272,15 @@ int Run(void)
        last one — and the loop knows that without asking the platform. */
     double next_feed = platform::Now();
 
-    /* Lesson 062: the channel's place in the sample — how far playback
-       has reached, what has been fed, and whether the end has been
-       named. The sample's frame_count is the fact that says when the
-       sample ends; nothing here assumes how long it is. */
-    int sample_feeds = 0;       /* buffers that carried sound */
-    bool sample_end_named = false;
+    /* Lesson 066: the loop's own bookkeeping, in the run's numbers — how
+       many buffers have been fed and how many carried sound, how far the
+       music has played (its wraps and its cursor say), and whether the
+       silence after the stop has been named. Nothing here assumes how
+       long the loop is. */
+    int feeds = 0;         /* buffers handed to the device */
+    int sound_feeds = 0;   /* buffers that carried sound */
+    int music_wraps = 0;   /* times the looping cursor returned to frame 0 */
+    bool silence_named = false;
     while (!platform::CloseRequested(opened.window)) {
         platform::PumpEvents(opened.window);
         if (platform::CloseRequested(opened.window))
@@ -344,32 +384,68 @@ int Run(void)
 
            Lesson 064: the stream is the mix. One buffer is every active
            channel's next frames summed and clamped — silence where no
-           channel has anything to say. frame_count is the fact that says
-           when a sample ends; no channel ever runs past it. */
+           channel has anything to say. Lesson 066: frame_count is still
+           the fact that says where a sample ends; a channel that loops
+           wraps there instead of ending, and the mix does not know the
+           difference. */
         double t_audio = platform::Now();
         if (audio.output && t_audio >= next_feed) {
-            /* Did this buffer carry sound? Answered from the cursors: the
-               buffer carried sample frames exactly when some channel's
-               cursor moved during the mix. */
-            long before = 0;
+            /* The run's script, one decision in it: at the 600th buffer
+               the run stops the music. A looping channel does not end on
+               its own, so ending it is the run's call — and this is the
+               call, made in front of the reader. */
+            if (feeds == MUSIC_STOP_FEEDS) {
+                MixerStop(mixer, AUDIO_MUSIC_CHANNEL);
+                std::printf("engine: mix: MixerStop ended the music on channel %d — %d frames in %d buffers, %d wraps, cursor %d of %d\n",
+                            AUDIO_MUSIC_CHANNEL, feeds * CHUNK_FRAMES, feeds,
+                            music_wraps,
+                            mixer.channels[AUDIO_MUSIC_CHANNEL].cursor,
+                            music.frame_count);
+            }
+
+            /* Does this buffer carry sound, and did the music wrap? Both
+               answered from the channels' own state: a channel active when
+               the mix starts speaks in this buffer, and a looping cursor
+               going backwards is the wrap. */
+            bool any = false;
             for (int c = 0; c < AUDIO_MIXER_CHANNELS; ++c)
-                before += mixer.channels[c].cursor;
+                any = any || mixer.channels[c].active;
+            int music_before = mixer.channels[AUDIO_MUSIC_CHANNEL].cursor;
+            bool effect_before = mixer.channels[effect_channel].active;
+
             MixBuffer(mixer, stream, CHUNK_FRAMES);
-            long after = 0;
-            for (int c = 0; c < AUDIO_MIXER_CHANNELS; ++c)
-                after += mixer.channels[c].cursor;
-            bool any = after > before;
+
+            if (effect_before && !mixer.channels[effect_channel].active) {
+                /* The one-shot's end, named in the sample's own numbers:
+                   it played once, to its end, and its channel is free. */
+                std::printf("engine: loop: the effect ended on channel %d — %d frames in %d buffers, the one-shot played to its end\n",
+                            effect_channel, effect.frame_count,
+                            (effect.frame_count + CHUNK_FRAMES - 1) /
+                                CHUNK_FRAMES);
+            }
+            if (mixer.channels[AUDIO_MUSIC_CHANNEL].active &&
+                mixer.channels[AUDIO_MUSIC_CHANNEL].cursor < music_before) {
+                /* The wrap: the cursor went backwards — the loop's own
+                   arithmetic, visible from outside the mixer. */
+                music_wraps += 1;
+                int cursor = mixer.channels[AUDIO_MUSIC_CHANNEL].cursor;
+                std::printf("engine: loop: music wrapped on channel %d — wrap %d, %ld frames played, cursor %d of %d\n",
+                            AUDIO_MUSIC_CHANNEL, music_wraps,
+                            (long)music_wraps * music.frame_count + cursor,
+                            cursor, music.frame_count);
+            }
 
             if (platform::SubmitSamples(audio.output, stream,
                                         CHUNK_FRAMES)) {
                 if (any)
-                    sample_feeds += 1;
-                if (!sample_end_named && !any) {
-                    /* The end, named in the mix's own numbers: how many
-                       buffers carried sound before it ran out. */
-                    sample_end_named = true;
+                    sound_feeds += 1;
+                if (!silence_named && !any) {
+                    /* The silence after the stop, named in the mix's own
+                       numbers: how many buffers carried sound before the
+                       run stopped the last sound. */
+                    silence_named = true;
                     std::printf("engine: mix: %d buffers of sound, then silence\n",
-                                sample_feeds);
+                                sound_feeds);
                 }
             } else {
                 /* A device that will not take the samples is named once,
@@ -380,10 +456,11 @@ int Run(void)
                 platform::CloseAudioOutput(audio.output);
                 audio.output = 0;
             }
+            feeds += 1;
             /* The schedule restarts from now, not from the missed slot: a
                long frame is caught up by one buffer, never by a backlog. */
             next_feed = platform::Now() +
-                        (double)CHUNK_FRAMES / (double)sample.rate;
+                        (double)CHUNK_FRAMES / (double)music.rate;
         }
         frame.audio = platform::Now() - t_audio;
 

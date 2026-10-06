@@ -320,6 +320,10 @@
   - [Solution: ex1 — the twenty-first press](solutions/lesson-065/ex1.md)
   - [Solution: ex2 — the policy that refuses](solutions/lesson-065/ex2.md)
 
+- [Lesson 066 — music as a loop](lessons/part-3/lesson-066-music.md)
+  - [Solution: ex1 — the seam, predicted](solutions/lesson-066/ex1.md)
+  - [Solution: ex2 — pause and resume](solutions/lesson-066/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

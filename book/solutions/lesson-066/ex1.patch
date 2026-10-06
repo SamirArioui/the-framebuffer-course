@@ -1,0 +1,43 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 10cdc13..0ddbca5 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -216,6 +216,38 @@ int Run(void)
+        decision; the loop itself would go on. */
+     constexpr int MUSIC_STOP_FEEDS = 600;
+ 
++    /* Exercise 1 (lesson 066): the seam probe. A scratch mixer, the music
++       alone, fed buffer by buffer — the cursor and the wrap count around
++       the seam, and the frames the mix holds at it. */
++    Mixer seam;
++    MixerInit(seam);
++    MixerPlayMusic(seam, music, AUDIO_VOLUME_FULL);
++    int seam_wraps = 0;
++    for (int b = 0; b <= 181; ++b) {
++        int before = seam.channels[AUDIO_MUSIC_CHANNEL].cursor;
++        MixBuffer(seam, stream, CHUNK_FRAMES);
++        int after = seam.channels[AUDIO_MUSIC_CHANNEL].cursor;
++        if (after < before)
++            seam_wraps += 1;
++        if (b == 179 || b == 180) {
++            std::printf("engine: seam: buffer %d: cursor %d -> %d, wraps %d\n",
++                        b, before, after, seam_wraps);
++            std::printf("engine: seam: buffer %d's %s frames:", b,
++                        b == 179 ? "last 4" : "first 4");
++            for (int i = 0; i < 4; ++i)
++                std::printf(" %d",
++                            (int)stream[b == 179 ? CHUNK_FRAMES - 4 + i : i]);
++            std::printf("\n");
++        }
++    }
++    std::printf("engine: seam: the sample's last 4 frames:");
++    for (int i = music.frame_count - 4; i < music.frame_count; ++i)
++        std::printf(" %d", (int)music.frames[i]);
++    std::printf(", and its first 4:");
++    for (int i = 0; i < 4; ++i)
++        std::printf(" %d", (int)music.frames[i]);
++    std::printf("\n");
++
+     double sprite_x = 312.0, sprite_y = 232.0;
+     double started = platform::Now();
+     double last = started;

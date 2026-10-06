@@ -193,6 +193,7 @@ void ChannelPlay(Channel &channel, const Sample &sample, int volume)
     channel.cursor = 0;
     channel.volume = volume;
     channel.active = true;
+    channel.loop = false; /* lesson 066: unlooped unless a route says otherwise */
 }
 
 namespace {
@@ -202,8 +203,26 @@ namespace {
    silence is not a value here, it is the absence of a contribution. */
 int ChannelFrame(Channel &channel)
 {
-    if (channel.active && channel.sample &&
-        channel.cursor < channel.sample->frame_count) {
+    if (channel.active && channel.sample) {
+        /* Lesson 066: the cursor's arithmetic at the sample's end. A
+           looping channel wraps — the cursor returns to the sample's
+           first frame and the pull below takes it again from there — so
+           the sample plays again from its start instead of ending. The
+           wrap is this one line; the mix above never knows it happened.
+           A sample with no frames has nothing to wrap to, and ends here
+           like any other. */
+        if (channel.cursor >= channel.sample->frame_count) {
+            if (channel.loop && channel.sample->frame_count > 0)
+                channel.cursor = 0;
+            else {
+                /* The sample's end — the fact frame_count carries. A
+                   channel that does not loop ends here, exactly as
+                   lesson 065 had it. */
+                channel.active = false;
+                return 0;
+            }
+        }
+
         /* One sample frame, scaled to the channel's volume. A frame is
            sample.channels values wide; the engine's stream is one
            channel wide, so it takes the frame's first value. */
@@ -213,7 +232,7 @@ int ChannelFrame(Channel &channel)
         return (frame * channel.volume) / AUDIO_VOLUME_FULL;
     }
 
-    /* The sample's end — the fact frame_count carries. */
+    /* Silence: the absence of a contribution. */
     channel.active = false;
     return 0;
 }
@@ -231,6 +250,7 @@ void MixerInit(Mixer &mixer)
         mixer.channels[c].cursor = 0;
         mixer.channels[c].volume = 0;
         mixer.channels[c].active = false;
+        mixer.channels[c].loop = false;
         mixer.channels[c].started = 0;
     }
     mixer.order = 0;
@@ -260,6 +280,25 @@ int MixerPlay(Mixer &mixer, const Sample &sample, int volume)
     ChannelPlay(mixer.channels[oldest], sample, volume);
     mixer.channels[oldest].started = ++mixer.order;
     return oldest;
+}
+
+void MixerPlayMusic(Mixer &mixer, const Sample &sample, int volume)
+{
+    /* The music channel — the reservation of lesson 065, spent here —
+       and the loop flag set: the run stops this sound with MixerStop,
+       the sample never does. */
+    ChannelPlay(mixer.channels[AUDIO_MUSIC_CHANNEL], sample, volume);
+    mixer.channels[AUDIO_MUSIC_CHANNEL].loop = true;
+    mixer.channels[AUDIO_MUSIC_CHANNEL].started = ++mixer.order;
+}
+
+void MixerStop(Mixer &mixer, int channel)
+{
+    /* The channel goes inactive and the mix stops pulling from it. Its
+       cursor keeps the place it stopped at; whatever plays on the channel
+       next starts from the sample's first frame. */
+    if (channel >= 0 && channel < AUDIO_MIXER_CHANNELS)
+        mixer.channels[channel].active = false;
 }
 
 void MixBuffer(Mixer &mixer, short *out, int frame_count)

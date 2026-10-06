@@ -1,0 +1,88 @@
+diff --git a/src/audio.cpp b/src/audio.cpp
+index 0849b9d..bc3f736 100644
+--- a/src/audio.cpp
++++ b/src/audio.cpp
+@@ -301,6 +301,21 @@ void MixerStop(Mixer &mixer, int channel)
+         mixer.channels[channel].active = false;
+ }
+ 
++void MixerPause(Mixer &mixer, int channel)
++{
++    /* Halt where it is: the cursor keeps its place and the mix stops
++       pulling — nothing is thrown away. */
++    if (channel >= 0 && channel < AUDIO_MIXER_CHANNELS)
++        mixer.channels[channel].active = false;
++}
++
++void MixerResume(Mixer &mixer, int channel)
++{
++    /* Carry on from exactly where the pause left the cursor. */
++    if (channel >= 0 && channel < AUDIO_MIXER_CHANNELS)
++        mixer.channels[channel].active = true;
++}
++
+ void MixBuffer(Mixer &mixer, short *out, int frame_count)
+ {
+     for (int i = 0; i < frame_count; ++i) {
+diff --git a/src/audio.h b/src/audio.h
+index e20f6d6..87cc99b 100644
+--- a/src/audio.h
++++ b/src/audio.h
+@@ -133,6 +133,12 @@ void MixerPlayMusic(Mixer &mixer, const Sample &sample, int volume);
+    from the sample's first frame. */
+ void MixerStop(Mixer &mixer, int channel);
+ 
++/* Exercise 2 (lesson 066): pause and resume. A pause halts the sound
++   where it is and keeps everything — sample, cursor, volume, loop — for
++   the resume to carry on from exactly there. */
++void MixerPause(Mixer &mixer, int channel);
++void MixerResume(Mixer &mixer, int channel);
++
+ /* The mix: `frame_count` frames of stream, each one the sum of every
+    active channel's next frame at its volume, clamped to the format's
+    range. Clamped, never wrapped — a sum past the range lands on the
+diff --git a/src/main.cpp b/src/main.cpp
+index 10cdc13..aa28ba8 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -216,6 +216,40 @@ int Run(void)
+        decision; the loop itself would go on. */
+     constexpr int MUSIC_STOP_FEEDS = 600;
+ 
++    /* Exercise 2 (lesson 066): pause and resume on a scratch mixer. The
++       music pauses at a known cursor, the mix runs while it is paused,
++       and the resume carries on from exactly where the pause left it.
++       Then the hazard: to the allocator, a paused effect channel is a
++       free channel. */
++    Mixer paused;
++    MixerInit(paused);
++    MixerPlayMusic(paused, music, AUDIO_VOLUME_FULL);
++    for (int b = 0; b < 300; ++b)
++        MixBuffer(paused, stream, CHUNK_FRAMES);
++    int at_pause = paused.channels[AUDIO_MUSIC_CHANNEL].cursor;
++    MixerPause(paused, AUDIO_MUSIC_CHANNEL);
++    int silence = 1;
++    for (int b = 0; b < 100; ++b) {
++        MixBuffer(paused, stream, CHUNK_FRAMES);
++        for (int i = 0; i < CHUNK_FRAMES; ++i)
++            if (stream[i] != 0)
++                silence = 0;
++    }
++    int while_paused = paused.channels[AUDIO_MUSIC_CHANNEL].cursor;
++    MixerResume(paused, AUDIO_MUSIC_CHANNEL);
++    for (int b = 0; b < 50; ++b)
++        MixBuffer(paused, stream, CHUNK_FRAMES);
++    std::printf("engine: pause: cursor %d at the pause, %d while paused, %d after 50 more buffers; the paused buffers %s\n",
++                at_pause, while_paused,
++                paused.channels[AUDIO_MUSIC_CHANNEL].cursor,
++                silence ? "were silence" : "carried sound");
++
++    int paused_effect = MixerPlay(paused, effect, AUDIO_VOLUME_FULL);
++    MixerPause(paused, paused_effect);
++    int next_effect = MixerPlay(paused, effect, AUDIO_VOLUME_FULL);
++    std::printf("engine: pause: the paused effect's channel %d looked free — the next effect took channel %d\n",
++                paused_effect, next_effect);
++
+     double sprite_x = 312.0, sprite_y = 232.0;
+     double started = platform::Now();
+     double last = started;
