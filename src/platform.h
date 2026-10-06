@@ -7,6 +7,8 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
+#include <stddef.h> /* size_t */
+
 namespace platform {
 
 /* What a window is made of is the OS implementation's business. The engine
@@ -61,6 +63,28 @@ bool HasFocus(const Window *window);
    and its resolution is fine enough to measure one frame. This is the
    clock Part 2's frame timing and Part 5's frame-budget report stand on. */
 double Now(void);
+
+/* A file's complete bytes — or a typed failure. Never partial data
+   presented as success. */
+enum FileError {
+    FILE_OK = 0,
+    FILE_NOT_FOUND,  /* nothing is there */
+    FILE_UNREADABLE, /* something is there and the OS says no */
+};
+
+struct FileData {
+    const unsigned char *data; /* the file's complete bytes, or 0 */
+    size_t size;
+    FileError error;
+};
+
+/* Reads a whole file from the OS. On success the bytes are the file —
+   all of it — and they belong to the caller: give them back with
+   ReleaseFile. */
+FileData ReadFile(const char *path);
+
+/* Gives the file's bytes back to the OS. */
+void ReleaseFile(FileData &file);
 
 /* Reads whatever news the OS has about this window and folds it into the
    platform layer's state. The engine never sees an event object — it polls

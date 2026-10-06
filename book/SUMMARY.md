@@ -200,6 +200,10 @@
   - [Solution: ex1 — the copy, isolated](solutions/lesson-036/ex1.md)
   - [Solution: ex2 — the frame budget](solutions/lesson-036/ex2.md)
 
+- [Lesson 037 — whole-file reads](lessons/part-1/lesson-037-file-read.md)
+  - [Solution: ex1 — read into your own memory](solutions/lesson-037/ex1.md)
+  - [Solution: ex2 — the file that never ends](solutions/lesson-037/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

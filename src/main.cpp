@@ -25,7 +25,7 @@ static void DrawMarker(Framebuffer &fb, int x, int y)
             PutPixel(fb, x + i, y + j, 240, 220, 80);
 }
 
-int Run(void)
+int Run(int argc, char **argv)
 {
     platform::WindowResult opened =
         platform::OpenWindow(FRAME_WIDTH, FRAME_HEIGHT);
@@ -63,6 +63,27 @@ int Run(void)
     }
     std::printf("engine: clock %s over 100000 samples, finest step %.0f ns\n",
                 backwards ? "WENT BACKWARDS" : "never backwards", finest * 1e9);
+
+    /* Whole-file reads: the file's complete bytes, or a typed failure —
+       never partial data dressed as success. */
+    if (argc > 1) {
+        platform::FileData file = platform::ReadFile(argv[1]);
+        if (file.error != platform::FILE_OK) {
+            std::printf("engine: %s: %s\n", argv[1],
+                        file.error == platform::FILE_NOT_FOUND
+                            ? "file not found"
+                            : "unreadable");
+            platform::CloseWindow(opened.window);
+            return 1;
+        }
+        long lines = 0;
+        for (size_t i = 0; i < file.size; ++i)
+            if (file.data[i] == '\n')
+                ++lines;
+        std::printf("engine: read %s: %zu bytes, %ld lines\n", argv[1],
+                    file.size, lines);
+        platform::ReleaseFile(file);
+    }
 
     /* The scene: a marker the arrow keys move. The report below is its
        position and the time it moved — the interactive frame makes itself
@@ -177,7 +198,7 @@ int Run(void)
 
 } /* namespace engine */
 
-int main(void)
+int main(int argc, char **argv)
 {
-    return engine::Run();
+    return engine::Run(argc, argv);
 }

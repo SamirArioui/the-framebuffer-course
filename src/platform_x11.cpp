@@ -11,6 +11,10 @@
 // Lesson 035: the platform clock. POSIX, not ISO C — clock_gettime is the
 // OS's clock interface (the one lesson 020 taught inside snek, now behind
 // the seam), so the feature-test macro goes before the includes.
+//
+// Lesson 037: whole-file reads. File I/O is OS surface too — POSIX here,
+// a second OS's own calls there. Everything in this file is one
+// implementation behind the seam.
 #define _POSIX_C_SOURCE 200809L
 
 #include "platform.h"
@@ -20,9 +24,14 @@
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
 
+#include <errno.h>
+#include <fcntl.h>
 #include <poll.h>
 #include <signal.h>
+#include <stdlib.h>
+#include <sys/stat.h>
 #include <time.h>
+#include <unistd.h>
 
 namespace platform {
 
@@ -210,6 +219,71 @@ double Now(void)
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
     return (double)ts.tv_sec + (double)ts.tv_nsec / 1e9;
+}
+
+/* File I/O is the OS side too — POSIX here, Win32's own calls in a second
+   implementation. The bytes the OS reads for us live in memory the OS
+   gives us (its allocator) and leave through ReleaseFile. */
+FileData ReadFile(const char *path)
+{
+    FileData file = { 0, 0, FILE_UNREADABLE };
+
+    int fd = open(path, O_RDONLY);
+    if (fd < 0) {
+        file.error = (errno == ENOENT) ? FILE_NOT_FOUND : FILE_UNREADABLE;
+        return file;
+    }
+
+    /* Whole file means whole file: the size is known before the first
+       byte, and a read that ends early is a failure, not a smaller file. */
+    struct stat st;
+    if (fstat(fd, &st) < 0 || !S_ISREG(st.st_mode)) {
+        close(fd);
+        return file; /* still FILE_UNREADABLE */
+    }
+
+    size_t capacity = (size_t)st.st_size;
+    unsigned char *bytes =
+        (unsigned char *)malloc(capacity ? capacity : 1);
+    if (!bytes) {
+        close(fd);
+        return file;
+    }
+
+    size_t total = 0;
+    while (total < capacity) {
+        ssize_t n = read(fd, bytes + total, capacity - total);
+        if (n < 0) {
+            free(bytes);
+            close(fd);
+            return file;
+        }
+        if (n == 0)
+            break; /* the file ended early — checked below */
+        total += (size_t)n;
+    }
+
+    /* One byte past what the size promised must find nothing, or the file
+       changed under the read — and a moving file is not a whole file. */
+    unsigned char extra;
+    if (total != capacity || read(fd, &extra, 1) != 0) {
+        free(bytes);
+        close(fd);
+        return file;
+    }
+
+    close(fd);
+    file.data = bytes;
+    file.size = total;
+    file.error = FILE_OK;
+    return file;
+}
+
+void ReleaseFile(FileData &file)
+{
+    free((void *)file.data);
+    file.data = 0;
+    file.size = 0;
 }
 
 void PumpEvents(Window *window)

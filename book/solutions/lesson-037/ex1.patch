@@ -1,0 +1,89 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 26aca64..92f6309 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -66,6 +66,17 @@ int Run(int argc, char **argv)
+ 
+     /* Whole-file reads: the file's complete bytes, or a typed failure —
+        never partial data dressed as success. */
++    if (argc > 2) { /* exercise 1: read into the engine's own memory */
++        static unsigned char mine[1 << 16];
++        platform::FileData file =
++            platform::ReadFileInto(argv[2], mine, sizeof mine);
++        if (file.error != platform::FILE_OK)
++            std::printf("engine: %s: does not fit in 64 KiB\n", argv[2]);
++        else
++            std::printf("engine: read %s into my own memory: %zu bytes\n",
++                        argv[2], file.size);
++    }
++
+     if (argc > 1) {
+         platform::FileData file = platform::ReadFile(argv[1]);
+         if (file.error != platform::FILE_OK) {
+diff --git a/src/platform.h b/src/platform.h
+index 73ec7e5..74df63e 100644
+--- a/src/platform.h
++++ b/src/platform.h
+@@ -86,6 +86,12 @@ FileData ReadFile(const char *path);
+ /* Gives the file's bytes back to the OS. */
+ void ReleaseFile(FileData &file);
+ 
++/* Reads a whole file into memory the caller owns — the shape Part 4's
++   asset loading will use when the caller is an arena. FILE_UNREADABLE if
++   the file does not fit. */
++FileData ReadFileInto(const char *path, unsigned char *into,
++                      size_t capacity);
++
+ /* Reads whatever news the OS has about this window and folds it into the
+    platform layer's state. The engine never sees an event object — it polls
+    state afterwards. Blocks until there is news or the run is interrupted. */
+diff --git a/src/platform_x11.cpp b/src/platform_x11.cpp
+index 3205c28..83f7457 100644
+--- a/src/platform_x11.cpp
++++ b/src/platform_x11.cpp
+@@ -279,6 +279,45 @@ FileData ReadFile(const char *path)
+     return file;
+ }
+ 
++FileData ReadFileInto(const char *path, unsigned char *into, size_t capacity)
++{
++    FileData file = { into, 0, FILE_UNREADABLE };
++
++    int fd = open(path, O_RDONLY);
++    if (fd < 0) {
++        file.data = 0;
++        file.error = (errno == ENOENT) ? FILE_NOT_FOUND : FILE_UNREADABLE;
++        return file;
++    }
++
++    size_t total = 0;
++    for (;;) {
++        ssize_t n = read(fd, into + total, capacity - total);
++        if (n < 0) {
++            close(fd);
++            file.data = 0;
++            return file;
++        }
++        if (n == 0)
++            break;
++        total += (size_t)n;
++        if (total == capacity) { /* no room left: is the file over? */
++            unsigned char extra;
++            if (read(fd, &extra, 1) != 0) {
++                close(fd);
++                file.data = 0;
++                return file; /* it did not fit */
++            }
++            break;
++        }
++    }
++
++    close(fd);
++    file.size = total;
++    file.error = FILE_OK;
++    return file;
++}
++
+ void ReleaseFile(FileData &file)
+ {
+     free((void *)file.data);
