@@ -8,7 +8,7 @@
 ## 2. Sound as bytes (lesson-059…060)
 
 - [x] 2.1 Author lesson-059 (sound as samples: frames of amplitude — 16-bit PCM bytes, the sample rate, a tone computed by code and played) — prose + one code step + 1-2 mixed exercises written before the prose with diff solutions linked after each prompt; verify the tone's bytes are what the lesson claims and the run plays through the `null` device as documented, the page renders, and the co-committed commit is tagged `lesson-059`.
-- [ ] 2.2 Author lesson-060 (the stream's shape: the output's format and rate, and the loop that feeds it — the paced wait that keeps the device from starving) with its exercises and diff solutions; verify the paced wait runs as documented under scripted input and idle, the page renders, and the commit is tagged `lesson-060`.
+- [x] 2.2 Author lesson-060 (the stream's shape: the output's format and rate, and the loop that feeds it — the paced wait that keeps the device from starving) with its exercises and diff solutions; verify the paced wait runs as documented under scripted input and idle, the page renders, and the commit is tagged `lesson-060`.
 
 ## 3. The sample asset (lesson-061…062)
 
