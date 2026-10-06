@@ -23,10 +23,12 @@ struct Framebuffer {
     int height;
 };
 
-/* The engine's framebuffer. Its bytes live in static storage — the
-   language law of lesson 026 keeps allocation out of the engine, and
-   lesson 040 gives buffers like this a real home. */
+/* The engine's framebuffer. Its bytes come from an OS-level reservation
+   (lesson 040): whole pages, zeroed, released with ReleaseFramebuffer. */
 Framebuffer *GetFramebuffer(void);
+
+/* Gives the framebuffer's pages back to the OS. */
+void ReleaseFramebuffer(void);
 
 /* Fills every pixel with one color. */
 void ClearBuffer(Framebuffer &fb, unsigned char r, unsigned char g,

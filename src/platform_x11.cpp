@@ -29,6 +29,7 @@
 #include <poll.h>
 #include <signal.h>
 #include <stdlib.h>
+#include <sys/mman.h>
 #include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
@@ -224,6 +225,38 @@ double Now(void)
 size_t PageSize(void)
 {
     return (size_t)sysconf(_SC_PAGESIZE);
+}
+
+/* Reservations are anonymous mappings (lesson 039's vocabulary): whole
+   pages of virtual memory, zeroed by the OS, with no file behind them.
+   Physical frames arrive only when the bytes are touched — the demand-zero
+   behavior the deep dive described. */
+Reservation ReserveMemory(size_t bytes)
+{
+    Reservation reservation = { 0, 0, MEMORY_NO_MEMORY };
+
+    size_t page = PageSize();
+    size_t rounded = (bytes + page - 1) / page * page;
+    if (rounded == 0)
+        rounded = page;
+
+    void *mapping = mmap(0, rounded, PROT_READ | PROT_WRITE,
+                         MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    if (mapping == MAP_FAILED)
+        return reservation;
+
+    reservation.bytes = (unsigned char *)mapping;
+    reservation.size = rounded;
+    reservation.error = MEMORY_OK;
+    return reservation;
+}
+
+void ReleaseMemory(Reservation &reservation)
+{
+    if (reservation.bytes)
+        munmap(reservation.bytes, reservation.size);
+    reservation.bytes = 0;
+    reservation.size = 0;
 }
 
 /* File I/O is the OS side too — POSIX here, Win32's own calls in a second

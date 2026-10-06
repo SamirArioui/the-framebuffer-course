@@ -1,0 +1,18 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index c345bb4..c4b6e6b 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -124,6 +124,13 @@ int Run(int argc, char **argv)
+                 (double)fb_bytes / (double)page,
+                 (size_t)fb->pixels % page == 0 ? "yes" : "no");
+ 
++    /* Exercise 1: what does one byte of reservation actually get you? */
++    platform::Reservation one = platform::ReserveMemory(1);
++    std::printf("engine: asked for 1 byte: got %zu bytes at %p — first bytes %u %u %u\n",
++                one.size, (void *)one.bytes, one.bytes[0], one.bytes[1],
++                one.bytes[2]);
++    platform::ReleaseMemory(one);
++
+     std::printf("engine: arrow keys move the marker; close the window to stop\n");
+     std::printf("engine: marker at %d,%d\n", (int)marker_x, (int)marker_y);
+ 

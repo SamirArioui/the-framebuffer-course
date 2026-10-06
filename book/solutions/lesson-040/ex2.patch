@@ -1,0 +1,56 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index c345bb4..3ebba34 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -124,6 +124,16 @@ int Run(int argc, char **argv)
+                 (double)fb_bytes / (double)page,
+                 (size_t)fb->pixels % page == 0 ? "yes" : "no");
+ 
++    /* DELIBERATE teaching state (exercise 2): the next lines crash on
++       purpose — reading a page the OS has made inaccessible. stderr, so
++       the words survive the crash (lesson 001's stream-ordering drill). */
++    if (argc > 1 && argv[1][0] == '!') {
++        platform::Reservation guarded = platform::ReserveMemory(16);
++        platform::MakeInaccessible(guarded.bytes, guarded.size);
++        std::fprintf(stderr, "engine: touching a page with no permissions\n");
++        std::fprintf(stderr, "engine: %u\n", guarded.bytes[0]);
++    }
++
+     std::printf("engine: arrow keys move the marker; close the window to stop\n");
+     std::printf("engine: marker at %d,%d\n", (int)marker_x, (int)marker_y);
+ 
+diff --git a/src/platform.h b/src/platform.h
+index 29e8dd9..d680415 100644
+--- a/src/platform.h
++++ b/src/platform.h
+@@ -87,6 +87,10 @@ Reservation ReserveMemory(size_t bytes);
+ /* Gives the reservation back to the OS. */
+ void ReleaseMemory(Reservation &reservation);
+ 
++/* Exercise 2: drop all access to these bytes. The next touch is a
++   deliberate crash — the machine's refusal, not a language error. */
++void MakeInaccessible(unsigned char *bytes, size_t size);
++
+ /* A file's complete bytes — or a typed failure. Never partial data
+    presented as success. */
+ enum FileError {
+diff --git a/src/platform_x11.cpp b/src/platform_x11.cpp
+index 17dae4e..b42c987 100644
+--- a/src/platform_x11.cpp
++++ b/src/platform_x11.cpp
+@@ -251,6 +251,15 @@ Reservation ReserveMemory(size_t bytes)
+     return reservation;
+ }
+ 
++void MakeInaccessible(unsigned char *bytes, size_t size)
++{
++    size_t page = PageSize();
++    size_t first = (size_t)bytes - (size_t)bytes % page;
++    size_t rounded = (size_t)bytes + size - first;
++    rounded = (rounded + page - 1) / page * page;
++    mprotect((void *)first, rounded, PROT_NONE);
++}
++
+ void ReleaseMemory(Reservation &reservation)
+ {
+     if (reservation.bytes)

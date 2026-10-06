@@ -113,12 +113,13 @@ int Run(int argc, char **argv)
     double last = started;
 
     /* The virtual-memory report: every byte the engine owns lives in a
-       mapping the OS keeps, counted in pages. This is what the deep dive
-       explains — the numbers here are measured, not illustrative. */
+       mapping the OS keeps, counted in pages. Since lesson 040 the
+       framebuffer's pages are a reservation — sized in whole pages and
+       aligned like one. */
     size_t page = platform::PageSize();
     size_t fb_bytes = (size_t)fb->width * fb->height * 4;
     std::printf("engine: page size %zu bytes\n", page);
-    std::printf("engine: framebuffer at %p — %zu bytes = %.2f pages (page-aligned: %s)\n",
+    std::printf("engine: framebuffer reserved at %p — %zu bytes = %.2f pages (page-aligned: %s)\n",
                 (void *)fb->pixels, fb_bytes,
                 (double)fb_bytes / (double)page,
                 (size_t)fb->pixels % page == 0 ? "yes" : "no");
@@ -222,6 +223,7 @@ int Run(int argc, char **argv)
     if (platform::CloseRequested(opened.window))
         std::printf("engine: close reported\n");
     platform::CloseWindow(opened.window);
+    ReleaseFramebuffer(); /* the pages go back to the OS (lesson 029's rule) */
     std::printf("engine: closed\n");
     return exit_code;
 }

@@ -67,6 +67,26 @@ double Now(void);
 /* The OS's memory page: the unit every mapping is counted in. */
 size_t PageSize(void);
 
+/* A memory reservation: whole pages of OS memory, zeroed, owned by the
+   engine until it releases them. This is where engine buffers come from
+   (lesson 040) — not from an allocator. */
+enum MemoryError {
+    MEMORY_OK = 0,
+    MEMORY_NO_MEMORY, /* the OS refused the reservation */
+};
+
+struct Reservation {
+    unsigned char *bytes; /* the reserved bytes, or 0 */
+    size_t size;          /* whole pages */
+    MemoryError error;
+};
+
+/* Reserves at least this many bytes from the OS, rounded to whole pages. */
+Reservation ReserveMemory(size_t bytes);
+
+/* Gives the reservation back to the OS. */
+void ReleaseMemory(Reservation &reservation);
+
 /* A file's complete bytes — or a typed failure. Never partial data
    presented as success. */
 enum FileError {

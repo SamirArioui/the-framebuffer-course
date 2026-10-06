@@ -212,6 +212,10 @@
   - [Solution: ex1 — find your mapping](solutions/lesson-039/ex1.md)
   - [Solution: ex2 — the file that lies about its size](solutions/lesson-039/ex2.md)
 
+- [Lesson 040 — reservation-backed buffers](lessons/part-1/lesson-040-reservations.md)
+  - [Solution: ex1 — one byte, please](solutions/lesson-040/ex1.md)
+  - [Solution: ex2 — the page that fights back](solutions/lesson-040/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)
