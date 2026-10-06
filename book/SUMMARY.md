@@ -282,6 +282,10 @@
   - [Solution: ex1 — the hitbox](solutions/lesson-056/ex1.md)
   - [Solution: ex2 — the step and the wall](solutions/lesson-056/ex2.md)
 
+- [Lesson 057 — the closing demo: the world, drawn](lessons/part-2/lesson-057-demo.md)
+  - [Solution: ex1 — the Part 2 demo on your machine](solutions/lesson-057/ex1.md)
+  - [Solution: ex2 — the acceptance table](solutions/lesson-057/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

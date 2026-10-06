@@ -1,0 +1,19 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index bc94247..a3285ec 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -125,6 +125,14 @@ int Run(void)
+     std::printf("engine: arrow keys move the sprite, space shakes the camera; close the window to stop\n");
+     std::printf("engine: sprite at %d,%d\n", (int)sprite_x, (int)sprite_y);
+ 
++    /* Exercise 2: the acceptance table's left column — the demo names
++       the Part 2 capabilities it uses, one line per group. */
++    std::printf("engine: drawing: one blit for sprites, glyphs, and tiles; clipping and transparency included\n");
++    std::printf("engine: text: strings laid out one slot per character, missing glyphs skipped\n");
++    std::printf("engine: world: the map loaded whole, drawn through the camera's summed offset\n");
++    std::printf("engine: input: polled movement, collision-gated per axis; the camera follows, the additive shakes\n");
++    std::printf("engine: measurement: one record per frame, render attributed per subsystem\n");
++
+     /* The frame step: read news, update from polled state, draw, present —
+        every phase measured, one record per frame. */
+     int exit_code = 0;
