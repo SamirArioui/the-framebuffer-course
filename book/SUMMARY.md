@@ -270,6 +270,10 @@
   - [Solution: ex1 — the tile under the sprite](solutions/lesson-053/ex1.md)
   - [Solution: ex2 — the empty draw](solutions/lesson-053/ex2.md)
 
+- [Lesson 054 — the camera](lessons/part-2/lesson-054-camera.md)
+  - [Solution: ex1 — the shake that decays](solutions/lesson-054/ex1.md)
+  - [Solution: ex2 — the additive that cancels](solutions/lesson-054/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

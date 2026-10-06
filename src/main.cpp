@@ -9,6 +9,7 @@
 
 #include "arena.h"
 #include "blit.h"
+#include "camera.h"
 #include "font.h"
 #include "framebuffer.h"
 #include "frame.h"
@@ -29,6 +30,57 @@ constexpr double SPRITE_SPEED = 240.0; /* pixels per second */
    blit, one position per glyph. Lesson 051 replaces the hand with a
    layout loop. */
 constexpr char HUD_LABEL[] = "SCORE";
+
+/* Lesson 054: the scene, drawn through the camera. The camera's summed
+   offset is applied once, at each draw's origin — the map's and the
+   sprite's. The HUD is not scene and does not pass through here. */
+static void DrawScene(Framebuffer &fb, const TileMap &map,
+                      const TileSheet &sheet, const Sprite &sprite,
+                      int sprite_x, int sprite_y, const Camera &camera)
+{
+    int x = CameraX(camera);
+    int y = CameraY(camera);
+    DrawTileMap(fb, map, sheet, -x, -y);
+    BlitSprite(fb, sprite, sprite_x - x, sprite_y - y);
+}
+
+/* The framebuffer's whole content, copied out — the check's reference. */
+static void Snapshot(Framebuffer &fb, unsigned char *snap)
+{
+    for (int y = 0; y < FRAME_HEIGHT; ++y)
+        for (int x = 0; x < FRAME_WIDTH; ++x) {
+            unsigned char r, g, b;
+            GetPixel(fb, x, y, r, g, b);
+            unsigned char *p = &snap[((y * FRAME_WIDTH) + x) * 3];
+            p[0] = r;
+            p[1] = g;
+            p[2] = b;
+        }
+}
+
+/* Compares the framebuffer against a snapshot shifted by (dx, dy): the
+   pixel at (x, y) now must be the snapshot's pixel at (x + dx, y + dy). */
+static void CompareShift(Framebuffer &fb, const unsigned char *snap, int dx,
+                         int dy, int &compared, int &mismatches)
+{
+    compared = 0;
+    mismatches = 0;
+    for (int y = 0; y < FRAME_HEIGHT; ++y) {
+        if (y + dy < 0 || y + dy >= FRAME_HEIGHT)
+            continue;
+        for (int x = 0; x < FRAME_WIDTH; ++x) {
+            if (x + dx < 0 || x + dx >= FRAME_WIDTH)
+                continue;
+            unsigned char r, g, b;
+            GetPixel(fb, x, y, r, g, b);
+            const unsigned char *p =
+                &snap[(((y + dy) * FRAME_WIDTH) + (x + dx)) * 3];
+            ++compared;
+            if (r != p[0] || g != p[1] || b != p[2])
+                ++mismatches;
+        }
+    }
+}
 
 /* Lesson 047: the caches deep dive's evidence — a copy walk over arena
    memory at two strides, timed at working-set sizes that cross this
@@ -449,13 +501,61 @@ int Run(void)
                 map.width * TILE_SIZE, map.height * TILE_SIZE, FRAME_WIDTH,
                 FRAME_HEIGHT, compared, moved_mismatches);
 
+    /* Lesson 054: the camera's three claims, each checked against the
+       framebuffer's pixels: the base scrolls the scene, the additive
+       offset stacks over it, and clearing the additive restores the
+       base view exactly. */
+    unsigned char *snap2 = (unsigned char *)ArenaAlloc(
+        arena, (size_t)FRAME_WIDTH * FRAME_HEIGHT * 3, 4);
+    Camera camera = { 0, 0, 0, 0 };
+    if (!snap2) {
+        std::fprintf(stderr, "engine: no room for the camera check\n");
+        platform::CloseWindow(opened.window);
+        ArenaRelease(arena);
+        return 1;
+    }
+    ClearBuffer(*fb, 32, 32, 64);
+    DrawScene(*fb, map, sheet, sprite, 200, 150, camera);
+    Snapshot(*fb, snap);
+
+    camera.base_x = 100;
+    camera.base_y = 50;
+    ClearBuffer(*fb, 32, 32, 64);
+    DrawScene(*fb, map, sheet, sprite, 200, 150, camera);
+    int cam_cmp = 0, cam_bad = 0;
+    CompareShift(*fb, snap, 100, 50, cam_cmp, cam_bad);
+    std::printf("engine: camera check: base (100,50) scrolls the scene — %d pixels compared, %d mismatches\n",
+                cam_cmp, cam_bad);
+    Snapshot(*fb, snap2); /* the base view, for the restore check below */
+
+    camera.add_x = 7;
+    camera.add_y = -3;
+    ClearBuffer(*fb, 32, 32, 64);
+    DrawScene(*fb, map, sheet, sprite, 200, 150, camera); /* base + add */
+    Snapshot(*fb, snap);
+    Camera summed = { 107, 47, 0, 0 }; /* the same sum, written out */
+    ClearBuffer(*fb, 32, 32, 64);
+    DrawScene(*fb, map, sheet, sprite, 200, 150, summed);
+    CompareShift(*fb, snap, 0, 0, cam_cmp, cam_bad);
+    std::printf("engine: camera check: additive (7,-3) stacks over base — %d pixels compared, %d mismatches\n",
+                cam_cmp, cam_bad);
+
+    camera.add_x = 0;
+    camera.add_y = 0;
+    ClearBuffer(*fb, 32, 32, 64);
+    DrawScene(*fb, map, sheet, sprite, 200, 150, camera);
+    CompareShift(*fb, snap2, 0, 0, cam_cmp, cam_bad);
+    std::printf("engine: camera check: additive cleared restores the base view — %d pixels compared, %d mismatches\n",
+                cam_cmp, cam_bad);
+
     double sprite_x = (FRAME_WIDTH - sprite.width) / 2.0;
     double sprite_y = (FRAME_HEIGHT - sprite.height) / 2.0;
     double started = platform::Now();
     double last = started;
+    int shake_frames = 0; /* lesson 054: the additive hook's demo */
 
     std::printf("engine: platform layer done — window, polled input, arena-backed framebuffer, measured frames\n");
-    std::printf("engine: arrow keys move the sprite; close the window to stop\n");
+    std::printf("engine: arrow keys move the sprite, space shakes the camera; close the window to stop\n");
     std::printf("engine: sprite at %d,%d\n", (int)sprite_x, (int)sprite_y);
 
     /* The frame step: read news, update from polled state, draw, present —
@@ -487,15 +587,54 @@ int Run(void)
         if (platform::KeyDown(opened.window, platform::KEY_DOWN))
             sprite_y += SPRITE_SPEED * dt;
 
-        /* The sprite stays on screen — lesson 015's fold at frame scale. */
+        /* The sprite stays in the world — the map's bounds now, not the
+           screen's: the camera moves the view, the world is bigger. */
         if (sprite_x < 0)
             sprite_x = 0;
-        if (sprite_x > FRAME_WIDTH - sprite.width)
-            sprite_x = FRAME_WIDTH - sprite.width;
+        if (sprite_x > map.width * TILE_SIZE - sprite.width)
+            sprite_x = map.width * TILE_SIZE - sprite.width;
         if (sprite_y < 0)
             sprite_y = 0;
-        if (sprite_y > FRAME_HEIGHT - sprite.height)
-            sprite_y = FRAME_HEIGHT - sprite.height;
+        if (sprite_y > map.height * TILE_SIZE - sprite.height)
+            sprite_y = map.height * TILE_SIZE - sprite.height;
+
+        /* Lesson 054: the camera's base follows the sprite — the world
+           scrolls under the movement — clamped to the map's bounds. */
+        int base_x = (int)sprite_x + sprite.width / 2 - FRAME_WIDTH / 2;
+        int base_y = (int)sprite_y + sprite.height / 2 - FRAME_HEIGHT / 2;
+        if (base_x < 0)
+            base_x = 0;
+        if (base_y < 0)
+            base_y = 0;
+        if (base_x > map.width * TILE_SIZE - FRAME_WIDTH)
+            base_x = map.width * TILE_SIZE - FRAME_WIDTH;
+        if (base_y > map.height * TILE_SIZE - FRAME_HEIGHT)
+            base_y = map.height * TILE_SIZE - FRAME_HEIGHT;
+        if (base_x != camera.base_x || base_y != camera.base_y) {
+            camera.base_x = base_x;
+            camera.base_y = base_y;
+            std::printf("engine: camera base %d,%d (t=%.3f)\n", base_x,
+                        base_y, platform::Now() - started);
+        }
+
+        /* The additive offset: the hook the juice toolkit will drive.
+           Here SPACE demonstrates it — a shake that ends at zero, which
+           is where it lives at rest. */
+        if (platform::KeyPressed(opened.window, platform::KEY_SPACE) &&
+            shake_frames <= 0) {
+            shake_frames = 30;
+            std::printf("engine: camera additive 6,0 (shake starts)\n");
+        }
+        if (shake_frames > 0) {
+            --shake_frames;
+            camera.add_x = (shake_frames % 2) ? 6 : -6;
+            camera.add_y = 0;
+            if (shake_frames == 0) {
+                camera.add_x = 0;
+                camera.add_y = 0;
+                std::printf("engine: camera additive 0,0 (at rest)\n");
+            }
+        }
 
         frame.update = platform::Now() - t0;
         double t1 = platform::Now();
@@ -505,14 +644,17 @@ int Run(void)
                         (int)sprite_y, platform::Now() - started);
 
         /* Render: every frame draws the whole scene — clear, then the
-           map, the sprite, and the text, each timed as its own named
-           phase: the subsystems the frame record can name. */
+           world through the camera, then the HUD — each timed as its own
+           named phase: the subsystems the frame record can name. The
+           camera's summed offset is applied once, at each draw's origin. */
+        int cam_x = CameraX(camera);
+        int cam_y = CameraY(camera);
         ClearBuffer(*fb, 32, 32, 64);
         double t_tilemap = platform::Now();
-        DrawTileMap(*fb, map, sheet, 0, 0);
+        DrawTileMap(*fb, map, sheet, -cam_x, -cam_y);
         frame.tilemap = platform::Now() - t_tilemap;
         double t_sprites = platform::Now();
-        BlitSprite(*fb, sprite, (int)sprite_x, (int)sprite_y);
+        BlitSprite(*fb, sprite, (int)sprite_x - cam_x, (int)sprite_y - cam_y);
         frame.sprites = platform::Now() - t_sprites;
         double t_text = platform::Now();
         DrawText(*fb, font, HUD_LABEL, 8, 8);

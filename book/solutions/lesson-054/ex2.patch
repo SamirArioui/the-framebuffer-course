@@ -1,0 +1,25 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 3c0c5bf..1922ed1 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -548,6 +548,20 @@ int Run(void)
+     std::printf("engine: camera check: additive cleared restores the base view — %d pixels compared, %d mismatches\n",
+                 cam_cmp, cam_bad);
+ 
++    /* Exercise 2: the additive can cancel the base outright — the draws
++       only ever see the sum. */
++    Camera origin = { 0, 0, 0, 0 };
++    ClearBuffer(*fb, 32, 32, 64);
++    DrawScene(*fb, map, sheet, sprite, 200, 150, origin);
++    Snapshot(*fb, snap);
++    camera.add_x = -camera.base_x;
++    camera.add_y = -camera.base_y;
++    ClearBuffer(*fb, 32, 32, 64);
++    DrawScene(*fb, map, sheet, sprite, 200, 150, camera);
++    CompareShift(*fb, snap, 0, 0, cam_cmp, cam_bad);
++    std::printf("engine: camera check: additive (-100,-50) cancels the base — %d pixels compared, %d mismatches\n",
++                cam_cmp, cam_bad);
++
+     double sprite_x = (FRAME_WIDTH - sprite.width) / 2.0;
+     double sprite_y = (FRAME_HEIGHT - sprite.height) / 2.0;
+     double started = platform::Now();
