@@ -1,0 +1,71 @@
+diff --git a/src/platform_x11.cpp b/src/platform_x11.cpp
+index 0438d3f..052dddc 100644
+--- a/src/platform_x11.cpp
++++ b/src/platform_x11.cpp
+@@ -12,6 +12,8 @@
+ 
+ #include <X11/Xlib.h>
+ 
++#include <cstdio>
++
+ #include <poll.h>
+ #include <signal.h>
+ 
+@@ -57,6 +59,7 @@ WindowResult OpenWindow(int width, int height)
+         result.window = 0;
+         return result;
+     }
++    std::fprintf(stderr, "platform: take display\n");
+ 
+     int screen = DefaultScreen(display);
+     ::Window xwindow = XCreateSimpleWindow(display, RootWindow(display, screen),
+@@ -64,6 +67,7 @@ WindowResult OpenWindow(int width, int height)
+                                            BlackPixel(display, screen),
+                                            WhitePixel(display, screen));
+     if (!xwindow) {
++        std::fprintf(stderr, "platform: release display\n");
+         XCloseDisplay(display);
+         result.window = 0;
+         result.error = OPEN_NO_WINDOW;
+@@ -76,6 +80,8 @@ WindowResult OpenWindow(int width, int height)
+     XSetWMProtocols(display, xwindow, &wm_delete_window, 1);
+     XSelectInput(display, xwindow, StructureNotifyMask);
+ 
++    std::fprintf(stderr, "platform: take window\n");
++
+     XStoreName(display, xwindow, "the framebuffer engine");
+     XMapWindow(display, xwindow);
+     XFlush(display);
+@@ -84,6 +90,8 @@ WindowResult OpenWindow(int width, int height)
+     window_state.xwindow = xwindow;
+     window_state.close_requested = false;
+ 
++    std::fprintf(stderr, "platform: take signal handler\n");
++
+     /* The interrupt is part of the window's take: from here on, Ctrl+C is
+        news like any other. */
+     interrupted = 0;
+@@ -101,6 +109,7 @@ static void HandleEvent(Window *window, XEvent &event)
+     } else if (event.type == DestroyNotify) {
+         window->close_requested = true; /* the window is already gone */
+         window->xwindow = 0;
++        std::fprintf(stderr, "platform: window released by the OS\n");
+     }
+ }
+ 
+@@ -139,10 +148,14 @@ void CloseWindow(Window *window)
+ 
+     /* xwindow is zero once the OS has already destroyed the window;
+        destroying it twice would be an X error. */
+-    if (window->xwindow)
++    if (window->xwindow) {
+         XDestroyWindow(window->display, window->xwindow);
++        std::fprintf(stderr, "platform: release window\n");
++    }
+     XCloseDisplay(window->display);
++    std::fprintf(stderr, "platform: release display\n");
+     signal(SIGINT, SIG_DFL); /* the handler is taken and released like the rest */
++    std::fprintf(stderr, "platform: release signal handler\n");
+     window->display = 0;
+     window->xwindow = 0;
+ }

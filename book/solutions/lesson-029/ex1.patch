@@ -1,0 +1,63 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index efb0b34..1534a2d 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -28,6 +28,9 @@ int Run(void)
+         case platform::OPEN_NO_WINDOW:
+             std::fprintf(stderr, "engine: the OS refused the window\n");
+             break;
++        case platform::OPEN_ALREADY_OPEN:
++            std::fprintf(stderr, "engine: a window is already open\n");
++            break;
+         default:
+             std::fprintf(stderr, "engine: platform error %d\n",
+                          opened.error);
+@@ -39,6 +42,15 @@ int Run(void)
+     std::printf("engine: window %dx%d open — waiting for news\n",
+                 WINDOW_WIDTH, WINDOW_HEIGHT);
+ 
++    /* The bug's proof: a second open while the first is still ours. */
++    platform::WindowResult again =
++        platform::OpenWindow(WINDOW_WIDTH, WINDOW_HEIGHT);
++    if (again.window)
++        std::printf("engine: BUG — second window handed out\n");
++    else
++        std::printf("engine: second open refused (platform error %d)\n",
++                    again.error);
++
+     /* The event pump: read news, fold it into state, react to state,
+        repeat. This loop is what keeps the window alive. */
+     while (!platform::CloseRequested(opened.window))
+diff --git a/src/platform.h b/src/platform.h
+index da3e0f1..4cc8580 100644
+--- a/src/platform.h
++++ b/src/platform.h
+@@ -17,8 +17,9 @@ struct Window;
+    the step that failed. No partial result is ever presented as success. */
+ enum OpenError {
+     OPEN_OK = 0,
+-    OPEN_NO_DISPLAY, /* the OS's display could not be opened */
+-    OPEN_NO_WINDOW,  /* the OS refused to create the window */
++    OPEN_NO_DISPLAY,  /* the OS's display could not be opened */
++    OPEN_NO_WINDOW,   /* the OS refused to create the window */
++    OPEN_ALREADY_OPEN, /* a window is already open */
+ };
+ 
+ struct WindowResult {
+diff --git a/src/platform_x11.cpp b/src/platform_x11.cpp
+index 0438d3f..3a19e2e 100644
+--- a/src/platform_x11.cpp
++++ b/src/platform_x11.cpp
+@@ -52,6 +52,12 @@ WindowResult OpenWindow(int width, int height)
+ {
+     WindowResult result = { &window_state, OPEN_NO_DISPLAY };
+ 
++    if (window_state.display) { /* one window at a time, and it is taken */
++        result.window = 0;
++        result.error = OPEN_ALREADY_OPEN;
++        return result;
++    }
++
+     Display *display = XOpenDisplay(0);
+     if (!display) {
+         result.window = 0;

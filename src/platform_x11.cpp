@@ -12,6 +12,9 @@
 
 #include <X11/Xlib.h>
 
+#include <poll.h>
+#include <signal.h>
+
 namespace platform {
 
 /* What a window is made of on this OS. The definition lives here, where
@@ -34,6 +37,16 @@ static Window window_state;
    ClientMessage whose first word is WM_DELETE_WINDOW. X atoms are names the
    server hands out as integers; asking for them is how you spell them. */
 static Atom wm_delete_window;
+
+/* The interrupt: Ctrl+C is an exit too, and the run owes it the same clean
+   close as any other. The handler does the only thing a signal handler may
+   safely do here — set a flag (lesson 020's rule). */
+static volatile sig_atomic_t interrupted;
+
+static void OnInterrupt(int)
+{
+    interrupted = 1;
+}
 
 WindowResult OpenWindow(int width, int height)
 {
@@ -70,6 +83,11 @@ WindowResult OpenWindow(int width, int height)
     window_state.display = display;
     window_state.xwindow = xwindow;
     window_state.close_requested = false;
+
+    /* The interrupt is part of the window's take: from here on, Ctrl+C is
+       news like any other. */
+    interrupted = 0;
+    signal(SIGINT, OnInterrupt);
     return result;
 }
 
@@ -91,12 +109,19 @@ void PumpEvents(Window *window)
     if (!window || !window->display)
         return;
 
-    /* Block for the first piece of news, then drain whatever else piled up.
-       Blocking is the point: the engine waits here instead of spinning. */
-    XEvent event;
-    XNextEvent(window->display, &event);
-    HandleEvent(window, event);
+    /* Wait for news where a signal can wake us. Lesson 028 slept inside
+       XNextEvent, where Ctrl+C could not reach it; poll on the OS
+       connection returns when there is news *or* when a signal interrupts
+       it — then the flag below is folded in like any other news. */
+    struct pollfd pfd = { ConnectionNumber(window->display), POLLIN, 0 };
+    poll(&pfd, 1, -1);
+
+    if (interrupted)
+        window->close_requested = true;
+
+    /* Drain whatever piled up: one blocking wait, then the whole batch. */
     while (XPending(window->display)) {
+        XEvent event;
         XNextEvent(window->display, &event);
         HandleEvent(window, event);
     }
@@ -117,6 +142,7 @@ void CloseWindow(Window *window)
     if (window->xwindow)
         XDestroyWindow(window->display, window->xwindow);
     XCloseDisplay(window->display);
+    signal(SIGINT, SIG_DFL); /* the handler is taken and released like the rest */
     window->display = 0;
     window->xwindow = 0;
 }

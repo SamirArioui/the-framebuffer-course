@@ -19,8 +19,20 @@ int Run(void)
     platform::WindowResult opened =
         platform::OpenWindow(WINDOW_WIDTH, WINDOW_HEIGHT);
     if (!opened.window) {
-        std::fprintf(stderr, "engine: no window (platform error %d)\n",
-                     opened.error);
+        /* The error path: nothing was taken that the platform layer did not
+           put back, and the failure is reported by name. */
+        switch (opened.error) {
+        case platform::OPEN_NO_DISPLAY:
+            std::fprintf(stderr, "engine: no display to open a window on\n");
+            break;
+        case platform::OPEN_NO_WINDOW:
+            std::fprintf(stderr, "engine: the OS refused the window\n");
+            break;
+        default:
+            std::fprintf(stderr, "engine: platform error %d\n",
+                         opened.error);
+            break;
+        }
         return 1;
     }
 

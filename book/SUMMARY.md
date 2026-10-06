@@ -168,6 +168,10 @@
   - [Solution: ex1 — resize is news too](solutions/lesson-028/ex1.md)
   - [Solution: ex2 — two ways the news arrives](solutions/lesson-028/ex2.md)
 
+- [Lesson 029 — clean close and error paths: OS resources released on every exit](lessons/part-1/lesson-029-clean-close.md)
+  - [Solution: ex1 — the window that gets opened twice](solutions/lesson-029/ex1.md)
+  - [Solution: ex2 — the ledger](solutions/lesson-029/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

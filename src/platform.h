@@ -31,10 +31,12 @@ WindowResult OpenWindow(int width, int height);
 
 /* Reads whatever news the OS has about this window and folds it into the
    platform layer's state. The engine never sees an event object — it polls
-   state afterwards. Blocks until there is news. */
+   state afterwards. Blocks until there is news or the run is interrupted. */
 void PumpEvents(Window *window);
 
-/* True once the user has asked for this window to close. */
+/* True once the user has asked for this window to close. An interrupted run
+   counts: every way the run can end reports here, so the engine has exactly
+   one ending to get right. */
 bool CloseRequested(const Window *window);
 
 /* Releases everything OpenWindow took from the OS. */
