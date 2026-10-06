@@ -1,0 +1,76 @@
+diff --git a/src/frame.cpp b/src/frame.cpp
+index e104e47..c08c8b5 100644
+--- a/src/frame.cpp
++++ b/src/frame.cpp
+@@ -14,6 +14,7 @@ void AccountFrame(FrameStats &stats, const FrameRecord &frame)
+     stats.present_sum += frame.present;
+     stats.total_sum += frame.total;
+     stats.sprites_sum += frame.sprites;
++    stats.clear_sum += frame.clear;
+     if (frame.total > stats.worst) {
+         stats.worst = frame.total;
+         stats.worst_number = frame.number;
+diff --git a/src/frame.h b/src/frame.h
+index bea2fbf..058863f 100644
+--- a/src/frame.h
++++ b/src/frame.h
+@@ -23,6 +23,7 @@ struct FrameRecord {
+        (lesson 058) grows from. The named times are inside render, never
+        instead of it: render stays the phase, these say where it went. */
+     double sprites; /* sprite draws through the blit */
++    double clear;   /* ClearBuffer — the phase lesson 058's table adds */
+ };
+ 
+ /* The running account: every frame measured so far. */
+@@ -33,6 +34,7 @@ struct FrameStats {
+     double present_sum;
+     double total_sum;
+     double sprites_sum; /* lesson 046's named sub-phase, summed like the rest */
++    double clear_sum;
+     double worst;      /* the longest frame so far */
+     long worst_number; /* and which one it was */
+ };
+diff --git a/src/main.cpp b/src/main.cpp
+index 1f8ad5c..72b3ab3 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -208,9 +208,10 @@ int Run(void)
+                         (int)sprite_y, platform::Now() - started);
+ 
+         /* Render: every frame draws the whole scene — clear, then the
+-           sprite through the one blit. The sprite draw is timed as its own
+-           named phase: the first subsystem the frame record can name. */
++           sprite through the one blit. Both phases named and timed. */
++        double t_clear = platform::Now();
+         ClearBuffer(*fb, 32, 32, 64);
++        frame.clear = platform::Now() - t_clear;
+         double t_sprites = platform::Now();
+         BlitSprite(*fb, sprite, (int)sprite_x, (int)sprite_y);
+         frame.sprites = platform::Now() - t_sprites;
+@@ -236,20 +237,21 @@ int Run(void)
+ 
+         /* The frame log: one line per record — the format grows its named
+            fields, one per subsystem, as the parts name them. */
+-        std::printf("frame %ld: update %.3f ms, render %.3f ms (sprites %.3f), present %.3f ms, total %.3f ms\n",
++        std::printf("frame %ld: update %.3f ms, render %.3f ms (sprites %.3f, clear %.3f), present %.3f ms, total %.3f ms\n",
+                     frame.number, frame.update * 1e3, frame.render * 1e3,
+-                    frame.sprites * 1e3, frame.present * 1e3,
+-                    frame.total * 1e3);
++                    frame.sprites * 1e3, frame.clear * 1e3,
++                    frame.present * 1e3, frame.total * 1e3);
+     }
+ 
+     /* The account: what the frames actually cost, including the honest
+        price of the presentation copy. */
+     if (stats.frames) {
+         double n = (double)stats.frames;
+-        std::printf("engine: %ld frames — avg %.3f ms (update %.3f, render %.3f incl. sprites %.3f, present %.3f)\n",
++        std::printf("engine: %ld frames — avg %.3f ms (update %.3f, render %.3f incl. sprites %.3f, clear %.3f, present %.3f)\n",
+                     stats.frames, stats.total_sum / n * 1e3,
+                     stats.update_sum / n * 1e3, stats.render_sum / n * 1e3,
+-                    stats.sprites_sum / n * 1e3, stats.present_sum / n * 1e3);
++                    stats.sprites_sum / n * 1e3, stats.clear_sum / n * 1e3,
++                    stats.present_sum / n * 1e3);
+         std::printf("engine: worst frame %.3f ms (frame %ld); present is %.0f%% of the frame\n",
+                     stats.worst * 1e3, stats.worst_number,
+                     100.0 * stats.present_sum / stats.total_sum);

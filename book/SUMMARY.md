@@ -238,6 +238,10 @@
   - [Solution: ex1 — your own key](solutions/lesson-045/ex1.md)
   - [Solution: ex2 — the four corners](solutions/lesson-045/ex2.md)
 
+- [Lesson 046 — the sprite moves](lessons/part-2/lesson-046-movable-sprite.md)
+  - [Solution: ex1 — where does render go?](solutions/lesson-046/ex1.md)
+  - [Solution: ex2 — the sprite that wraps](solutions/lesson-046/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

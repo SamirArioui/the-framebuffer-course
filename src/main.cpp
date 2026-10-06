@@ -16,17 +16,10 @@
 
 namespace engine {
 
-/* The marker: one square the arrow keys move. Its speed is the engine's —
-   pixels per second — and the clock's dt turns it into a per-frame step. */
-constexpr int MARKER_SIZE = 24;
-constexpr double MARKER_SPEED = 240.0; /* pixels per second */
-
-static void DrawMarker(Framebuffer &fb, int x, int y)
-{
-    for (int j = 0; j < MARKER_SIZE; ++j)
-        for (int i = 0; i < MARKER_SIZE; ++i)
-            PutPixel(fb, x + i, y + j, 240, 220, 80);
-}
+/* The scene's one object: the sprite the arrow keys move. Its speed is
+   the engine's — pixels per second — and the clock's dt turns it into a
+   per-frame step. */
+constexpr double SPRITE_SPEED = 240.0; /* pixels per second */
 
 int Run(void)
 {
@@ -159,14 +152,14 @@ int Run(void)
     std::printf("engine: blit check: clip at -4,-4 landed %d pixels, %d wrong, %d touched outside\n",
                 landed, wrong, wrapped);
 
-    double marker_x = (FRAME_WIDTH - MARKER_SIZE) / 2.0;
-    double marker_y = (FRAME_HEIGHT - MARKER_SIZE) / 2.0;
+    double sprite_x = (FRAME_WIDTH - sprite.width) / 2.0;
+    double sprite_y = (FRAME_HEIGHT - sprite.height) / 2.0;
     double started = platform::Now();
     double last = started;
 
     std::printf("engine: platform layer done — window, polled input, arena-backed framebuffer, measured frames\n");
-    std::printf("engine: arrow keys move the marker; close the window to stop\n");
-    std::printf("engine: marker at %d,%d\n", (int)marker_x, (int)marker_y);
+    std::printf("engine: arrow keys move the sprite; close the window to stop\n");
+    std::printf("engine: sprite at %d,%d\n", (int)sprite_x, (int)sprite_y);
 
     /* The frame step: read news, update from polled state, draw, present —
        every phase measured, one record per frame. */
@@ -187,38 +180,40 @@ int Run(void)
         double dt = now - last;
         last = now;
 
-        int old_x = (int)marker_x, old_y = (int)marker_y;
+        int old_x = (int)sprite_x, old_y = (int)sprite_y;
         if (platform::KeyDown(opened.window, platform::KEY_LEFT))
-            marker_x -= MARKER_SPEED * dt;
+            sprite_x -= SPRITE_SPEED * dt;
         if (platform::KeyDown(opened.window, platform::KEY_RIGHT))
-            marker_x += MARKER_SPEED * dt;
+            sprite_x += SPRITE_SPEED * dt;
         if (platform::KeyDown(opened.window, platform::KEY_UP))
-            marker_y -= MARKER_SPEED * dt;
+            sprite_y -= SPRITE_SPEED * dt;
         if (platform::KeyDown(opened.window, platform::KEY_DOWN))
-            marker_y += MARKER_SPEED * dt;
+            sprite_y += SPRITE_SPEED * dt;
 
-        /* The marker stays on screen — lesson 015's fold at frame scale. */
-        if (marker_x < 0)
-            marker_x = 0;
-        if (marker_x > FRAME_WIDTH - MARKER_SIZE)
-            marker_x = FRAME_WIDTH - MARKER_SIZE;
-        if (marker_y < 0)
-            marker_y = 0;
-        if (marker_y > FRAME_HEIGHT - MARKER_SIZE)
-            marker_y = FRAME_HEIGHT - MARKER_SIZE;
+        /* The sprite stays on screen — lesson 015's fold at frame scale. */
+        if (sprite_x < 0)
+            sprite_x = 0;
+        if (sprite_x > FRAME_WIDTH - sprite.width)
+            sprite_x = FRAME_WIDTH - sprite.width;
+        if (sprite_y < 0)
+            sprite_y = 0;
+        if (sprite_y > FRAME_HEIGHT - sprite.height)
+            sprite_y = FRAME_HEIGHT - sprite.height;
 
         frame.update = platform::Now() - t0;
         double t1 = platform::Now();
 
-        if ((int)marker_x != old_x || (int)marker_y != old_y)
-            std::printf("engine: marker at %d,%d (t=%.3f)\n", (int)marker_x,
-                        (int)marker_y, platform::Now() - started);
+        if ((int)sprite_x != old_x || (int)sprite_y != old_y)
+            std::printf("engine: sprite at %d,%d (t=%.3f)\n", (int)sprite_x,
+                        (int)sprite_y, platform::Now() - started);
 
         /* Render: every frame draws the whole scene — clear, then the
-           sprite through the one blit. */
+           sprite through the one blit. The sprite draw is timed as its own
+           named phase: the first subsystem the frame record can name. */
         ClearBuffer(*fb, 32, 32, 64);
-        BlitSprite(*fb, sprite, 32, 32);
-        DrawMarker(*fb, (int)marker_x, (int)marker_y);
+        double t_sprites = platform::Now();
+        BlitSprite(*fb, sprite, (int)sprite_x, (int)sprite_y);
+        frame.sprites = platform::Now() - t_sprites;
 
         frame.render = platform::Now() - t1;
         double t2 = platform::Now();
@@ -239,20 +234,22 @@ int Run(void)
         frame.total = platform::Now() - t0;
         AccountFrame(stats, frame);
 
-        /* The frame log: one line per record — the format Part 2 grows. */
-        std::printf("frame %ld: update %.3f ms, render %.3f ms, present %.3f ms, total %.3f ms\n",
+        /* The frame log: one line per record — the format grows its named
+           fields, one per subsystem, as the parts name them. */
+        std::printf("frame %ld: update %.3f ms, render %.3f ms (sprites %.3f), present %.3f ms, total %.3f ms\n",
                     frame.number, frame.update * 1e3, frame.render * 1e3,
-                    frame.present * 1e3, frame.total * 1e3);
+                    frame.sprites * 1e3, frame.present * 1e3,
+                    frame.total * 1e3);
     }
 
     /* The account: what the frames actually cost, including the honest
        price of the presentation copy. */
     if (stats.frames) {
         double n = (double)stats.frames;
-        std::printf("engine: %ld frames — avg %.3f ms (update %.3f, render %.3f, present %.3f)\n",
+        std::printf("engine: %ld frames — avg %.3f ms (update %.3f, render %.3f incl. sprites %.3f, present %.3f)\n",
                     stats.frames, stats.total_sum / n * 1e3,
                     stats.update_sum / n * 1e3, stats.render_sum / n * 1e3,
-                    stats.present_sum / n * 1e3);
+                    stats.sprites_sum / n * 1e3, stats.present_sum / n * 1e3);
         std::printf("engine: worst frame %.3f ms (frame %ld); present is %.0f%% of the frame\n",
                     stats.worst * 1e3, stats.worst_number,
                     100.0 * stats.present_sum / stats.total_sum);

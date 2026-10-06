@@ -1,0 +1,30 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 1f8ad5c..ba1a23d 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -190,15 +190,16 @@ int Run(void)
+         if (platform::KeyDown(opened.window, platform::KEY_DOWN))
+             sprite_y += SPRITE_SPEED * dt;
+ 
+-        /* The sprite stays on screen — lesson 015's fold at frame scale. */
+-        if (sprite_x < 0)
+-            sprite_x = 0;
+-        if (sprite_x > FRAME_WIDTH - sprite.width)
+-            sprite_x = FRAME_WIDTH - sprite.width;
+-        if (sprite_y < 0)
+-            sprite_y = 0;
+-        if (sprite_y > FRAME_HEIGHT - sprite.height)
+-            sprite_y = FRAME_HEIGHT - sprite.height;
++        /* Wrap instead of clamp: leave one edge, appear at the other. The
++           sprite can be partly — or entirely — outside; the blit clips. */
++        if (sprite_x < -sprite.width)
++            sprite_x = FRAME_WIDTH;
++        if (sprite_x > FRAME_WIDTH)
++            sprite_x = -sprite.width;
++        if (sprite_y < -sprite.height)
++            sprite_y = FRAME_HEIGHT;
++        if (sprite_y > FRAME_HEIGHT)
++            sprite_y = -sprite.height;
+ 
+         frame.update = platform::Now() - t0;
+         double t1 = platform::Now();

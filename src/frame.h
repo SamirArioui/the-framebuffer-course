@@ -17,6 +17,12 @@ struct FrameRecord {
     double render; /* drawing the scene into the framebuffer */
     double present;/* the copy to the window, sync included */
     double total;  /* the whole frame step */
+
+    /* Lesson 046: the render phase starts naming what is inside it — one
+       field per subsystem, the attribution the frame-budget table
+       (lesson 058) grows from. The named times are inside render, never
+       instead of it: render stays the phase, these say where it went. */
+    double sprites; /* sprite draws through the blit */
 };
 
 /* The running account: every frame measured so far. */
@@ -26,6 +32,7 @@ struct FrameStats {
     double render_sum;
     double present_sum;
     double total_sum;
+    double sprites_sum; /* lesson 046's named sub-phase, summed like the rest */
     double worst;      /* the longest frame so far */
     long worst_number; /* and which one it was */
 };
