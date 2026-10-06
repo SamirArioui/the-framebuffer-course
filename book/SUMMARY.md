@@ -246,6 +246,10 @@
   - [Solution: ex1 — your machine's knees](solutions/lesson-047/ex1.md)
   - [Solution: ex2 — the stride that doesn't fit the line](solutions/lesson-047/ex2.md)
 
+- [Lesson 048 — the blitter's compiled assembly](lessons/part-2/lesson-048-assembly.md)
+  - [Solution: ex1 — the instruction budget](solutions/lesson-048/ex1.md)
+  - [Solution: ex2 — the compiler's signature](solutions/lesson-048/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

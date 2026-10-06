@@ -1,0 +1,15 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 18747c7..a1f4c0e 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -223,6 +223,10 @@ int Run(void)
+     /* Lesson 047's evidence, measured before the loop starts. */
+     CacheProbe(arena);
+ 
++    /* Exercise 2: a measurement without its machine is a rumor — and the
++       compiler is part of the machine. */
++    std::printf("engine: compiler %s\n", __VERSION__);
++
+     double sprite_x = (FRAME_WIDTH - sprite.width) / 2.0;
+     double sprite_y = (FRAME_HEIGHT - sprite.height) / 2.0;
+     double started = platform::Now();

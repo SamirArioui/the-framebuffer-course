@@ -1,0 +1,24 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 18747c7..de18924 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -220,6 +220,19 @@ int Run(void)
+     std::printf("engine: blit check: clip at -4,-4 landed %d pixels, %d wrong, %d touched outside\n",
+                 landed, wrong, wrapped);
+ 
++    /* Exercise 1: the blit's cost, measured over many draws — the
++       instruction budget of the copy loop, priced in nanoseconds. */
++    const int bench_draws = 10000;
++    double t_bench = platform::Now();
++    for (int r = 0; r < bench_draws; ++r)
++        BlitSprite(*fb, sprite, 100, 100);
++    double bench_seconds = platform::Now() - t_bench;
++    std::printf("engine: blit bench: %d draws in %.3f ms — %.1f ns per sprite, %.2f ns per pixel\n",
++                bench_draws, bench_seconds * 1e3,
++                bench_seconds * 1e9 / bench_draws,
++                bench_seconds * 1e9 / bench_draws /
++                    (sprite.width * sprite.height));
++
+     /* Lesson 047's evidence, measured before the loop starts. */
+     CacheProbe(arena);
+ 
