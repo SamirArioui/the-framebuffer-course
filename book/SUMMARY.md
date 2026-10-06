@@ -172,6 +172,10 @@
   - [Solution: ex1 — the window that gets opened twice](solutions/lesson-029/ex1.md)
   - [Solution: ex2 — the ledger](solutions/lesson-029/ex2.md)
 
+- [Lesson 030 — the framebuffer as our own bytes](lessons/part-1/lesson-030-framebuffer.md)
+  - [Solution: ex1 — fillrect, back from Part 0](solutions/lesson-030/ex1.md)
+  - [Solution: ex2 — the four bytes](solutions/lesson-030/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

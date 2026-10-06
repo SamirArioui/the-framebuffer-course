@@ -1,0 +1,68 @@
+diff --git a/src/framebuffer.cpp b/src/framebuffer.cpp
+index 7e6fe13..e3dc3b2 100644
+--- a/src/framebuffer.cpp
++++ b/src/framebuffer.cpp
+@@ -42,6 +42,21 @@ void PutPixel(Framebuffer &fb, int x, int y, unsigned char r,
+     p[3] = 0;
+ }
+ 
++void FillRect(Framebuffer &fb, int x, int y, int w, int h,
++              unsigned char r, unsigned char g, unsigned char b)
++{
++    /* Fold first (lesson 015): the clip happens in rectangle space, so one
++       check replaces one check per pixel. */
++    int x0 = x < 0 ? 0 : x;
++    int y0 = y < 0 ? 0 : y;
++    int x1 = x + w > fb.width ? fb.width : x + w;
++    int y1 = y + h > fb.height ? fb.height : y + h;
++
++    for (int py = y0; py < y1; ++py)
++        for (int px = x0; px < x1; ++px)
++            PutPixel(fb, px, py, r, g, b);
++}
++
+ void GetPixel(const Framebuffer &fb, int x, int y, unsigned char &r,
+               unsigned char &g, unsigned char &b)
+ {
+diff --git a/src/framebuffer.h b/src/framebuffer.h
+index 1f38723..c41bfbd 100644
+--- a/src/framebuffer.h
++++ b/src/framebuffer.h
+@@ -37,6 +37,10 @@ void ClearBuffer(Framebuffer &fb, unsigned char r, unsigned char g,
+ void PutPixel(Framebuffer &fb, int x, int y, unsigned char r,
+               unsigned char g, unsigned char b);
+ 
++/* Fills a clipped rectangle with one color (Part 0's FillRect). */
++void FillRect(Framebuffer &fb, int x, int y, int w, int h,
++              unsigned char r, unsigned char g, unsigned char b);
++
+ /* Reads one pixel back — the same bytes PutPixel wrote. Out of bounds, the
+    result is black. */
+ void GetPixel(const Framebuffer &fb, int x, int y, unsigned char &r,
+diff --git a/src/main.cpp b/src/main.cpp
+index 3245656..1a2702d 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -41,6 +41,9 @@ int Run(void)
+     PutPixel(*fb, 0, 0, 255, 0, 0);
+     PutPixel(*fb, 639, 479, 0, 255, 0);
+     PutPixel(*fb, 700, 100, 0, 0, 255); /* out of bounds: dropped */
++    FillRect(*fb, 100, 100, 200, 100, 200, 120, 40);
++    FillRect(*fb, -20, 400, 60, 40, 0, 200, 200); /* clipped on the left */
++    FillRect(*fb, 600, 440, 100, 100, 200, 0, 200); /* clipped right+bottom */
+ 
+     /* The byte-level report: what is actually in the buffer. */
+     unsigned char r, g, b;
+@@ -53,6 +56,12 @@ int Run(void)
+     std::printf("engine: pixel (639,479) = %d %d %d\n", r, g, b);
+     GetPixel(*fb, 60, 101, r, g, b);
+     std::printf("engine: pixel (60,101) = %d %d %d\n", r, g, b);
++    GetPixel(*fb, 150, 150, r, g, b);
++    std::printf("engine: pixel (150,150) = %d %d %d\n", r, g, b);
++    GetPixel(*fb, 20, 410, r, g, b);
++    std::printf("engine: pixel (20,410) = %d %d %d\n", r, g, b);
++    GetPixel(*fb, 630, 470, r, g, b);
++    std::printf("engine: pixel (630,470) = %d %d %d\n", r, g, b);
+ 
+     /* First light: the bytes go to the window through the seam. */
+     platform::Present(opened.window, fb->pixels, fb->width, fb->height);

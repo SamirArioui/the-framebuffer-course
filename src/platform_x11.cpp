@@ -11,6 +11,7 @@
 #include "platform.h"
 
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
 
 #include <poll.h>
 #include <signal.h>
@@ -130,6 +131,39 @@ void PumpEvents(Window *window)
 bool CloseRequested(const Window *window)
 {
     return window && window->close_requested;
+}
+
+void Present(Window *window, const unsigned char *pixels, int width,
+             int height)
+{
+    if (!window || !window->display)
+        return;
+
+    int screen = DefaultScreen(window->display);
+
+    /* An XImage is a *view*: XCreateImage wraps the engine's bytes without
+       copying them — the description of a pixel buffer, not the buffer.
+       It carries our bytes exactly as the seam's contract defines them. */
+    XImage *image = XCreateImage(window->display,
+                                 DefaultVisual(window->display, screen),
+                                 DefaultDepth(window->display, screen),
+                                 ZPixmap, 0, (char *)pixels,
+                                 width, height, 32, width * 4);
+    if (!image)
+        return;
+
+    /* XPutImage is where the copy happens — our bytes to the server. Its
+       cost is real; lesson 036 measures it. */
+    XPutImage(window->display, window->xwindow,
+              DefaultGC(window->display, screen),
+              image, 0, 0, 0, 0, width, height);
+
+    /* The image struct is ours to destroy; the bytes under it are the
+       engine's, so they are detached before destruction (the same rule as
+       lesson 004's ownership drills). */
+    image->data = 0;
+    XDestroyImage(image);
+    XFlush(window->display);
 }
 
 void CloseWindow(Window *window)

@@ -1,0 +1,15 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 3245656..78d2b83 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -53,6 +53,10 @@ int Run(void)
+     std::printf("engine: pixel (639,479) = %d %d %d\n", r, g, b);
+     GetPixel(*fb, 60, 101, r, g, b);
+     std::printf("engine: pixel (60,101) = %d %d %d\n", r, g, b);
++    std::printf("engine: bytes at (0,0): %02x %02x %02x %02x\n",
++                fb->pixels[0], fb->pixels[1], fb->pixels[2], fb->pixels[3]);
++    std::printf("engine: bytes at (1,0): %02x %02x %02x %02x\n",
++                fb->pixels[4], fb->pixels[5], fb->pixels[6], fb->pixels[7]);
+ 
+     /* First light: the bytes go to the window through the seam. */
+     platform::Present(opened.window, fb->pixels, fb->width, fb->height);
