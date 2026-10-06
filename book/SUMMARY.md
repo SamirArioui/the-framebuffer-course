@@ -216,6 +216,10 @@
   - [Solution: ex1 — one byte, please](solutions/lesson-040/ex1.md)
   - [Solution: ex2 — the page that fights back](solutions/lesson-040/ex2.md)
 
+- [Lesson 041 — arenas](lessons/part-1/lesson-041-arenas.md)
+  - [Solution: ex1 — the marker's trail](solutions/lesson-041/ex1.md)
+  - [Solution: ex2 — the bug asan cannot see](solutions/lesson-041/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

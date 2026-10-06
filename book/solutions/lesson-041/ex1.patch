@@ -1,0 +1,79 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 06eba6e..9682c56 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -19,6 +19,20 @@ namespace engine {
+ constexpr int MARKER_SIZE = 24;
+ constexpr double MARKER_SPEED = 240.0; /* pixels per second */
+ 
++/* The trail: the marker's last positions, allocated from the arena. */
++struct TrailPos {
++    int x;
++    int y;
++};
++
++static void DrawDot(Framebuffer &fb, int x, int y, unsigned char r,
++                    unsigned char g, unsigned char b)
++{
++    for (int j = 0; j < MARKER_SIZE / 2; ++j)
++        for (int i = 0; i < MARKER_SIZE / 2; ++i)
++            PutPixel(fb, x + i, y + j, r, g, b);
++}
++
+ static void DrawMarker(Framebuffer &fb, int x, int y)
+ {
+     for (int j = 0; j < MARKER_SIZE; ++j)
+@@ -157,7 +171,15 @@ int Run(int argc, char **argv)
+     void *e = ArenaAlloc(arena, 999999, 16);
+     std::printf("engine: exhausted: alloc 999999 -> %s\n",
+                 e ? "handed out (!)" : "0 (as it should be)");
+-    ArenaRelease(arena);
++    ArenaRollback(arena, 0); /* clear the experiment; the arena stays ours */
++
++    /* Exercise 1: the marker's trail lives in the arena. */
++    size_t trail_mark = ArenaMark(arena);
++    TrailPos *trail = (TrailPos *)ArenaAlloc(arena, 8 * sizeof(TrailPos), 4);
++    std::printf("engine: trail: 8 slots at offset %zu (arena used %zu)\n",
++                (size_t)((unsigned char *)trail - arena.memory.bytes),
++                arena.used);
++    int trail_len = 0, trail_at = 0;
+ 
+     /* The frame step: read news, update from polled state, draw, present.
+        This is the shape every later part fills in — Part 2 draws into it,
+@@ -205,12 +227,24 @@ int Run(int argc, char **argv)
+         frame.update = platform::Now() - t0;
+         double t1 = platform::Now();
+ 
+-        if ((int)marker_x != old_x || (int)marker_y != old_y)
++        if ((int)marker_x != old_x || (int)marker_y != old_y) {
++            trail[trail_at].x = (int)marker_x;
++            trail[trail_at].y = (int)marker_y;
++            trail_at = (trail_at + 1) % 8;
++            if (trail_len < 8)
++                ++trail_len;
+             std::printf("engine: marker at %d,%d (t=%.3f)\n", (int)marker_x,
+                         (int)marker_y, platform::Now() - started);
++        }
+ 
+-        /* Render: every frame draws the whole scene — clear, then marker. */
++        /* Render: every frame draws the whole scene — clear, trail,
++           marker. */
+         ClearBuffer(*fb, 32, 32, 64);
++        for (int i = 0; i < trail_len; ++i) {
++            int slot = (trail_at - 1 - i + 16) % 8;
++            unsigned char dim = (unsigned char)(120 - i * 12);
++            DrawDot(*fb, trail[slot].x, trail[slot].y, dim, dim, 40);
++        }
+         DrawMarker(*fb, (int)marker_x, (int)marker_y);
+ 
+         frame.render = platform::Now() - t1;
+@@ -255,6 +289,9 @@ int Run(int argc, char **argv)
+     if (platform::CloseRequested(opened.window))
+         std::printf("engine: close reported\n");
+     platform::CloseWindow(opened.window);
++    std::printf("engine: trail used %zu bytes of its arena mark %zu\n",
++                arena.used - trail_mark, trail_mark);
++    ArenaRelease(arena);
+     ReleaseFramebuffer(); /* the pages go back to the OS (lesson 029's rule) */
+     std::printf("engine: closed\n");
+     return exit_code;

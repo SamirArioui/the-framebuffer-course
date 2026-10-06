@@ -7,6 +7,7 @@
 
 #include <cstdio>
 
+#include "arena.h"
 #include "framebuffer.h"
 #include "frame.h"
 #include "platform.h"
@@ -126,6 +127,37 @@ int Run(int argc, char **argv)
 
     std::printf("engine: arrow keys move the marker; close the window to stop\n");
     std::printf("engine: marker at %d,%d\n", (int)marker_x, (int)marker_y);
+
+    /* The arena: bump allocation over a reservation. This report is the
+       allocator's behavior — the same numbers Part 4's services will rely
+       on. */
+    Arena arena;
+    ArenaInit(arena, 65536);
+    std::printf("engine: arena over %zu bytes (%zu pages)\n",
+                arena.memory.size, arena.memory.size / page);
+
+    void *a = ArenaAlloc(arena, 100, 16);
+    std::printf("engine: alloc 100 (align 16) -> offset %ld, used %zu\n",
+                (long)((unsigned char *)a - arena.memory.bytes), arena.used);
+    void *b = ArenaAlloc(arena, 50, 32);
+    std::printf("engine: alloc 50 (align 32) -> offset %ld, used %zu\n",
+                (long)((unsigned char *)b - arena.memory.bytes), arena.used);
+
+    size_t mark = ArenaMark(arena);
+    std::printf("engine: mark at %zu\n", mark);
+    void *c = ArenaAlloc(arena, 3, 1);
+    std::printf("engine: alloc 3 (align 1) -> offset %ld, used %zu\n",
+                (long)((unsigned char *)c - arena.memory.bytes), arena.used);
+    ArenaRollback(arena, mark);
+    std::printf("engine: rollback to %zu — used %zu\n", mark, arena.used);
+    void *d = ArenaAlloc(arena, 3, 1);
+    std::printf("engine: alloc 3 (align 1) -> offset %ld, used %zu\n",
+                (long)((unsigned char *)d - arena.memory.bytes), arena.used);
+
+    void *e = ArenaAlloc(arena, 999999, 16);
+    std::printf("engine: exhausted: alloc 999999 -> %s\n",
+                e ? "handed out (!)" : "0 (as it should be)");
+    ArenaRelease(arena);
 
     /* The frame step: read news, update from polled state, draw, present.
        This is the shape every later part fills in — Part 2 draws into it,

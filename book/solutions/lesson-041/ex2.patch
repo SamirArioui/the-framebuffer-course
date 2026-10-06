@@ -1,0 +1,26 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 06eba6e..3612833 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -157,6 +157,21 @@ int Run(int argc, char **argv)
+     void *e = ArenaAlloc(arena, 999999, 16);
+     std::printf("engine: exhausted: alloc 999999 -> %s\n",
+                 e ? "handed out (!)" : "0 (as it should be)");
++
++    /* DELIBERATE teaching state (exercise 2): a use-after-rollback, the
++       bug the sanitizer cannot see. The stale pointer still names mapped
++       memory — the arena gave the bytes away again and nothing here
++       notices. */
++    if (argc > 1 && argv[1][0] == '?') {
++        size_t stale_mark = ArenaMark(arena);
++        unsigned char *stale = (unsigned char *)ArenaAlloc(arena, 64, 1);
++        ArenaRollback(arena, stale_mark);
++        unsigned char *again = (unsigned char *)ArenaAlloc(arena, 64, 1);
++        stale[0] = 0x5A;
++        std::fprintf(stderr, "engine: stale write landed on the new block: %u (same memory: %s)\n",
++                     again[0], stale == again ? "yes" : "no");
++    }
++
+     ArenaRelease(arena);
+ 
+     /* The frame step: read news, update from polled state, draw, present.
