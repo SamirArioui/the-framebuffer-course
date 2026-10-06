@@ -324,6 +324,10 @@
   - [Solution: ex1 — the seam, predicted](solutions/lesson-066/ex1.md)
   - [Solution: ex2 — pause and resume](solutions/lesson-066/ex2.md)
 
+- [Lesson 067 — effects as one-shots](lessons/part-3/lesson-067-effects.md)
+  - [Solution: ex1 — one sample, two volumes](solutions/lesson-067/ex1.md)
+  - [Solution: ex2 — the effect that must not stack](solutions/lesson-067/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

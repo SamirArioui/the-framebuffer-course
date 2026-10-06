@@ -1,0 +1,40 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 9f825c3..422558b 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -216,6 +216,35 @@ int Run(void)
+     int third_channel = -1;
+     int effect_step = 0;
+ 
++    /* Exercise 1 (lesson 067): one sample at two volumes, in the mix's
++       own bytes. The pair fires together on a scratch mixer and the
++       probe reads the mixed buffer back — the same check the run makes
++       above, at the volumes the exercise names. */
++    Mixer pair;
++    MixerInit(pair);
++    int wide_channel = MixerPlayEffect(pair, effect, 192);
++    int narrow_channel = MixerPlayEffect(pair, effect, 48);
++    MixBuffer(pair, stream, CHUNK_FRAMES);
++    std::printf("engine: volumes: channel %d at 192 of 256, channel %d at 48 of 256\n",
++                wide_channel, narrow_channel);
++    std::printf("engine: volumes: first frames (summed):");
++    for (int i = 0; i < 8; ++i)
++        std::printf(" %d", (int)stream[i]);
++    std::printf("\n");
++    for (int b = 1; b <= 12; ++b)
++        MixBuffer(pair, stream, CHUNK_FRAMES);
++    int silent = 1;
++    for (int i = 0; i < CHUNK_FRAMES; ++i)
++        if (stream[i] != 0)
++            silent = 0;
++    std::printf("engine: volumes: buffer 13 is %s, and channels %d and %d %s\n",
++                silent ? "silence" : "still carrying sound", wide_channel,
++                narrow_channel,
++                (!pair.channels[wide_channel].active &&
++                 !pair.channels[narrow_channel].active)
++                    ? "are free again"
++                    : "are still busy");
++
+     double sprite_x = 312.0, sprite_y = 232.0;
+     double started = platform::Now();
+     double last = started;

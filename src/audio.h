@@ -112,13 +112,23 @@ struct Mixer {
 /* Every channel idle and free. */
 void MixerInit(Mixer &mixer);
 
-/* Starts `sample` playing at `volume` and says which channel it landed
-   on. An effect takes the first free channel of the pool's effects
+/* The effect route — lesson 065's allocator, named at last: it was
+   always the effect path. Starts `sample` playing at `volume` and says
+   which channel it landed on.
+
+   The one-shot contract, in full: the effect plays **once**, to the
+   sample's end — then its channel goes inactive and returns to the
+   pool, free for the next sound. Play once, then free; that is what
+   makes effects cheap to fire. `volume` is the sound's own, carried
+   into its channel, so two effects of one sample at different volumes
+   are different sounds.
+
+   An effect takes the first free channel of the pool's effects
    (everything but the music channel). When they are all busy the mixer
    steals the **oldest effect channel** — the one that started earliest —
    so the sound that has had the longest hearing is the one dropped. The
    music channel is never stolen. */
-int MixerPlay(Mixer &mixer, const Sample &sample, int volume);
+int MixerPlayEffect(Mixer &mixer, const Sample &sample, int volume);
 
 /* Starts `sample` playing as the run's music: on the music channel,
    looping, at `volume`. That is what the reserved channel was reserved

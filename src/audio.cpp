@@ -256,7 +256,7 @@ void MixerInit(Mixer &mixer)
     mixer.order = 0;
 }
 
-int MixerPlay(Mixer &mixer, const Sample &sample, int volume)
+int MixerPlayEffect(Mixer &mixer, const Sample &sample, int volume)
 {
     /* The first free channel of the pool's effects — the music channel is
        reserved, so the walk starts after it. */

@@ -1,0 +1,79 @@
+diff --git a/src/audio.cpp b/src/audio.cpp
+index a1f4e47..643c002 100644
+--- a/src/audio.cpp
++++ b/src/audio.cpp
+@@ -282,6 +282,17 @@ int MixerPlayEffect(Mixer &mixer, const Sample &sample, int volume)
+     return oldest;
+ }
+ 
++int MixerPlayEffectSolo(Mixer &mixer, const Sample &sample, int volume)
++{
++    /* The gate before the route: if this sample is already sounding on
++       some effect channel, there is no second copy to start. */
++    for (int c = AUDIO_MUSIC_CHANNEL + 1; c < AUDIO_MIXER_CHANNELS; ++c) {
++        if (mixer.channels[c].active && mixer.channels[c].sample == &sample)
++            return AUDIO_ALREADY_PLAYING;
++    }
++    return MixerPlayEffect(mixer, sample, volume);
++}
++
+ void MixerPlayMusic(Mixer &mixer, const Sample &sample, int volume)
+ {
+     /* The music channel — the reservation of lesson 065, spent here —
+diff --git a/src/audio.h b/src/audio.h
+index 7576f59..b6bc5b6 100644
+--- a/src/audio.h
++++ b/src/audio.h
+@@ -130,6 +130,13 @@ void MixerInit(Mixer &mixer);
+    music channel is never stolen. */
+ int MixerPlayEffect(Mixer &mixer, const Sample &sample, int volume);
+ 
++/* Exercise 2 (lesson 067): the effect that must not stack. The same
++   route, gated: a sample already playing on some effect channel is not
++   started again. The answer is the channel it landed on, or the
++   refusal's own name below. */
++constexpr int AUDIO_ALREADY_PLAYING = -1;
++int MixerPlayEffectSolo(Mixer &mixer, const Sample &sample, int volume);
++
+ /* Starts `sample` playing as the run's music: on the music channel,
+    looping, at `volume`. That is what the reserved channel was reserved
+    for — a looping sound under everything else, one that no effect ever
+diff --git a/src/main.cpp b/src/main.cpp
+index 9f825c3..06a23c3 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -216,6 +216,34 @@ int Run(void)
+     int third_channel = -1;
+     int effect_step = 0;
+ 
++    /* Exercise 2 (lesson 067): the effect that must not stack — the same
++       three presses through both routes, each on its own mixer, so the
++       refusal and the stacking sit side by side. */
++    Mixer solo;
++    MixerInit(solo);
++    for (int p = 0; p < 3; ++p) {
++        int ch = MixerPlayEffectSolo(solo, effect, AUDIO_VOLUME_FULL);
++        if (ch == AUDIO_ALREADY_PLAYING)
++            std::printf("engine: solo: press %d refused — the sound is already playing\n",
++                        p + 1);
++        else
++            std::printf("engine: solo: press %d -> channel %d\n", p + 1, ch);
++        MixBuffer(solo, stream, CHUNK_FRAMES);
++    }
++    for (int b = 3; b <= 12; ++b)
++        MixBuffer(solo, stream, CHUNK_FRAMES);
++    int again = MixerPlayEffectSolo(solo, effect, AUDIO_VOLUME_FULL);
++    std::printf("engine: solo: press 4, after the effect's end -> channel %d\n",
++                again);
++
++    Mixer stacked;
++    MixerInit(stacked);
++    for (int p = 0; p < 3; ++p) {
++        int ch = MixerPlayEffect(stacked, effect, AUDIO_VOLUME_FULL);
++        std::printf("engine: stack: press %d -> channel %d\n", p + 1, ch);
++        MixBuffer(stacked, stream, CHUNK_FRAMES);
++    }
++
+     double sprite_x = 312.0, sprite_y = 232.0;
+     double started = platform::Now();
+     double last = started;
