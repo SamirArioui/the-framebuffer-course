@@ -1,0 +1,41 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 180c505..c3da561 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -586,6 +586,36 @@ int Run(void)
+     std::printf("engine: collision check: %d of %d answers as documented (out-of-bounds is solid)\n",
+                 passed, (int)(sizeof cases / sizeof cases[0]));
+ 
++    /* Exercise 2: the rectangle's edges — the boundary arithmetic, one
++       pixel either side of the pillar at cells (8,6)-(9,7). */
++    struct EdgeCase {
++        const char *what;
++        int x, y, w, h;
++        bool expected;
++    };
++    const EdgeCase edges[] = {
++        { "rect exactly the pillar cell", 128, 96, 16, 16, true },
++        { "rect beside the pillar", 160, 96, 16, 16, false },
++        { "rect one pixel into the pillar", 159, 96, 1, 16, true },
++        { "rect diagonal to the pillar", 160, 128, 16, 16, false },
++        { "rect touching the pillar's corner", 159, 127, 1, 1, true },
++        { "rect one pixel past the corner", 160, 128, 1, 1, false },
++    };
++    int edge_passed = 0;
++    for (unsigned ei = 0; ei < sizeof edges / sizeof edges[0]; ++ei) {
++        const EdgeCase &e = edges[ei];
++        bool answer = TileRectSolid(map, e.x, e.y, e.w, e.h);
++        if (answer == e.expected) {
++            ++edge_passed;
++        } else {
++            std::printf("engine: boundary check: %s — expected %s, got %s\n",
++                        e.what, e.expected ? "solid" : "free",
++                        answer ? "solid" : "free");
++        }
++    }
++    std::printf("engine: boundary check: %d of %d edges behave as documented\n",
++                edge_passed, (int)(sizeof edges / sizeof edges[0]));
++
+     double sprite_x = (FRAME_WIDTH - sprite.width) / 2.0;
+     double sprite_y = (FRAME_HEIGHT - sprite.height) / 2.0;
+     double started = platform::Now();

@@ -13,9 +13,6 @@
 
 namespace engine {
 
-/* The format's cell size: every tile is TILE_SIZE x TILE_SIZE pixels. */
-constexpr int TILE_SIZE = 16;
-
 /* A tile sheet: one sprite per kind, cut from the sheet at load. */
 struct TileSheet {
     Sprite kinds[TILE_MAX_KINDS];

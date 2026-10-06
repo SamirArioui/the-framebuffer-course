@@ -22,6 +22,11 @@ namespace engine {
 constexpr int TILE_MAX_DIM = 256;
 constexpr int TILE_MAX_KINDS = 8;
 
+/* The cell's size in pixels: the geometry every world coordinate walks
+   on. Lesson 053 draws cells at this size; lesson 055's queries read
+   world positions through it. */
+constexpr int TILE_SIZE = 16;
+
 /* One tile kind: the character that names it in the file, and whether it
    is solid for collision (lesson 055 reads this; the format carries it
    from the first day). */
@@ -61,6 +66,22 @@ TileResult LoadTileMap(Arena &arena, const char *path);
 
 /* The kind of a cell, or -1 outside the map. */
 int TileAt(const TileMap &map, int x, int y);
+
+/* Lesson 055: the collision queries — answered from the map data alone
+   (the kinds' solidity), never from drawing code. The out-of-bounds
+   policy is defined, not accidental: a position or rectangle outside the
+   map counts as solid, so the world's edge blocks like a wall and no
+   query ever reads outside the map's cells. */
+
+/* Is the cell at (x, y) solid? Cells outside the map answer solid. */
+bool TileSolid(const TileMap &map, int x, int y);
+
+/* Point query: does this world position overlap a solid tile? */
+bool TilePointSolid(const TileMap &map, int world_x, int world_y);
+
+/* Rectangle query: does this world rectangle (w, h > 0) overlap any
+   solid tile — or the world's edge, which counts as solid? */
+bool TileRectSolid(const TileMap &map, int x, int y, int w, int h);
 
 } /* namespace engine */
 

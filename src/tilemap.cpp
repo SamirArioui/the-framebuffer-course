@@ -161,4 +161,44 @@ int TileAt(const TileMap &map, int x, int y)
     return map.cells[y * map.width + x];
 }
 
+bool TileSolid(const TileMap &map, int x, int y)
+{
+    int kind = TileAt(map, x, y);
+    if (kind < 0)
+        return true; /* outside the map: the edge blocks like a wall */
+    return map.kinds[kind].solid != 0;
+}
+
+bool TilePointSolid(const TileMap &map, int world_x, int world_y)
+{
+    if (world_x < 0 || world_y < 0 ||
+        world_x >= map.width * TILE_SIZE ||
+        world_y >= map.height * TILE_SIZE)
+        return true; /* out of bounds: the policy's answer, no cell read */
+    return TileSolid(map, world_x / TILE_SIZE, world_y / TILE_SIZE);
+}
+
+bool TileRectSolid(const TileMap &map, int x, int y, int w, int h)
+{
+    if (w <= 0 || h <= 0)
+        return false; /* an empty rectangle overlaps nothing */
+
+    /* The map's edge is solid: a rectangle that leaves the map answers
+       without reading a single cell. */
+    if (x < 0 || y < 0 || x + w > map.width * TILE_SIZE ||
+        y + h > map.height * TILE_SIZE)
+        return true;
+
+    /* Otherwise only the cells the rectangle covers can say yes. */
+    int cx0 = x / TILE_SIZE;
+    int cy0 = y / TILE_SIZE;
+    int cx1 = (x + w - 1) / TILE_SIZE;
+    int cy1 = (y + h - 1) / TILE_SIZE;
+    for (int cy = cy0; cy <= cy1; ++cy)
+        for (int cx = cx0; cx <= cx1; ++cx)
+            if (map.kinds[map.cells[cy * map.width + cx]].solid)
+                return true;
+    return false;
+}
+
 } /* namespace engine */

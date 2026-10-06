@@ -548,6 +548,44 @@ int Run(void)
     std::printf("engine: camera check: additive cleared restores the base view — %d pixels compared, %d mismatches\n",
                 cam_cmp, cam_bad);
 
+    /* Lesson 055: the collision queries — every documented answer
+       checked against the map's own data, out-of-bounds included. */
+    struct CollisionCase {
+        const char *what;
+        bool point; /* true: a point query; false: a rectangle */
+        int x, y, w, h;
+        bool expected;
+    };
+    const CollisionCase cases[] = {
+        { "point over floor", true, 256, 224, 0, 0, false },
+        { "point in the border wall", true, 8, 8, 0, 0, true },
+        { "point in a pillar", true, 128, 96, 0, 0, true },
+        { "point in the water", true, 528, 416, 0, 0, false },
+        { "point left of the map", true, -1, 100, 0, 0, true },
+        { "point past the right edge", true, 768, 100, 0, 0, true },
+        { "point below the map", true, 100, 512, 0, 0, true },
+        { "rect over floor", false, 240, 216, 32, 32, false },
+        { "rect reaching a pillar", false, 120, 88, 32, 32, true },
+        { "rect leaving the map", false, -8, 100, 16, 16, true },
+        { "rect past the right edge", false, 760, 100, 16, 16, true },
+        { "empty rect", false, 100, 100, 0, 0, false },
+    };
+    int passed = 0;
+    for (unsigned ci = 0; ci < sizeof cases / sizeof cases[0]; ++ci) {
+        const CollisionCase &c = cases[ci];
+        bool answer = c.point ? TilePointSolid(map, c.x, c.y)
+                              : TileRectSolid(map, c.x, c.y, c.w, c.h);
+        if (answer == c.expected) {
+            ++passed;
+        } else {
+            std::printf("engine: collision check: %s — expected %s, got %s\n",
+                        c.what, c.expected ? "solid" : "free",
+                        answer ? "solid" : "free");
+        }
+    }
+    std::printf("engine: collision check: %d of %d answers as documented (out-of-bounds is solid)\n",
+                passed, (int)(sizeof cases / sizeof cases[0]));
+
     double sprite_x = (FRAME_WIDTH - sprite.width) / 2.0;
     double sprite_y = (FRAME_HEIGHT - sprite.height) / 2.0;
     double started = platform::Now();

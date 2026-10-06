@@ -1,0 +1,95 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 180c505..aa1fdd8 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -586,6 +586,30 @@ int Run(void)
+     std::printf("engine: collision check: %d of %d answers as documented (out-of-bounds is solid)\n",
+                 passed, (int)(sizeof cases / sizeof cases[0]));
+ 
++    /* Exercise 1: the policy is a choice — the same four out-of-bounds
++       cases under both answers. */
++    struct PolicyCase {
++        const char *what;
++        bool point;
++        int x, y, w, h;
++    };
++    const PolicyCase policies[] = {
++        { "point left of the map", true, -1, 100, 0, 0 },
++        { "point past the right edge", true, 768, 100, 0, 0 },
++        { "rect leaving the map", false, -8, 100, 16, 16 },
++        { "rect entirely past the edge", false, 800, 100, 16, 16 },
++    };
++    for (unsigned pi = 0; pi < sizeof policies / sizeof policies[0]; ++pi) {
++        const PolicyCase &p = policies[pi];
++        bool as_solid = p.point ? TilePointSolid(map, p.x, p.y)
++                                : TileRectSolid(map, p.x, p.y, p.w, p.h);
++        bool as_free = p.point ? TilePointFree(map, p.x, p.y)
++                               : TileRectFree(map, p.x, p.y, p.w, p.h);
++        std::printf("engine: policy: %s — outside-solid %s, outside-free %s\n",
++                    p.what, as_solid ? "solid" : "free",
++                    as_free ? "solid" : "free");
++    }
++
+     double sprite_x = (FRAME_WIDTH - sprite.width) / 2.0;
+     double sprite_y = (FRAME_HEIGHT - sprite.height) / 2.0;
+     double started = platform::Now();
+diff --git a/src/tilemap.cpp b/src/tilemap.cpp
+index b65ec21..3c83046 100644
+--- a/src/tilemap.cpp
++++ b/src/tilemap.cpp
+@@ -201,4 +201,38 @@ bool TileRectSolid(const TileMap &map, int x, int y, int w, int h)
+     return false;
+ }
+ 
++bool TilePointFree(const TileMap &map, int world_x, int world_y)
++{
++    if (world_x < 0 || world_y < 0 ||
++        world_x >= map.width * TILE_SIZE ||
++        world_y >= map.height * TILE_SIZE)
++        return false; /* the opposite policy: outside is free */
++    return TileSolid(map, world_x / TILE_SIZE, world_y / TILE_SIZE);
++}
++
++bool TileRectFree(const TileMap &map, int x, int y, int w, int h)
++{
++    if (w <= 0 || h <= 0)
++        return false;
++
++    /* Outside is free: clamp the rectangle to the map, and only the
++       cells it still covers can say yes. */
++    if (x + w <= 0 || y + h <= 0 || x >= map.width * TILE_SIZE ||
++        y >= map.height * TILE_SIZE)
++        return false;
++    int px0 = x < 0 ? 0 : x;
++    int py0 = y < 0 ? 0 : y;
++    int px1 = x + w > map.width * TILE_SIZE ? map.width * TILE_SIZE : x + w;
++    int py1 = y + h > map.height * TILE_SIZE ? map.height * TILE_SIZE : y + h;
++    int cx0 = px0 / TILE_SIZE;
++    int cy0 = py0 / TILE_SIZE;
++    int cx1 = (px1 - 1) / TILE_SIZE;
++    int cy1 = (py1 - 1) / TILE_SIZE;
++    for (int cy = cy0; cy <= cy1; ++cy)
++        for (int cx = cx0; cx <= cx1; ++cx)
++            if (map.kinds[map.cells[cy * map.width + cx]].solid)
++                return true;
++    return false;
++}
++
+ } /* namespace engine */
+diff --git a/src/tilemap.h b/src/tilemap.h
+index d34fa8d..ebc3471 100644
+--- a/src/tilemap.h
++++ b/src/tilemap.h
+@@ -83,6 +83,12 @@ bool TilePointSolid(const TileMap &map, int world_x, int world_y);
+    solid tile — or the world's edge, which counts as solid? */
+ bool TileRectSolid(const TileMap &map, int x, int y, int w, int h);
+ 
++/* Exercise 1: the policy is a choice. These are the same queries with
++   the opposite out-of-bounds answer — outside the map is free, so only
++   cells the map actually has can report a collision. */
++bool TilePointFree(const TileMap &map, int world_x, int world_y);
++bool TileRectFree(const TileMap &map, int x, int y, int w, int h);
++
+ } /* namespace engine */
+ 
+ #endif

@@ -274,6 +274,10 @@
   - [Solution: ex1 — the shake that decays](solutions/lesson-054/ex1.md)
   - [Solution: ex2 — the additive that cancels](solutions/lesson-054/ex2.md)
 
+- [Lesson 055 — tile kinds and solidity](lessons/part-2/lesson-055-collision.md)
+  - [Solution: ex1 — the policy is yours](solutions/lesson-055/ex1.md)
+  - [Solution: ex2 — the rectangle at the boundary](solutions/lesson-055/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)
