@@ -233,7 +233,7 @@ index 75dfaa6..8febd4a 100644
      double started = platform::Now();
 diff --git a/src/sprite.cpp b/src/sprite.cpp
 new file mode 100644
-index 0000000..2ef07a8
+index 0000000..449b4dc
 --- /dev/null
 +++ b/src/sprite.cpp
 @@ -0,0 +1,123 @@
@@ -362,7 +362,7 @@ index 0000000..2ef07a8
 +} /* namespace engine */
 diff --git a/src/sprite.h b/src/sprite.h
 new file mode 100644
-index 0000000..b60b37d
+index 0000000..5be7140
 --- /dev/null
 +++ b/src/sprite.h
 @@ -0,0 +1,44 @@

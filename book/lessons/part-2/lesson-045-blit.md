@@ -242,7 +242,7 @@ index 8febd4a..7b750ac 100644
  #include "frame.h"
  #include "platform.h"
 @@ -100,6 +101,64 @@ int Run(void)
-                                 sprite.width / 2) * 3 + 2]);
+                                sprite.width / 2) * 3 + 2]);
      std::printf("engine: pixel bytes sum to %ld\n", byte_sum);
  
 +    /* Lesson 045: the blitter's three claims, checked against the

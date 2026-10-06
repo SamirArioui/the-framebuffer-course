@@ -186,7 +186,7 @@ index 1f8ad5c..18747c7 100644
 --- a/src/main.cpp
 +++ b/src/main.cpp
 @@ -21,6 +21,72 @@ namespace engine {
-     per-frame step. */
+    per-frame step. */
  constexpr double SPRITE_SPEED = 240.0; /* pixels per second */
  
 +/* Lesson 047: the caches deep dive's evidence — a copy walk over arena

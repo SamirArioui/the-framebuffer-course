@@ -168,7 +168,7 @@ index f142cb1..fcd9ce5 100644
 +################################################
 diff --git a/assets/tiles.ppm b/assets/tiles.ppm
 new file mode 100644
-index 0000000..2913240
+index 0000000..287453f
 Binary files /dev/null and b/assets/tiles.ppm differ
 diff --git a/src/frame.cpp b/src/frame.cpp
 index 36a2827..22cb968 100644
