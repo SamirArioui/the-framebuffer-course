@@ -13,7 +13,7 @@
 ## Walkthrough
 
 The three verdicts, checked against reality. `./wordcount nope.txt` prints
-`cannot open nope.txt` and the sanitizer says nothing, exit 0 — `CountStream`
+`./wordcount: cannot open nope.txt` and the sanitizer says nothing, exit 0 — `CountStream`
 never ran, so no block was ever allocated. `./wordcount empty.txt` prints
 `0 0 0 0 empty.txt` and is likewise silent, exit 0 — this one *did* run
 `CountStream`, but an empty file never pushes a byte, `BufferGrow` never

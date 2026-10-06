@@ -36,5 +36,6 @@ at `CountStream`'s return. That is the leak, and lesson 005 will name and
 count it. A one-shot command can afford it — the operating system reclaims
 the whole heap at exit; the damage is to principle and to anyone who copies
 the pattern. A game loop that leaks one block per frame cannot: 60 frames a
-second × 8 KB is a megabyte every two minutes, forever. Free what you
+second × 8 KB is almost half a megabyte every second — a megabyte every two
+seconds, forever. Free what you
 allocate; from lesson 005 on, the tools will insist.

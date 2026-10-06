@@ -12,9 +12,12 @@
 
 ## Walkthrough
 
-Running the buggy variant dies like this:
+Running the buggy variant on a terminal dies like this (the counts for
+`a.txt` print first; through a pipe the abort can swallow the buffered
+output):
 
 ```
+3 a.txt
 free(): double free detected in tcache 2
 
 Program received signal SIGABRT, Aborted.
@@ -34,5 +37,6 @@ guilty call. The fix is "close exactly once", and this patch takes the
 teammate's rule seriously: `CountBytes` consumes the stream, so it closes it,
 with the ownership rule in a comment where the next reader will trip over it.
 Deleting the callee's `fclose` instead is an equally correct program — the
-bug class is two closes, not which close. Behavior is unchanged:
+bug class is two closes, not which close. (Addresses in the trace vary per
+machine and per run; the frame shapes do not.) Behavior is unchanged:
 `./wordcount a.txt b.txt` still prints `3 a.txt` and `6 b.txt`.

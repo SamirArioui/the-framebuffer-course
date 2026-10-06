@@ -19,7 +19,11 @@ counts bytes. On this system that is all there is to it.
 The instrumented loop is where the lesson hides. It prints, in order:
 
 ```
-c=72 c=105 c=0 c=10 c=255
+c=72
+c=105
+c=0
+c=10
+c=255
 ```
 
 `72` is `H`, `105` is `i`, `0` is the NUL byte, `10` is the newline, and

@@ -1,5 +1,5 @@
 diff --git a/sandbox/wordcount/wordcount.c b/sandbox/wordcount/wordcount.c
-index e7d8151..23f8450 100644
+index e7d8151..ba2ec6d 100644
 --- a/sandbox/wordcount/wordcount.c
 +++ b/sandbox/wordcount/wordcount.c
 @@ -96,12 +96,15 @@ static void CountStream(FILE *f, struct Counts *out)
@@ -18,7 +18,14 @@ index e7d8151..23f8450 100644
              BufferPush(&line, '\0');
              unsigned long line_len = LineLen(line.data);
              if (line_len > out->longest)
-@@ -127,6 +130,7 @@ static void CountStream(FILE *f, struct Counts *out)
+@@ -121,12 +124,14 @@ static void CountStream(FILE *f, struct Counts *out)
+     }
+ 
+     if (line.len > 0) {
++        last = *BufferAt(&line, line.len - 1);
+         BufferPush(&line, '\0');
+         unsigned long line_len = LineLen(line.data);
+         if (line_len > out->longest)
              out->longest = line_len;
      }
  

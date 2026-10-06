@@ -117,6 +117,19 @@ optimizer lesson (018) carry the highest toolchain-drift exposure and deserve
 one more pass, and the L25 C++ subset wording will get a consistency read
 against Part 1's engine-opening lesson when that is planned.
 
+## Review pass status (pre-freeze)
+
+The independent review pass over `lesson-001`…`lesson-006` (contents +
+re-run tool transcripts) is done. Seventeen findings were reported: three
+were real defects — lesson 004's solution arithmetic (leak rate off by
+~60×), a misattributed `info locals` reference in lesson 006, and a lesson
+006 solution fix that missed unterminated last lines — plus transcript-
+shape and wording issues in solution walkthroughs. All were corrected in
+place (prose/solution class-1 edits; no tag moved). One reported finding
+(a solution patch's post-image hash) was re-verified and found correct as
+published. The centerpiece claim — lesson 005's LeakSanitizer report —
+reproduces literally from the lesson-004 state.
+
 ## Known warts carried forward (intentional, documented in-prose)
 
 - 003: the 256-byte line ceiling understates `longest` (004 lifts it).

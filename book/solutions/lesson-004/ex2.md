@@ -28,8 +28,12 @@ the copy theory predicts. If every growth copied, one-byte-at-a-time would
 move about N²/2 = 5×10¹¹ bytes and run for minutes; clearly it moved almost
 nothing. Where did the copying go? Into `realloc`'s first contract clause:
 when nothing sits above the block in the heap, it grows **in place** and
-copies zero bytes. Exercise 3's address instrument is the evidence — every
-growth on these fixtures prints the same block address. What the timings do
+copies zero bytes. Exercise 3's address instrument is the evidence — copy
+its printing line into this variant (the two patches both touch `BufferGrow`,
+so a hand-merge is needed). On the 100 000 fixture every growth prints the
+same block address; on the 1 000 000 fixture the block moves a few times in
+most runs. In-place growth is the allocator's heuristic when the space is
+there, not a guarantee. What the timings do
 prove is the cost of a million `realloc` calls; what they do not prove is
 the worst case, which appears as soon as the heap is fragmented enough that
 the block must move. Theory bounds that case; measurement showed this one.

@@ -29,8 +29,8 @@ report is the recorded stack of whoever asked for it.
 gcc -std=c11 -O0 -g -Wall -Wextra -fsanitize=address -fno-omit-frame-pointer wordcount.c -o wordcount
 ```
 
-- `-fsanitize=address` is the instrumentation above. It costs speed (a
-  factor of roughly two on this program — exercise 2 measures it) and
+- `-fsanitize=address` is the instrumentation above. It costs speed (about
+  1.6× on this program as written — exercise 2 measures it) and
   memory (the shadow map, the redzones, a quarantine of freed blocks), and
   it buys certainty about every memory access the program makes.
 - `-fno-omit-frame-pointer` keeps one register reserved for the frame
@@ -80,7 +80,8 @@ the buffering story from lesson 001.)
 with `free` and resets the struct so the buffer cannot be used to touch
 freed memory afterwards. `free(NULL)` is explicitly legal — freeing an
 empty buffer is a no-op — and calling `free` twice on the same block is
-undefined, which lesson 006 will explore in its own cheerful way. The
+undefined behavior of its own kind, no matter how harmless the second call
+looks. The
 discipline the fix encodes is the one worth keeping for the rest of the
 course: every allocation has exactly one owner, every owner frees on every
 path out, and a function that takes a buffer in takes responsibility for

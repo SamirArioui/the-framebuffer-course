@@ -13,7 +13,10 @@
 ## Walkthrough
 
 The counter is one file-scope variable, incremented at the top of
-`CountBytes` and reported by `main` after the last file:
+`CountBytes` and reported by `main` after the last file. On a terminal the
+count rows print as each file is done and the counter comes last; captured
+through one pipe, stderr arrives ahead of the block-buffered stdout and the
+order flips:
 
 ```
 CountBytes called 2 times
@@ -42,4 +45,5 @@ for the whole run, so every frame can name it. (It reads `0` at the first
 stop because the breakpoint fires before `++calls` runs.) Note that `static`
 limits *compile-time* name visibility to this file — it does not hide the
 variable from the debugger. This locals-versus-globals difference is exactly
-what exercise 3 ran into from the other side.
+what exercise 3 ran into from the other side. (Addresses in the transcripts
+are machine-specific; the frames and values are not.)

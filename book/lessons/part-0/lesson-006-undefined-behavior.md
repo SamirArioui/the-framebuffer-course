@@ -27,7 +27,7 @@ void. The three ways to fall off the map that matter to this program:
   the array, or dereferencing a pointer outside its object. One step past
   the end may be *pointed at* but never touched. This is the fate our own
   buffer flirted with in lesson 003 and exercise 2 stages properly.
-- **Indeterminate values.** Using memory before writing it: lesson 003's
+- **Indeterminate values.** Using memory before writing it: lesson 002's
   `info locals` garbage was this — a value that exists only as whatever
   bits were left behind.
 
@@ -65,7 +65,7 @@ int main(void)
 ```
 ==105939==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000014 ...
 WRITE of size 1 at 0x502000000014 thread T0
-    #0 0x6386f4bb72db in main /tmp/opencode/work/demo_overflow.c:7
+    #0 0x6386f4bb72db in main /tmp/opencode/work/demo_overflow.c:6
     ...
 0x502000000014 is located 0 bytes after 4-byte region [0x502000000010,0x502000000014)
 allocated by thread T0 here:
@@ -199,8 +199,9 @@ to do with the code around it.
 
 A teammate added a small feature: report the last character of the file's
 last line. Their attempt compiles and works on `story.txt` — but the
-sanitizer build aborts with a heap-buffer-overflow report the moment a file
-contains an empty line, and the plain build pretends nothing happened.
+sanitizer build aborts with a heap-buffer-overflow report the moment an
+empty line shows up below real content, and the plain build pretends nothing
+happened.
 Their additions to `CountStream`:
 
 ```c

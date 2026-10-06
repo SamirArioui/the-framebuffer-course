@@ -13,8 +13,9 @@
 ## Walkthrough
 
 On one machine the 100 MB file took about 0.15 s through `fgetc` and about
-0.01 s through `fread` — an order of magnitude. Your numbers will differ;
-the ratio will not.
+0.01 s through `fread` — an order of magnitude. Your numbers will differ,
+and so will the ratio: caching and storage shift it. What survives every
+machine is the order of magnitude.
 
 Both loops do the same arithmetic, so the time is not in counting. Every
 `fgetc` call is a function call that checks the stream's buffer state and

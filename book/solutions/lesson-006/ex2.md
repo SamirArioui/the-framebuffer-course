@@ -24,6 +24,7 @@ READ of size 1 at 0x50600000001f thread T0
     ...
 0x50600000001f is located 1 bytes before 64-byte region [0x506000000020,0x506000000060)
 allocated by thread T0 here:
+    #0 ... in realloc ...
     #1 ... in BufferGrow ...
 ```
 
@@ -33,10 +34,14 @@ plain build is the other half of the lesson — it read a stale byte and
 printed `last char: ' '` (whatever byte sat before the block on your run),
 exit 0: undefined behavior is not obliged to crash.
 
-The fix is two disciplines. The guard `if (line.len > 0)` makes the empty
+The fix is three disciplines. The guard `if (line.len > 0)` makes the empty
 line mean "no character to report", so the feature is honest about its own
-domain. And the read goes through `BufferAt`, the checked accessor — if
+domain. The same guarded read runs at the end of the file, where a final
+line without a trailing newline is still a line and its last character
+counts too. And the read goes through `BufferAt`, the checked accessor — if
 the guard were ever wrong again, the program would name the bad index and
 exit cleanly instead of reading backwards. Verified on both builds:
 `last char: 'e'` for `story.txt`, `last char: 'o'` for a file whose empty
-line is skipped over the earlier `hello`.
+line is skipped over the earlier `hello`, `last char: 'o'` for a bare
+`hello` with no trailing newline, and `last char: 'd'` for a file ending
+`hello\n\nworld`.

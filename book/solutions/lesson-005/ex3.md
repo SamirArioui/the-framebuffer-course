@@ -12,7 +12,11 @@
 
 ## Walkthrough
 
-The instrumented run prints the truth the report is built from:
+The instrumented run prints the truth the report is built from (captured
+with output redirected: through one pipe the unbuffered `freeing` lines
+arrive first; on a terminal the rows interleave — `story.txt`'s row after
+the first `freeing`, `long.txt`'s after the second. Addresses are the
+sanitizer allocator's and vary across versions and machines):
 
 ```
 freeing 64 bytes at 0x506000000020

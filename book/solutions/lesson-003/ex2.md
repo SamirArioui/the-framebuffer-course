@@ -21,7 +21,7 @@ and `%s` walks straight through them. Third, nothing records the final line
 when the file lacks a trailing newline, so `partial.txt` quotes whatever
 garbage the stack holds (on a quiet build, often nothing at all). Fourth,
 `longest_text[128]` cannot hold a line the `line` buffer accepted — the
-copy writes up to 256 bytes into 128, a stack overflow that happens to be
+copy writes up to 255 bytes into 128, a stack overflow that happens to be
 harmless on this build; lessons 005 and 006 teach the tools that make such
 things scream.
 

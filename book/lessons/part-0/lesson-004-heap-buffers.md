@@ -54,7 +54,8 @@ asks you to measure the alternative.
 
 One call out the door of `BufferGrow`: `realloc` hands back `void *` like
 `malloc`, and each grown block *replaces* the previous one — the pointers
-printed at each growth are the same story `realloc`'s first clause tells.
+that exercise 3's instrument prints at each growth are the same story
+`realloc`'s first clause tells.
 
 **Ownership, and the leak we are keeping.** Here is the sentence this
 lesson owes you: **we are leaking the buffer on purpose; lesson 005 makes
