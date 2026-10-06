@@ -234,6 +234,10 @@
   - [Solution: ex1 — the header that lies](solutions/lesson-044/ex1.md)
   - [Solution: ex2 — sprite, meet window](solutions/lesson-044/ex2.md)
 
+- [Lesson 045 — the clipped, transparent blit](lessons/part-2/lesson-045-blit.md)
+  - [Solution: ex1 — your own key](solutions/lesson-045/ex1.md)
+  - [Solution: ex2 — the four corners](solutions/lesson-045/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

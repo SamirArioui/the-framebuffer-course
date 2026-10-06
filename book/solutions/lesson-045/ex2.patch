@@ -1,0 +1,91 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 7b750ac..bb5e07a 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -28,6 +28,46 @@ static void DrawMarker(Framebuffer &fb, int x, int y)
+             PutPixel(fb, x + i, y + j, 240, 220, 80);
+ }
+ 
++/* One clip case: draw at (x, y) and count what landed, what landed wrong,
++   and what got touched outside the landed rectangle. */
++static void CheckClip(Framebuffer &fb, const Sprite &s, int x, int y)
++{
++    ClearBuffer(fb, 32, 32, 64);
++    BlitSprite(fb, s, x, y);
++
++    /* The landed rectangle: the sprite's box crossed with the frame. */
++    int left = x < 0 ? 0 : x;
++    int top = y < 0 ? 0 : y;
++    int right = x + s.width < fb.width ? x + s.width : fb.width;
++    int bottom = y + s.height < fb.height ? y + s.height : fb.height;
++
++    int landed = 0, wrong = 0, touched = 0;
++    for (int j = top; j < bottom; ++j)
++        for (int i = left; i < right; ++i) {
++            const unsigned char *p =
++                &s.pixels[(((j - y) * s.width) + (i - x)) * 3];
++            unsigned char r, g, b;
++            GetPixel(fb, i, j, r, g, b);
++            ++landed;
++            bool is_key = p[0] == s.key_r && p[1] == s.key_g &&
++                          p[2] == s.key_b;
++            if (is_key ? (r != 32 || g != 32 || b != 64)
++                       : (r != p[0] || g != p[1] || b != p[2]))
++                ++wrong;
++        }
++    for (int yy = 0; yy < fb.height; ++yy)
++        for (int xx = 0; xx < fb.width; ++xx) {
++            if (xx >= left && xx < right && yy >= top && yy < bottom)
++                continue;
++            unsigned char r, g, b;
++            GetPixel(fb, xx, yy, r, g, b);
++            if (r != 32 || g != 32 || b != 64)
++                ++touched;
++        }
++    std::printf("engine: clip (%d,%d): %d pixels landed, %d wrong, %d touched outside\n",
++                x, y, landed, wrong, touched);
++}
++
+ int Run(void)
+ {
+     platform::WindowResult opened =
+@@ -129,35 +169,10 @@ int Run(void)
+     std::printf("engine: blit check: %d key pixels wrote nothing over the background\n",
+                 key_pixels);
+ 
+-    ClearBuffer(*fb, 32, 32, 64);
+-    BlitSprite(*fb, sprite, -4, -4);
+-    int landed = 0, wrong = 0, wrapped = 0;
+-    for (int j = 0; j < sprite.height; ++j)
+-        for (int i = 0; i < sprite.width; ++i) {
+-            if (i < 4 || j < 4)
+-                continue; /* these pixels landed outside and were dropped */
+-            const unsigned char *p =
+-                &sprite.pixels[(j * sprite.width + i) * 3];
+-            unsigned char r, g, b;
+-            GetPixel(*fb, i - 4, j - 4, r, g, b);
+-            ++landed;
+-            bool is_key = p[0] == sprite.key_r && p[1] == sprite.key_g &&
+-                          p[2] == sprite.key_b;
+-            if (is_key ? (r != 32 || g != 32 || b != 64)
+-                       : (r != p[0] || g != p[1] || b != p[2]))
+-                ++wrong;
+-        }
+-    for (int y = 0; y < FRAME_HEIGHT; ++y)
+-        for (int x = 0; x < FRAME_WIDTH; ++x) {
+-            if (x < sprite.width - 4 && y < sprite.height - 4)
+-                continue; /* the landed region, checked above */
+-            unsigned char r, g, b;
+-            GetPixel(*fb, x, y, r, g, b);
+-            if (r != 32 || g != 32 || b != 64)
+-                ++wrapped;
+-        }
+-    std::printf("engine: blit check: clip at -4,-4 landed %d pixels, %d wrong, %d touched outside\n",
+-                landed, wrong, wrapped);
++    CheckClip(*fb, sprite, -4, -4);
++    CheckClip(*fb, sprite, 632, 472);
++    CheckClip(*fb, sprite, -100, 0);
++    CheckClip(*fb, sprite, 640, 480);
+ 
+     double marker_x = (FRAME_WIDTH - MARKER_SIZE) / 2.0;
+     double marker_y = (FRAME_HEIGHT - MARKER_SIZE) / 2.0;

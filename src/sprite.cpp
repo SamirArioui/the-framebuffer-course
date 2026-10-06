@@ -64,7 +64,7 @@ bool ReadNumber(const unsigned char *data, size_t size, size_t &at, long &out)
 
 SpriteResult LoadSprite(Arena &arena, const char *path)
 {
-    SpriteResult result = { { 0, 0, 0 }, SPRITE_OK };
+    SpriteResult result = { { 0, 0, 0, 0, 0, 0 }, SPRITE_OK };
 
     platform::FileData file = platform::ReadFile(path);
     if (file.error != platform::FILE_OK) {
@@ -116,6 +116,9 @@ SpriteResult LoadSprite(Arena &arena, const char *path)
     result.sprite.pixels = pixels;
     result.sprite.width = (int)width;
     result.sprite.height = (int)height;
+    result.sprite.key_r = SPRITE_KEY_R;
+    result.sprite.key_g = SPRITE_KEY_G;
+    result.sprite.key_b = SPRITE_KEY_B;
     result.error = SPRITE_OK;
     return result;
 }

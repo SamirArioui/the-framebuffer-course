@@ -1,0 +1,49 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 7b750ac..50c644d 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -100,6 +100,8 @@ int Run(void)
+                 sprite.pixels[(sprite.height / 2 * sprite.width +
+                                sprite.width / 2) * 3 + 2]);
+     std::printf("engine: pixel bytes sum to %ld\n", byte_sum);
++    std::printf("engine: key color from the sprite's corner: %d,%d,%d\n",
++                sprite.key_r, sprite.key_g, sprite.key_b);
+ 
+     /* Lesson 045: the blitter's three claims, checked against the
+        framebuffer's own bytes before anything depends on them. */
+diff --git a/src/sprite.cpp b/src/sprite.cpp
+index 4d04e96..753a6a0 100644
+--- a/src/sprite.cpp
++++ b/src/sprite.cpp
+@@ -116,9 +116,11 @@ SpriteResult LoadSprite(Arena &arena, const char *path)
+     result.sprite.pixels = pixels;
+     result.sprite.width = (int)width;
+     result.sprite.height = (int)height;
+-    result.sprite.key_r = SPRITE_KEY_R;
+-    result.sprite.key_g = SPRITE_KEY_G;
+-    result.sprite.key_b = SPRITE_KEY_B;
++    /* The sprite's own top-left pixel names the transparent color — the
++       artist's corner is the key, whatever color it is. */
++    result.sprite.key_r = pixels[0];
++    result.sprite.key_g = pixels[1];
++    result.sprite.key_b = pixels[2];
+     result.error = SPRITE_OK;
+     return result;
+ }
+diff --git a/src/sprite.h b/src/sprite.h
+index b9ef087..6a479dc 100644
+--- a/src/sprite.h
++++ b/src/sprite.h
+@@ -12,9 +12,9 @@
+ 
+ namespace engine {
+ 
+-/* The transparent color of the course's sprites: magenta. PPM carries no
+-   key field, so the format's convention is the loader's job — every sprite
+-   loaded here names 255,0,255 as "draw nothing". */
++/* The transparent color comes from the sprite's own bytes: its top-left
++   pixel names it (exercise 1's rule). The course's sprite ships with
++   magenta (255, 0, 255) in that corner; your sprite can choose any key. */
+ constexpr unsigned char SPRITE_KEY_R = 255;
+ constexpr unsigned char SPRITE_KEY_G = 0;
+ constexpr unsigned char SPRITE_KEY_B = 255;

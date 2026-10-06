@@ -12,12 +12,21 @@
 
 namespace engine {
 
+/* The transparent color of the course's sprites: magenta. PPM carries no
+   key field, so the format's convention is the loader's job — every sprite
+   loaded here names 255,0,255 as "draw nothing". */
+constexpr unsigned char SPRITE_KEY_R = 255;
+constexpr unsigned char SPRITE_KEY_G = 0;
+constexpr unsigned char SPRITE_KEY_B = 255;
+
 /* A sprite: one image's pixels in the engine's memory — row after row,
-   three bytes each (red, green, blue), exactly the file's pixel section. */
+   three bytes each (red, green, blue), exactly the file's pixel section —
+   and the color that means "nothing" when it is drawn. */
 struct Sprite {
     unsigned char *pixels; /* width * height * 3 bytes */
     int width;
     int height;
+    unsigned char key_r, key_g, key_b; /* the transparent color */
 };
 
 /* A load either hands over a complete sprite or names what went wrong —

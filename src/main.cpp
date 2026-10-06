@@ -8,6 +8,7 @@
 #include <cstdio>
 
 #include "arena.h"
+#include "blit.h"
 #include "framebuffer.h"
 #include "frame.h"
 #include "platform.h"
@@ -100,6 +101,64 @@ int Run(void)
                                sprite.width / 2) * 3 + 2]);
     std::printf("engine: pixel bytes sum to %ld\n", byte_sum);
 
+    /* Lesson 045: the blitter's three claims, checked against the
+       framebuffer's own bytes before anything depends on them. */
+    ClearBuffer(*fb, 32, 32, 64);
+    BlitSprite(*fb, sprite, 100, 100);
+    int opaque = 0, key_pixels = 0, mismatches = 0;
+    for (int j = 0; j < sprite.height; ++j)
+        for (int i = 0; i < sprite.width; ++i) {
+            const unsigned char *p =
+                &sprite.pixels[(j * sprite.width + i) * 3];
+            unsigned char r, g, b;
+            GetPixel(*fb, 100 + i, 100 + j, r, g, b);
+            bool is_key = p[0] == sprite.key_r && p[1] == sprite.key_g &&
+                          p[2] == sprite.key_b;
+            if (is_key) {
+                ++key_pixels;
+                if (r != 32 || g != 32 || b != 64)
+                    ++mismatches; /* the key must have written nothing */
+            } else {
+                ++opaque;
+                if (r != p[0] || g != p[1] || b != p[2])
+                    ++mismatches;
+            }
+        }
+    std::printf("engine: blit check: %d opaque pixels drawn unchanged, %d mismatches\n",
+                opaque, mismatches);
+    std::printf("engine: blit check: %d key pixels wrote nothing over the background\n",
+                key_pixels);
+
+    ClearBuffer(*fb, 32, 32, 64);
+    BlitSprite(*fb, sprite, -4, -4);
+    int landed = 0, wrong = 0, wrapped = 0;
+    for (int j = 0; j < sprite.height; ++j)
+        for (int i = 0; i < sprite.width; ++i) {
+            if (i < 4 || j < 4)
+                continue; /* these pixels landed outside and were dropped */
+            const unsigned char *p =
+                &sprite.pixels[(j * sprite.width + i) * 3];
+            unsigned char r, g, b;
+            GetPixel(*fb, i - 4, j - 4, r, g, b);
+            ++landed;
+            bool is_key = p[0] == sprite.key_r && p[1] == sprite.key_g &&
+                          p[2] == sprite.key_b;
+            if (is_key ? (r != 32 || g != 32 || b != 64)
+                       : (r != p[0] || g != p[1] || b != p[2]))
+                ++wrong;
+        }
+    for (int y = 0; y < FRAME_HEIGHT; ++y)
+        for (int x = 0; x < FRAME_WIDTH; ++x) {
+            if (x < sprite.width - 4 && y < sprite.height - 4)
+                continue; /* the landed region, checked above */
+            unsigned char r, g, b;
+            GetPixel(*fb, x, y, r, g, b);
+            if (r != 32 || g != 32 || b != 64)
+                ++wrapped;
+        }
+    std::printf("engine: blit check: clip at -4,-4 landed %d pixels, %d wrong, %d touched outside\n",
+                landed, wrong, wrapped);
+
     double marker_x = (FRAME_WIDTH - MARKER_SIZE) / 2.0;
     double marker_y = (FRAME_HEIGHT - MARKER_SIZE) / 2.0;
     double started = platform::Now();
@@ -155,8 +214,10 @@ int Run(void)
             std::printf("engine: marker at %d,%d (t=%.3f)\n", (int)marker_x,
                         (int)marker_y, platform::Now() - started);
 
-        /* Render: every frame draws the whole scene — clear, then marker. */
+        /* Render: every frame draws the whole scene — clear, then the
+           sprite through the one blit. */
         ClearBuffer(*fb, 32, 32, 64);
+        BlitSprite(*fb, sprite, 32, 32);
         DrawMarker(*fb, (int)marker_x, (int)marker_y);
 
         frame.render = platform::Now() - t1;
