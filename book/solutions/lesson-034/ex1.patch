@@ -1,0 +1,30 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 47d7360..cebbf3e 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -64,16 +64,20 @@ int Run(void)
+         if (platform::CloseRequested(opened.window))
+             break;
+ 
+-        /* Update: a frame reads state — it never handles events. */
++        /* Update: a frame reads state — it never handles events. Both
++           axes read independently, so two held keys give the diagonal. */
+         int old_x = marker_x, old_y = marker_y;
++        int dx = 0, dy = 0;
+         if (platform::KeyDown(opened.window, platform::KEY_LEFT))
+-            marker_x -= MARKER_STEP;
++            dx -= 1;
+         if (platform::KeyDown(opened.window, platform::KEY_RIGHT))
+-            marker_x += MARKER_STEP;
++            dx += 1;
+         if (platform::KeyDown(opened.window, platform::KEY_UP))
+-            marker_y -= MARKER_STEP;
++            dy -= 1;
+         if (platform::KeyDown(opened.window, platform::KEY_DOWN))
+-            marker_y += MARKER_STEP;
++            dy += 1;
++        marker_x += dx * MARKER_STEP;
++        marker_y += dy * MARKER_STEP;
+ 
+         /* The marker stays on screen — lesson 015's fold at frame scale. */
+         if (marker_x < 0)

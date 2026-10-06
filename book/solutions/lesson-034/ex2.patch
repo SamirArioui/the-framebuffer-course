@@ -1,0 +1,24 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 47d7360..db4b807 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -59,7 +59,9 @@ int Run(void)
+        This is the shape every later part fills in — Part 2 draws into it,
+        Part 5 measures it. */
+     int exit_code = 0;
++    long frame = 0;
+     while (!platform::CloseRequested(opened.window)) {
++        ++frame;
+         platform::PumpEvents(opened.window);
+         if (platform::CloseRequested(opened.window))
+             break;
+@@ -86,7 +88,8 @@ int Run(void)
+             marker_y = FRAME_HEIGHT - MARKER_SIZE;
+ 
+         if (marker_x != old_x || marker_y != old_y)
+-            std::printf("engine: marker at %d,%d\n", marker_x, marker_y);
++            std::printf("engine: frame %ld: marker at %d,%d\n", frame,
++                        marker_x, marker_y);
+ 
+         /* Render: every frame draws the whole scene — clear, then marker. */
+         ClearBuffer(*fb, 32, 32, 64);

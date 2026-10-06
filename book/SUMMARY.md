@@ -188,6 +188,10 @@
   - [Solution: ex1 — the press count](solutions/lesson-033/ex1.md)
   - [Solution: ex2 — the key that will not let go](solutions/lesson-033/ex2.md)
 
+- [Lesson 034 — the first interactive frame](lessons/part-1/lesson-034-first-frame.md)
+  - [Solution: ex1 — eight directions](solutions/lesson-034/ex1.md)
+  - [Solution: ex2 — the speed that belongs to the keyboard](solutions/lesson-034/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

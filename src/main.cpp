@@ -12,10 +12,18 @@
 
 namespace engine {
 
-/* The seam's keys, by name — for the report below. */
-static const char *const key_names[platform::KEY_COUNT] = {
-    "up", "down", "left", "right", "space", "enter", "escape",
-};
+/* The marker: one square the arrow keys move. Its position is whole
+   pixels and its speed is pixels-per-frame — lesson 035's clock turns
+   that into pixels-per-second. */
+constexpr int MARKER_SIZE = 24;
+constexpr int MARKER_STEP = 8;
+
+static void DrawMarker(Framebuffer &fb, int x, int y)
+{
+    for (int j = 0; j < MARKER_SIZE; ++j)
+        for (int i = 0; i < MARKER_SIZE; ++i)
+            PutPixel(fb, x + i, y + j, 240, 220, 80);
+}
 
 int Run(void)
 {
@@ -39,69 +47,50 @@ int Run(void)
         return 1;
     }
 
-    /* Paint: clear, then pixels — the two instincts Part 0's paint taught,
-       now onto the engine's own buffer. */
+    /* The scene: a marker the arrow keys move. The report below is its
+       position — the interactive frame makes itself observable. */
     Framebuffer *fb = GetFramebuffer();
-    ClearBuffer(*fb, 32, 32, 64);
-    PutPixel(*fb, 0, 0, 255, 0, 0);
-    PutPixel(*fb, 639, 479, 0, 255, 0);
-    PutPixel(*fb, 700, 100, 0, 0, 255); /* out of bounds: dropped */
+    int marker_x = (FRAME_WIDTH - MARKER_SIZE) / 2;
+    int marker_y = (FRAME_HEIGHT - MARKER_SIZE) / 2;
+    std::printf("engine: arrow keys move the marker; close the window to stop\n");
+    std::printf("engine: marker at %d,%d\n", marker_x, marker_y);
 
-    /* The byte-level report: what is actually in the buffer. */
-    unsigned char r, g, b;
-    std::printf("engine: framebuffer %dx%d, %d bytes, stride %d\n",
-                fb->width, fb->height, fb->width * fb->height * 4,
-                fb->width * 4);
-    GetPixel(*fb, 0, 0, r, g, b);
-    std::printf("engine: pixel (0,0) = %d %d %d\n", r, g, b);
-    GetPixel(*fb, 639, 479, r, g, b);
-    std::printf("engine: pixel (639,479) = %d %d %d\n", r, g, b);
-    GetPixel(*fb, 60, 101, r, g, b);
-    std::printf("engine: pixel (60,101) = %d %d %d\n", r, g, b);
-
-    /* First light: the bytes go to the window through the seam. */
-    if (!platform::Present(opened.window, fb->pixels, fb->width, fb->height)) {
-        std::fprintf(stderr, "engine: presentation failed\n");
-        platform::CloseWindow(opened.window);
-        return 1;
-    }
-    std::printf("engine: presented\n");
-
-    /* The frame step: read news, react, present our pixels, repeat.
-       Presentation is not an event — it is the engine's answer to every
-       event: the pixels the engine wrote are the pixels the window shows,
-       and re-presenting is what repairs the window when the OS damaged it.
-       React first: if the news was "the window is gone", there is nothing
-       left to present to. */
+    /* The frame step: read news, update from polled state, draw, present.
+       This is the shape every later part fills in — Part 2 draws into it,
+       Part 5 measures it. */
     int exit_code = 0;
-    bool had_focus = platform::HasFocus(opened.window);
     while (!platform::CloseRequested(opened.window)) {
         platform::PumpEvents(opened.window);
         if (platform::CloseRequested(opened.window))
             break;
 
-        /* The polled state: what is down right now, as of this poll. */
-        std::printf("engine: polled:");
-        bool any = false;
-        for (int k = 0; k < platform::KEY_COUNT; ++k) {
-            if (platform::KeyDown(opened.window, (platform::Key)k)) {
-                std::printf(" %s", key_names[k]);
-                any = true;
-            }
-        }
-        std::printf(any ? "\n" : " -\n");
+        /* Update: a frame reads state — it never handles events. */
+        int old_x = marker_x, old_y = marker_y;
+        if (platform::KeyDown(opened.window, platform::KEY_LEFT))
+            marker_x -= MARKER_STEP;
+        if (platform::KeyDown(opened.window, platform::KEY_RIGHT))
+            marker_x += MARKER_STEP;
+        if (platform::KeyDown(opened.window, platform::KEY_UP))
+            marker_y -= MARKER_STEP;
+        if (platform::KeyDown(opened.window, platform::KEY_DOWN))
+            marker_y += MARKER_STEP;
 
-        /* The latches: presses that ended before this poll are not lost. */
-        for (int k = 0; k < platform::KEY_COUNT; ++k)
-            if (platform::KeyPressed(opened.window, (platform::Key)k))
-                std::printf("engine: pressed %s\n", key_names[k]);
+        /* The marker stays on screen — lesson 015's fold at frame scale. */
+        if (marker_x < 0)
+            marker_x = 0;
+        if (marker_x > FRAME_WIDTH - MARKER_SIZE)
+            marker_x = FRAME_WIDTH - MARKER_SIZE;
+        if (marker_y < 0)
+            marker_y = 0;
+        if (marker_y > FRAME_HEIGHT - MARKER_SIZE)
+            marker_y = FRAME_HEIGHT - MARKER_SIZE;
 
-        /* Focus: reported when it changes. */
-        bool focus = platform::HasFocus(opened.window);
-        if (focus != had_focus) {
-            std::printf("engine: focus %s\n", focus ? "gained" : "lost");
-            had_focus = focus;
-        }
+        if (marker_x != old_x || marker_y != old_y)
+            std::printf("engine: marker at %d,%d\n", marker_x, marker_y);
+
+        /* Render: every frame draws the whole scene — clear, then marker. */
+        ClearBuffer(*fb, 32, 32, 64);
+        DrawMarker(*fb, marker_x, marker_y);
 
         if (!platform::Present(opened.window, fb->pixels, fb->width,
                                fb->height)) {
