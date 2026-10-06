@@ -1,0 +1,119 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 8febd4a..3867cad 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -27,7 +27,7 @@ static void DrawMarker(Framebuffer &fb, int x, int y)
+             PutPixel(fb, x + i, y + j, 240, 220, 80);
+ }
+ 
+-int Run(void)
++int Run(int argc, char **argv)
+ {
+     platform::WindowResult opened =
+         platform::OpenWindow(FRAME_WIDTH, FRAME_HEIGHT);
+@@ -58,7 +58,7 @@ int Run(void)
+     /* Lesson 044: the sprite is a file's bytes. It is loaded once, at
+        startup, through the seam's whole-file read into the arena — and
+        then inspected like Part 0 inspected everything: by byte. */
+-    const char *sprite_path = "assets/sprite.ppm";
++    const char *sprite_path = argc > 1 ? argv[1] : "assets/sprite.ppm";
+     SpriteResult loaded = LoadSprite(arena, sprite_path);
+     if (loaded.error != SPRITE_OK) {
+         switch (loaded.error) {
+@@ -66,9 +66,14 @@ int Run(void)
+             std::fprintf(stderr, "engine: %s: missing or unreadable\n",
+                          sprite_path);
+             break;
+-        case SPRITE_MALFORMED:
++        case SPRITE_BAD_HEADER:
+             std::fprintf(stderr,
+-                         "engine: %s: not a complete P6 image\n",
++                         "engine: %s: the header fields are not a P6 header\n",
++                         sprite_path);
++            break;
++        case SPRITE_TRUNCATED:
++            std::fprintf(stderr,
++                         "engine: %s: the pixel bytes do not fill the header's claim\n",
+                          sprite_path);
+             break;
+         default:
+@@ -209,7 +214,7 @@ int Run(void)
+ 
+ } /* namespace engine */
+ 
+-int main(void)
++int main(int argc, char **argv)
+ {
+-    return engine::Run();
++    return engine::Run(argc, argv);
+ }
+diff --git a/src/sprite.cpp b/src/sprite.cpp
+index 449b4dc..a08ef9d 100644
+--- a/src/sprite.cpp
++++ b/src/sprite.cpp
+@@ -77,28 +77,31 @@ SpriteResult LoadSprite(Arena &arena, const char *path)
+     size_t at = 0;
+     long width = 0, height = 0, maxval = 0;
+ 
+-    bool ok = size >= 2 && data[0] == 'P' && data[1] == '6';
++    bool header_ok = size >= 2 && data[0] == 'P' && data[1] == '6';
+     at = 2;
+-    ok = ok && ReadNumber(data, size, at, width);
+-    ok = ok && ReadNumber(data, size, at, height);
+-    ok = ok && ReadNumber(data, size, at, maxval);
+-    ok = ok && maxval == 255; /* one byte per channel, as lesson 017 wrote */
+-    ok = ok && width > 0 && width <= 4096 && height > 0 && height <= 4096;
+-
+-    /* Exactly one whitespace byte separates the header from the pixels.
+-       Not "skip whitespace here" — the pixel bytes are arbitrary, and the
+-       first one may itself look like whitespace. This is the line that
+-       keeps the parse honest. */
+-    ok = ok && at < size && IsSpace(data[at]);
++    header_ok = header_ok && ReadNumber(data, size, at, width);
++    header_ok = header_ok && ReadNumber(data, size, at, height);
++    header_ok = header_ok && ReadNumber(data, size, at, maxval);
++    header_ok = header_ok && maxval == 255;
++    header_ok = header_ok && width > 0 && width <= 4096 && height > 0 &&
++                height <= 4096;
++
++    /* Exactly one whitespace byte separates the header from the pixels. */
++    header_ok = header_ok && at < size && IsSpace(data[at]);
+     ++at;
+ 
+     /* Complete or nothing: the file must hold exactly the pixels the
+-       header claims — no short read presented as a sprite. */
++       header claims. */
+     size_t pixel_bytes = (size_t)width * (size_t)height * 3;
+-    ok = ok && size - at == pixel_bytes;
++    bool count_ok = header_ok && size - at == pixel_bytes;
+ 
+-    if (!ok) {
+-        result.error = SPRITE_MALFORMED;
++    if (!header_ok) {
++        result.error = SPRITE_BAD_HEADER;
++        platform::ReleaseFile(file);
++        return result;
++    }
++    if (!count_ok) {
++        result.error = SPRITE_TRUNCATED;
+         platform::ReleaseFile(file);
+         return result;
+     }
+diff --git a/src/sprite.h b/src/sprite.h
+index 5be7140..5d1df38 100644
+--- a/src/sprite.h
++++ b/src/sprite.h
+@@ -24,9 +24,10 @@ struct Sprite {
+    never a half-loaded sprite presented as success. */
+ enum SpriteError {
+     SPRITE_OK = 0,
+-    SPRITE_MISSING,   /* the file is not there or cannot be read */
+-    SPRITE_MALFORMED, /* the bytes are not a complete P6 image */
+-    SPRITE_NO_ROOM,   /* the arena had no room for the pixels */
++    SPRITE_MISSING,    /* the file is not there or cannot be read */
++    SPRITE_BAD_HEADER, /* the header fields do not form a P6 image */
++    SPRITE_TRUNCATED,  /* the pixels do not fill the header's claim */
++    SPRITE_NO_ROOM,    /* the arena had no room for the pixels */
+ };
+ 
+ struct SpriteResult {

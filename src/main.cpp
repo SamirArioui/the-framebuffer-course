@@ -11,6 +11,7 @@
 #include "framebuffer.h"
 #include "frame.h"
 #include "platform.h"
+#include "sprite.h"
 
 namespace engine {
 
@@ -53,6 +54,51 @@ int Run(void)
     Arena arena;
     ArenaInit(arena, 4 * 1024 * 1024);
     Framebuffer *fb = GetFramebuffer(arena);
+
+    /* Lesson 044: the sprite is a file's bytes. It is loaded once, at
+       startup, through the seam's whole-file read into the arena — and
+       then inspected like Part 0 inspected everything: by byte. */
+    const char *sprite_path = "assets/sprite.ppm";
+    SpriteResult loaded = LoadSprite(arena, sprite_path);
+    if (loaded.error != SPRITE_OK) {
+        switch (loaded.error) {
+        case SPRITE_MISSING:
+            std::fprintf(stderr, "engine: %s: missing or unreadable\n",
+                         sprite_path);
+            break;
+        case SPRITE_MALFORMED:
+            std::fprintf(stderr,
+                         "engine: %s: not a complete P6 image\n",
+                         sprite_path);
+            break;
+        default:
+            std::fprintf(stderr, "engine: %s: no room in the arena\n",
+                         sprite_path);
+            break;
+        }
+        platform::CloseWindow(opened.window);
+        ArenaRelease(arena);
+        return 1;
+    }
+    Sprite &sprite = loaded.sprite;
+    long pixel_bytes = (long)sprite.width * sprite.height * 3;
+    long byte_sum = 0;
+    for (long i = 0; i < pixel_bytes; ++i)
+        byte_sum += sprite.pixels[i];
+
+    std::printf("engine: sprite %s: %dx%d, %ld pixel bytes\n", sprite_path,
+                sprite.width, sprite.height, pixel_bytes);
+    std::printf("engine: pixel 0,0 = %d,%d,%d\n", sprite.pixels[0],
+                sprite.pixels[1], sprite.pixels[2]);
+    std::printf("engine: pixel %d,%d = %d,%d,%d\n", sprite.width / 2,
+                sprite.height / 2,
+                sprite.pixels[(sprite.height / 2 * sprite.width +
+                               sprite.width / 2) * 3 + 0],
+                sprite.pixels[(sprite.height / 2 * sprite.width +
+                               sprite.width / 2) * 3 + 1],
+                sprite.pixels[(sprite.height / 2 * sprite.width +
+                               sprite.width / 2) * 3 + 2]);
+    std::printf("engine: pixel bytes sum to %ld\n", byte_sum);
 
     double marker_x = (FRAME_WIDTH - MARKER_SIZE) / 2.0;
     double marker_y = (FRAME_HEIGHT - MARKER_SIZE) / 2.0;

@@ -228,6 +228,12 @@
   - [Solution: ex1 — platform layer done, on your machine](solutions/lesson-043/ex1.md)
   - [Solution: ex2 — the acceptance table](solutions/lesson-043/ex2.md)
 
+# Part 2 — software rendering
+
+- [Lesson 044 — a sprite as loaded bytes](lessons/part-2/lesson-044-sprite-bytes.md)
+  - [Solution: ex1 — the header that lies](solutions/lesson-044/ex1.md)
+  - [Solution: ex2 — sprite, meet window](solutions/lesson-044/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)
