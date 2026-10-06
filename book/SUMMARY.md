@@ -160,6 +160,10 @@
   - [Solution: ex1 — the engine speaks its name](solutions/lesson-026/ex1.md)
   - [Solution: ex2 — two translation units](solutions/lesson-026/ex2.md)
 
+- [Lesson 027 — the platform seam and the first X11 window](lessons/part-1/lesson-027-first-window.md)
+  - [Solution: ex1 — the window gets your title](solutions/lesson-027/ex1.md)
+  - [Solution: ex2 — where the boundary is](solutions/lesson-027/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

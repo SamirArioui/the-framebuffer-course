@@ -13,7 +13,8 @@
 # Environment overrides:
 #   CC, CFLAGS       compiler and flags for C sources
 #   CXX, CXXFLAGS    compiler and flags for C++ sources
-#   LDFLAGS          extra link flags
+#   LDFLAGS          extra link flags (default: the OS library the platform
+#                    layer wraps — -lX11 on the Linux/X11 main line)
 #   BUILD_DIR        output directory (default: build)
 
 set -euo pipefail
@@ -24,7 +25,7 @@ CC="${CC:-gcc}"
 CXX="${CXX:-g++}"
 CFLAGS="${CFLAGS:--std=c11 -O0 -g -Wall -Wextra}"
 CXXFLAGS="${CXXFLAGS:--std=c++17 -O0 -g -Wall -Wextra}"
-LDFLAGS="${LDFLAGS:-}"
+LDFLAGS="${LDFLAGS:--lX11}"
 BUILD_DIR="${BUILD_DIR:-build}"
 OBJ_DIR="$BUILD_DIR/obj"
 BIN="$BUILD_DIR/game"

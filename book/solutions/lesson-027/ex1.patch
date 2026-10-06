@@ -1,0 +1,53 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 106b3b0..e9fe820 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -17,8 +17,8 @@ constexpr int WINDOW_HEIGHT = 480;
+ 
+ int Run(void)
+ {
+-    platform::WindowResult opened =
+-        platform::OpenWindow(WINDOW_WIDTH, WINDOW_HEIGHT);
++    platform::WindowResult opened = platform::OpenWindow(
++        WINDOW_WIDTH, WINDOW_HEIGHT, "the framebuffer engine — lesson 027");
+     if (!opened.window) {
+         std::fprintf(stderr, "engine: no window (platform error %d)\n",
+                      opened.error);
+diff --git a/src/platform.h b/src/platform.h
+index 361251c..d5db044 100644
+--- a/src/platform.h
++++ b/src/platform.h
+@@ -26,8 +26,9 @@ struct WindowResult {
+     OpenError error; /* OPEN_OK exactly when window is non-0 */
+ };
+ 
+-/* Opens a window of exactly the requested size on the OS's display. */
+-WindowResult OpenWindow(int width, int height);
++/* Opens a window of exactly the requested size on the OS's display, with
++   the given title. A title is plain text — no OS idiom reaches the engine. */
++WindowResult OpenWindow(int width, int height, const char *title);
+ 
+ /* Releases everything OpenWindow took from the OS. */
+ void CloseWindow(Window *window);
+diff --git a/src/platform_x11.cpp b/src/platform_x11.cpp
+index 203b181..c20c4e3 100644
+--- a/src/platform_x11.cpp
++++ b/src/platform_x11.cpp
+@@ -25,7 +25,7 @@ struct Window {
+    part. The engine only ever holds the pointer. */
+ static Window window_state;
+ 
+-WindowResult OpenWindow(int width, int height)
++WindowResult OpenWindow(int width, int height, const char *title)
+ {
+     WindowResult result = { &window_state, OPEN_NO_DISPLAY };
+ 
+@@ -47,7 +47,7 @@ WindowResult OpenWindow(int width, int height)
+         return result;
+     }
+ 
+-    XStoreName(display, xwindow, "the framebuffer engine");
++    XStoreName(display, xwindow, title);
+     XMapWindow(display, xwindow);
+     XFlush(display);
+ 

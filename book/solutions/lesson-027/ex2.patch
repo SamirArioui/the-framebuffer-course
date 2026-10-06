@@ -1,0 +1,23 @@
+diff --git a/src/platform_x11.cpp b/src/platform_x11.cpp
+index 203b181..13c510e 100644
+--- a/src/platform_x11.cpp
++++ b/src/platform_x11.cpp
+@@ -9,6 +9,8 @@
+ 
+ #include <X11/Xlib.h>
+ 
++#include <cstdio>
++
+ namespace platform {
+ 
+ /* What a window is made of on this OS. The definition lives here, where
+@@ -29,6 +31,9 @@ WindowResult OpenWindow(int width, int height)
+ {
+     WindowResult result = { &window_state, OPEN_NO_DISPLAY };
+ 
++    /* Instrumenting print: which implementation is serving this call. */
++    std::fprintf(stderr, "platform: x11 implementation active\n");
++
+     Display *display = XOpenDisplay(0);
+     if (!display) {
+         result.window = 0;
