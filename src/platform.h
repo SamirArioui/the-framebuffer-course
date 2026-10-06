@@ -29,6 +29,14 @@ struct WindowResult {
 /* Opens a window of exactly the requested size on the OS's display. */
 WindowResult OpenWindow(int width, int height);
 
+/* Reads whatever news the OS has about this window and folds it into the
+   platform layer's state. The engine never sees an event object — it polls
+   state afterwards. Blocks until there is news. */
+void PumpEvents(Window *window);
+
+/* True once the user has asked for this window to close. */
+bool CloseRequested(const Window *window);
+
 /* Releases everything OpenWindow took from the OS. */
 void CloseWindow(Window *window);
 

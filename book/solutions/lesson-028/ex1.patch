@@ -1,0 +1,75 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 1fa92f3..66ae0bd 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -33,8 +33,10 @@ int Run(void)
+         platform::PumpEvents(opened.window);
+ 
+     std::printf("engine: close reported\n");
++    int width = 0, height = 0;
++    platform::WindowSize(opened.window, width, height);
+     platform::CloseWindow(opened.window);
+-    std::printf("engine: closed\n");
++    std::printf("engine: closed at %dx%d\n", width, height);
+     return 0;
+ }
+ 
+diff --git a/src/platform.h b/src/platform.h
+index d6aa25e..8b8350a 100644
+--- a/src/platform.h
++++ b/src/platform.h
+@@ -37,6 +37,9 @@ void PumpEvents(Window *window);
+ /* True once the user has asked for this window to close. */
+ bool CloseRequested(const Window *window);
+ 
++/* The window's current size, as the OS last reported it. */
++void WindowSize(const Window *window, int &width, int &height);
++
+ /* Releases everything OpenWindow took from the OS. */
+ void CloseWindow(Window *window);
+ 
+diff --git a/src/platform_x11.cpp b/src/platform_x11.cpp
+index 68de824..fd300f6 100644
+--- a/src/platform_x11.cpp
++++ b/src/platform_x11.cpp
+@@ -21,6 +21,8 @@ struct Window {
+     Display *display;
+     ::Window xwindow;
+     bool close_requested;
++    int width;
++    int height;
+ };
+ 
+ /* The OS state for one window, in static storage: no new, no delete — the
+@@ -70,6 +72,8 @@ WindowResult OpenWindow(int width, int height)
+     window_state.display = display;
+     window_state.xwindow = xwindow;
+     window_state.close_requested = false;
++    window_state.width = width;
++    window_state.height = height;
+     return result;
+ }
+ 
+@@ -83,6 +87,9 @@ static void HandleEvent(Window *window, XEvent &event)
+     } else if (event.type == DestroyNotify) {
+         window->close_requested = true; /* the window is already gone */
+         window->xwindow = 0;
++    } else if (event.type == ConfigureNotify) {
++        window->width = event.xconfigure.width;
++        window->height = event.xconfigure.height;
+     }
+ }
+ 
+@@ -107,6 +114,12 @@ bool CloseRequested(const Window *window)
+     return window && window->close_requested;
+ }
+ 
++void WindowSize(const Window *window, int &width, int &height)
++{
++    width = window->width;
++    height = window->height;
++}
++
+ void CloseWindow(Window *window)
+ {
+     if (!window || !window->display)

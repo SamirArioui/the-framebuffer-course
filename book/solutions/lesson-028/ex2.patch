@@ -1,0 +1,24 @@
+diff --git a/src/platform_x11.cpp b/src/platform_x11.cpp
+index 68de824..2cd54bb 100644
+--- a/src/platform_x11.cpp
++++ b/src/platform_x11.cpp
+@@ -12,6 +12,8 @@
+ 
+ #include <X11/Xlib.h>
+ 
++#include <cstdio>
++
+ namespace platform {
+ 
+ /* What a window is made of on this OS. The definition lives here, where
+@@ -79,8 +81,10 @@ static void HandleEvent(Window *window, XEvent &event)
+ {
+     if (event.type == ClientMessage &&
+         (Atom)event.xclient.data.l[0] == wm_delete_window) {
++        std::fprintf(stderr, "platform: close request (ClientMessage)\n");
+         window->close_requested = true; /* the polite request */
+     } else if (event.type == DestroyNotify) {
++        std::fprintf(stderr, "platform: window destroyed (DestroyNotify)\n");
+         window->close_requested = true; /* the window is already gone */
+         window->xwindow = 0;
+     }

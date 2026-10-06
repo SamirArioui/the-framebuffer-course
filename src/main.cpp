@@ -1,10 +1,9 @@
 // main.cpp — the engine, born.
 //
-// Lesson 027: the engine meets the OS through the platform seam. This file
-// includes no OS headers and names no OS type — it sees platform.h and
-// nothing else. The language law of lesson 026 holds: engine code lives in
-// namespace engine, main stays global, and every feature here is one the
-// law admits.
+// Lesson 028: the engine stays alive by reading the OS's news through the
+// seam. Still no OS headers, still no OS types — the pump is one more
+// platform function and the engine polls what it leaves behind. The
+// language law of lesson 026 holds.
 
 #include <cstdio>
 
@@ -25,13 +24,15 @@ int Run(void)
         return 1;
     }
 
-    std::printf("engine: window %dx%d open — press enter to close\n",
+    std::printf("engine: window %dx%d open — waiting for news\n",
                 WINDOW_WIDTH, WINDOW_HEIGHT);
 
-    /* Stand-in for the event pump: hold the window open until enter.
-       Lesson 028 replaces exactly this. */
-    std::getchar();
+    /* The event pump: read news, fold it into state, react to state,
+       repeat. This loop is what keeps the window alive. */
+    while (!platform::CloseRequested(opened.window))
+        platform::PumpEvents(opened.window);
 
+    std::printf("engine: close reported\n");
     platform::CloseWindow(opened.window);
     std::printf("engine: closed\n");
     return 0;

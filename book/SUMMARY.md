@@ -164,6 +164,10 @@
   - [Solution: ex1 — the window gets your title](solutions/lesson-027/ex1.md)
   - [Solution: ex2 — where the boundary is](solutions/lesson-027/ex2.md)
 
+- [Lesson 028 — the event pump: keeping the window alive and reporting close](lessons/part-1/lesson-028-event-pump.md)
+  - [Solution: ex1 — resize is news too](solutions/lesson-028/ex1.md)
+  - [Solution: ex2 — two ways the news arrives](solutions/lesson-028/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)
