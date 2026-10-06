@@ -13,6 +13,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 
+#include <cstdio>
 #include <poll.h>
 #include <signal.h>
 
@@ -49,6 +50,21 @@ static void OnInterrupt(int)
     interrupted = 1;
 }
 
+/* X errors are values in this layer, not process death. The default X
+   error handler would end the run on the spot — but a window can die while
+   a present is in flight, and that is news, not a crash. The handler
+   records what happened; Present decides what it means. */
+static int last_xerror;
+static unsigned long last_xerror_resource;
+
+static int OnXError(Display *display, XErrorEvent *event)
+{
+    (void)display;
+    last_xerror = event->error_code;
+    last_xerror_resource = event->resourceid;
+    return 0;
+}
+
 WindowResult OpenWindow(int width, int height)
 {
     WindowResult result = { &window_state, OPEN_NO_DISPLAY };
@@ -72,10 +88,12 @@ WindowResult OpenWindow(int width, int height)
     }
 
     /* Register the close request as the way to go, and subscribe to the
-       window's lifecycle news (map, configure, destroy). */
+       window's lifecycle news (map, configure, destroy) — plus Expose, the
+       "your pixels are gone" news. The engine handles Expose by doing the
+       only thing that repairs a window: presenting again. */
     wm_delete_window = XInternAtom(display, "WM_DELETE_WINDOW", False);
     XSetWMProtocols(display, xwindow, &wm_delete_window, 1);
-    XSelectInput(display, xwindow, StructureNotifyMask);
+    XSelectInput(display, xwindow, StructureNotifyMask | ExposureMask);
 
     XStoreName(display, xwindow, "the framebuffer engine");
     XMapWindow(display, xwindow);
@@ -86,9 +104,10 @@ WindowResult OpenWindow(int width, int height)
     window_state.close_requested = false;
 
     /* The interrupt is part of the window's take: from here on, Ctrl+C is
-       news like any other. */
+       news like any other — and X errors are recorded, not fatal. */
     interrupted = 0;
     signal(SIGINT, OnInterrupt);
+    XSetErrorHandler(OnXError);
     return result;
 }
 
@@ -133,11 +152,11 @@ bool CloseRequested(const Window *window)
     return window && window->close_requested;
 }
 
-void Present(Window *window, const unsigned char *pixels, int width,
+bool Present(Window *window, const unsigned char *pixels, int width,
              int height)
 {
-    if (!window || !window->display)
-        return;
+    if (!window || !window->display || !window->xwindow)
+        return false; /* nothing to present to (the OS may have destroyed it) */
 
     int screen = DefaultScreen(window->display);
 
@@ -150,10 +169,12 @@ void Present(Window *window, const unsigned char *pixels, int width,
                                  ZPixmap, 0, (char *)pixels,
                                  width, height, 32, width * 4);
     if (!image)
-        return;
+        return false;
 
     /* XPutImage is where the copy happens — our bytes to the server. Its
-       cost is real; lesson 036 measures it. */
+       cost is real; lesson 036 measures it. (Its return value is not a
+       status in practice — this call either copies or raises an X error,
+       which is the OS error handler's territory.) */
     XPutImage(window->display, window->xwindow,
               DefaultGC(window->display, screen),
               image, 0, 0, 0, 0, width, height);
@@ -163,7 +184,24 @@ void Present(Window *window, const unsigned char *pixels, int width,
        lesson 004's ownership drills). */
     image->data = 0;
     XDestroyImage(image);
-    XFlush(window->display);
+
+    /* The contract: when Present returns, the pixels are on screen. XFlush
+       would only send the copy; XSync waits for the server to have done
+       it. */
+    last_xerror = 0;
+    XSync(window->display, False);
+
+    if (last_xerror) {
+        /* An error on our own window means it died mid-copy — the same
+           news as DestroyNotify, the deed: report it and stop presenting. */
+        if ((last_xerror == BadDrawable || last_xerror == BadWindow) &&
+            last_xerror_resource == (unsigned long)window->xwindow) {
+            window->close_requested = true;
+            window->xwindow = 0;
+        }
+        return false;
+    }
+    return true;
 }
 
 void CloseWindow(Window *window)

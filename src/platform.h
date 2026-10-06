@@ -42,8 +42,10 @@ bool CloseRequested(const Window *window);
 /* Presents the engine's framebuffer in the window: the pixels the engine
    wrote are the pixels the window shows. The format is this interface's
    contract, not any OS's — width * height pixels of 4 bytes each (blue,
-   green, red, one unused byte), one row after another. */
-void Present(Window *window, const unsigned char *pixels, int width,
+   green, red, one unused byte), one row after another. Returns false if
+   the platform could not carry the pixels at all; when it returns true the
+   pixels are on screen — the copy has happened. */
+bool Present(Window *window, const unsigned char *pixels, int width,
              int height);
 
 /* Releases everything OpenWindow took from the OS. */

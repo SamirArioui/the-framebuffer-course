@@ -176,6 +176,10 @@
   - [Solution: ex1 — fillrect, back from Part 0](solutions/lesson-030/ex1.md)
   - [Solution: ex2 — the four bytes](solutions/lesson-030/ex2.md)
 
+- [Lesson 031 — presentation through the platform layer](lessons/part-1/lesson-031-present.md)
+  - [Solution: ex1 — the presentation check](solutions/lesson-031/ex1.md)
+  - [Solution: ex2 — cover and reveal](solutions/lesson-031/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

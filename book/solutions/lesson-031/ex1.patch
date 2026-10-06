@@ -1,0 +1,74 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 2dc455a..daa2d97 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -62,6 +62,13 @@ int Run(void)
+     }
+     std::printf("engine: presented\n");
+ 
++    /* The contract, proved: read the window back and compare. */
++    if (platform::PresentedMatches(opened.window, fb->pixels, fb->width,
++                                   fb->height))
++        std::printf("engine: presentation verified — window matches framebuffer\n");
++    else
++        std::fprintf(stderr, "engine: window does not match the framebuffer\n");
++
+     /* The frame step: read news, react, present our pixels, repeat.
+        Presentation is not an event — it is the engine's answer to every
+        event: the pixels the engine wrote are the pixels the window shows,
+diff --git a/src/platform.h b/src/platform.h
+index e23434d..33e1c21 100644
+--- a/src/platform.h
++++ b/src/platform.h
+@@ -48,6 +48,11 @@ bool CloseRequested(const Window *window);
+ bool Present(Window *window, const unsigned char *pixels, int width,
+              int height);
+ 
++/* Reads the window's pixels back and compares them with the bytes the
++   engine presented. The proof of the contract above. */
++bool PresentedMatches(Window *window, const unsigned char *pixels,
++                      int width, int height);
++
+ /* Releases everything OpenWindow took from the OS. */
+ void CloseWindow(Window *window);
+ 
+diff --git a/src/platform_x11.cpp b/src/platform_x11.cpp
+index 19bff08..5008c4f 100644
+--- a/src/platform_x11.cpp
++++ b/src/platform_x11.cpp
+@@ -204,6 +204,35 @@ bool Present(Window *window, const unsigned char *pixels, int width,
+     return true;
+ }
+ 
++bool PresentedMatches(Window *window, const unsigned char *pixels,
++                      int width, int height)
++{
++    if (!window || !window->display || !window->xwindow)
++        return false;
++
++    XImage *image = XGetImage(window->display, window->xwindow, 0, 0,
++                              width, height, AllPlanes, ZPixmap);
++    if (!image)
++        return false;
++
++    bool match = true;
++    for (int y = 0; y < height && match; ++y) {
++        for (int px = 0; px < width; ++px) {
++            unsigned long got = XGetPixel(image, px, y) & 0xFFFFFFUL;
++            const unsigned char *p = pixels + (y * width + px) * 4;
++            unsigned long want = (unsigned long)p[0] |
++                                 ((unsigned long)p[1] << 8) |
++                                 ((unsigned long)p[2] << 16);
++            if (got != want) {
++                match = false;
++                break;
++            }
++        }
++    }
++    XDestroyImage(image); /* the readback's bytes are Xlib's to free */
++    return match;
++}
++
+ void CloseWindow(Window *window)
+ {
+     if (!window || !window->display)

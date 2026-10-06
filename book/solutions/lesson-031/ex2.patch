@@ -1,0 +1,21 @@
+diff --git a/src/platform_x11.cpp b/src/platform_x11.cpp
+index 19bff08..977d81c 100644
+--- a/src/platform_x11.cpp
++++ b/src/platform_x11.cpp
+@@ -13,6 +13,7 @@
+ #include <X11/Xlib.h>
+ #include <X11/Xutil.h>
+ 
++#include <cstdio>
+ #include <cstdio>
+ #include <poll.h>
+ #include <signal.h>
+@@ -118,6 +119,8 @@ static void HandleEvent(Window *window, XEvent &event)
+     if (event.type == ClientMessage &&
+         (Atom)event.xclient.data.l[0] == wm_delete_window) {
+         window->close_requested = true; /* the polite request */
++    } else if (event.type == Expose) {
++        std::fprintf(stderr, "platform: expose — the window needs its pixels\n");
+     } else if (event.type == DestroyNotify) {
+         window->close_requested = true; /* the window is already gone */
+         window->xwindow = 0;

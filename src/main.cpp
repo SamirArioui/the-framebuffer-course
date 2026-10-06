@@ -55,16 +55,42 @@ int Run(void)
     std::printf("engine: pixel (60,101) = %d %d %d\n", r, g, b);
 
     /* First light: the bytes go to the window through the seam. */
-    platform::Present(opened.window, fb->pixels, fb->width, fb->height);
+    if (!platform::Present(opened.window, fb->pixels, fb->width, fb->height)) {
+        std::fprintf(stderr, "engine: presentation failed\n");
+        platform::CloseWindow(opened.window);
+        return 1;
+    }
     std::printf("engine: presented\n");
 
-    while (!platform::CloseRequested(opened.window))
+    /* The frame step: read news, react, present our pixels, repeat.
+       Presentation is not an event — it is the engine's answer to every
+       event: the pixels the engine wrote are the pixels the window shows,
+       and re-presenting is what repairs the window when the OS damaged it.
+       React first: if the news was "the window is gone", there is nothing
+       left to present to. */
+    int exit_code = 0;
+    while (!platform::CloseRequested(opened.window)) {
         platform::PumpEvents(opened.window);
+        if (platform::CloseRequested(opened.window))
+            break;
+        if (!platform::Present(opened.window, fb->pixels, fb->width,
+                               fb->height)) {
+            /* A present can fail because the window died mid-copy — that
+               is close news and the fold already said so. Anything else is
+               a real failure and is reported as one. */
+            if (platform::CloseRequested(opened.window))
+                break;
+            std::fprintf(stderr, "engine: presentation failed\n");
+            exit_code = 1;
+            break;
+        }
+    }
 
-    std::printf("engine: close reported\n");
+    if (platform::CloseRequested(opened.window))
+        std::printf("engine: close reported\n");
     platform::CloseWindow(opened.window);
     std::printf("engine: closed\n");
-    return 0;
+    return exit_code;
 }
 
 } /* namespace engine */
