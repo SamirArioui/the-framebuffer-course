@@ -17,8 +17,11 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-# The files a second OS replaces. Everything else is engine code.
-IMPL="src/platform_x11.cpp"
+# The files a second OS replaces. Everything else is engine code. The list
+# grows with the seam: the window, clock, memory, and file I/O live in the
+# X11 file; the sound device lives in its own (Part 3). A file that does not
+# exist yet is simply never matched.
+IMPL="src/platform_x11.cpp src/platform_alsa.cpp"
 
 # Headers that only an OS has. The language's own headers (<cstdio>,
 # <cstring>, <stddef.h>, ...) are fine anywhere — they are not an OS.
@@ -29,9 +32,18 @@ OS_CALLS='(^|[^A-Za-z0-9_:])(X[A-Z][A-Za-z]+|mmap|munmap|mprotect|clock_gettime|
 
 status=0
 
+# True when this file is one a second OS replaces.
+is_impl() {
+    local f="$1" candidate
+    for candidate in $IMPL; do
+        [ "$f" = "$candidate" ] && return 0
+    done
+    return 1
+}
+
 echo "boundary: engine code must not name an OS"
 for f in src/*.h src/*.cpp; do
-    [ "$f" = "$IMPL" ] && continue
+    is_impl "$f" && continue
     if hits=$(grep -nE "$OS_HEADERS" "$f"); then
         echo "BREACH: $f includes an OS header:"
         echo "$hits"

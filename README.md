@@ -40,6 +40,10 @@ retrievable from its tag (`git checkout lesson-025 -- sandbox/`).
 - **gcc** (or clang) and **gdb** — Part 0 teaches the toolchain explicitly; for
   this audience the toolchain is curriculum
 - **git**
+- **libasound2-dev** — the ALSA development headers, the sound device's
+  interface (Part 3). On Debian/Ubuntu: `apt install libasound2-dev`. The
+  `libx11-dev` analog for the sound line; a machine without a working output
+  still runs the engine, which reports the missing device as a typed failure.
 - **mdBook 0.5.4** (pinned) — site authoring tooling. The course's "no external
   libraries" rule governs student-visible C/C++ only, not authoring tools.
 - **openspec** (CLI) — to validate the planning changes under `openspec/`
