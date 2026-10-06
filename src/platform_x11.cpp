@@ -221,6 +221,11 @@ double Now(void)
     return (double)ts.tv_sec + (double)ts.tv_nsec / 1e9;
 }
 
+size_t PageSize(void)
+{
+    return (size_t)sysconf(_SC_PAGESIZE);
+}
+
 /* File I/O is the OS side too — POSIX here, Win32's own calls in a second
    implementation. The bytes the OS reads for us live in memory the OS
    gives us (its allocator) and leave through ReleaseFile. */

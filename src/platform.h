@@ -64,6 +64,9 @@ bool HasFocus(const Window *window);
    clock Part 2's frame timing and Part 5's frame-budget report stand on. */
 double Now(void);
 
+/* The OS's memory page: the unit every mapping is counted in. */
+size_t PageSize(void);
+
 /* A file's complete bytes — or a typed failure. Never partial data
    presented as success. */
 enum FileError {

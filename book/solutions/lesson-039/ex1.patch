@@ -1,0 +1,20 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 0eedfe1..5268ae9 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -123,6 +123,15 @@ int Run(int argc, char **argv)
+                 (double)fb_bytes / (double)page,
+                 (size_t)fb->pixels % page == 0 ? "yes" : "no");
+ 
++    /* The pages the bytes touch: mappings are counted in pages, so an
++       unaligned buffer covers one page more than it "is". */
++    size_t first_page = (size_t)fb->pixels - (size_t)fb->pixels % page;
++    size_t last_byte = (size_t)fb->pixels + fb_bytes - 1;
++    size_t last_page = last_byte - last_byte % page;
++    std::printf("engine: framebuffer spans %p .. %p — %zu pages\n",
++                (void *)first_page, (void *)(last_page + page),
++                (last_page - first_page) / page + 1);
++
+     std::printf("engine: arrow keys move the marker; close the window to stop\n");
+     std::printf("engine: marker at %d,%d\n", (int)marker_x, (int)marker_y);
+ 

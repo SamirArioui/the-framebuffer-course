@@ -208,6 +208,10 @@
   - [Solution: ex1 — the screenshot](solutions/lesson-038/ex1.md)
   - [Solution: ex2 — the device that is always full](solutions/lesson-038/ex2.md)
 
+- [Lesson 039 — the virtual-memory deep dive](lessons/part-1/lesson-039-virtual-memory.md)
+  - [Solution: ex1 — find your mapping](solutions/lesson-039/ex1.md)
+  - [Solution: ex2 — the file that lies about its size](solutions/lesson-039/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

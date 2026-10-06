@@ -111,6 +111,18 @@ int Run(int argc, char **argv)
     double marker_y = (FRAME_HEIGHT - MARKER_SIZE) / 2.0;
     double started = platform::Now();
     double last = started;
+
+    /* The virtual-memory report: every byte the engine owns lives in a
+       mapping the OS keeps, counted in pages. This is what the deep dive
+       explains — the numbers here are measured, not illustrative. */
+    size_t page = platform::PageSize();
+    size_t fb_bytes = (size_t)fb->width * fb->height * 4;
+    std::printf("engine: page size %zu bytes\n", page);
+    std::printf("engine: framebuffer at %p — %zu bytes = %.2f pages (page-aligned: %s)\n",
+                (void *)fb->pixels, fb_bytes,
+                (double)fb_bytes / (double)page,
+                (size_t)fb->pixels % page == 0 ? "yes" : "no");
+
     std::printf("engine: arrow keys move the marker; close the window to stop\n");
     std::printf("engine: marker at %d,%d\n", (int)marker_x, (int)marker_y);
 

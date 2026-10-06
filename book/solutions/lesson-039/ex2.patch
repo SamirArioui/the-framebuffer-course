@@ -1,0 +1,77 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 0eedfe1..942392f 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -123,6 +123,12 @@ int Run(int argc, char **argv)
+                 (double)fb_bytes / (double)page,
+                 (size_t)fb->pixels % page == 0 ? "yes" : "no");
+ 
++    if (argc > 2) { /* exercise 2: what does a lie of a file really hold? */
++        platform::FileData probe = platform::ReadFile(argv[2]);
++        std::printf("engine: %s: %zu bytes read\n", argv[2], probe.size);
++        platform::ReleaseFile(probe);
++    }
++
+     std::printf("engine: arrow keys move the marker; close the window to stop\n");
+     std::printf("engine: marker at %d,%d\n", (int)marker_x, (int)marker_y);
+ 
+diff --git a/src/platform_x11.cpp b/src/platform_x11.cpp
+index 58c6339..f972da0 100644
+--- a/src/platform_x11.cpp
++++ b/src/platform_x11.cpp
+@@ -247,16 +247,31 @@ FileData ReadFile(const char *path)
+         return file; /* still FILE_UNREADABLE */
+     }
+ 
++    /* The size is where reading starts, not where it stops: virtual files
++       (like /proc/self/maps) report 0 and hold kilobytes. Read to the end
++       of the file and grow the buffer as needed (lesson 008's tool). */
+     size_t capacity = (size_t)st.st_size;
+-    unsigned char *bytes =
+-        (unsigned char *)malloc(capacity ? capacity : 1);
++    if (capacity == 0)
++        capacity = 4096;
++    unsigned char *bytes = (unsigned char *)malloc(capacity);
+     if (!bytes) {
+         close(fd);
+         return file;
+     }
+ 
+     size_t total = 0;
+-    while (total < capacity) {
++    for (;;) {
++        if (total == capacity) {
++            capacity *= 2;
++            unsigned char *grown =
++                (unsigned char *)realloc(bytes, capacity);
++            if (!grown) {
++                free(bytes);
++                close(fd);
++                return file;
++            }
++            bytes = grown;
++        }
+         ssize_t n = read(fd, bytes + total, capacity - total);
+         if (n < 0) {
+             free(bytes);
+@@ -264,19 +279,10 @@ FileData ReadFile(const char *path)
+             return file;
+         }
+         if (n == 0)
+-            break; /* the file ended early — checked below */
++            break; /* the file ends here, and that is the whole of it */
+         total += (size_t)n;
+     }
+ 
+-    /* One byte past what the size promised must find nothing, or the file
+-       changed under the read — and a moving file is not a whole file. */
+-    unsigned char extra;
+-    if (total != capacity || read(fd, &extra, 1) != 0) {
+-        free(bytes);
+-        close(fd);
+-        return file;
+-    }
+-
+     close(fd);
+     file.data = bytes;
+     file.size = total;
