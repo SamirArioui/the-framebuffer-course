@@ -1,0 +1,67 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 25ce44c..ca54ed1 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -162,25 +162,51 @@ int Run(void)
+         std::printf(" %d", (int)sample.frames[i]);
+     std::printf("\n");
+ 
+-    /* Lesson 064: two channels playing the same sample at different
+-       volumes, so the mix is a real sum and the numbers are checkable —
+-       each output frame is the two contributions added, then clamped. */
++    /* Exercise 1: five channels on the same sample at full volume — the
++       mix is a real sum, and five of them leave the format's range. */
+     Mixer mixer;
+     MixerInit(mixer);
+-    ChannelPlay(mixer.channels[0], sample, AUDIO_VOLUME_FULL / 2);
+-    ChannelPlay(mixer.channels[1], sample, AUDIO_VOLUME_FULL / 4);
+-    std::printf("engine: mix: channel 0 at volume %d, channel 1 at volume %d of %d\n",
+-                mixer.channels[0].volume, mixer.channels[1].volume,
+-                AUDIO_VOLUME_FULL);
++    for (int c = 0; c < 5; ++c)
++        ChannelPlay(mixer.channels[c], sample, AUDIO_VOLUME_FULL);
++    std::printf("engine: mix: five channels at volume %d of %d\n",
++                mixer.channels[0].volume, AUDIO_VOLUME_FULL);
+     std::printf("engine: mix: first frames (summed):");
+     for (int i = 0; i < 8 && i < sample.frame_count; ++i) {
+         int v = sample.frames[i * sample.channels];
+-        std::printf(" %d",
+-                    (v * mixer.channels[0].volume) / AUDIO_VOLUME_FULL +
+-                        (v * mixer.channels[1].volume) / AUDIO_VOLUME_FULL);
++        int sum = 0;
++        for (int c = 0; c < 5; ++c)
++            sum += (v * mixer.channels[c].volume) / AUDIO_VOLUME_FULL;
++        std::printf(" %d", sum);
+     }
+     std::printf("\n");
+ 
++    /* Exercise 1: the clamp's footprint. The whole sample, frame by
++       frame, through the engine's own MixBuffer on a scratch mixer —
++       five channels at full volume — and every frame the clamp changes
++       is named (the first few) and counted (all of them). */
++    Mixer probe;
++    MixerInit(probe);
++    for (int c = 0; c < 5; ++c)
++        ChannelPlay(probe.channels[c], sample, AUDIO_VOLUME_FULL);
++    int clamped = 0;
++    for (int at = 0; at < sample.frame_count; ++at) {
++        short one = 0;
++        MixBuffer(probe, &one, 1);
++        int sum = 5 * sample.frames[at * sample.channels];
++        if (sum == (int)one)
++            continue;
++        clamped += 1;
++        if (clamped <= 6) {
++            /* What a wrapping accumulator — the sum truncated to the
++               format's 16 bits — would have put in the stream instead. */
++            int wrapped = sum > 32767 ? sum - 65536 : sum + 65536;
++            std::printf("engine: clamp: frame %d: sum %d -> out %d, wrapped %d\n",
++                        at, sum, (int)one, wrapped);
++        }
++    }
++    std::printf("engine: clamp: %d of %d frames clamped\n", clamped,
++                sample.frame_count);
++
+     double sprite_x = 312.0, sprite_y = 232.0;
+     double started = platform::Now();
+     double last = started;

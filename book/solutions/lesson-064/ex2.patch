@@ -1,0 +1,38 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 25ce44c..dada7b0 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -181,6 +181,33 @@ int Run(void)
+     }
+     std::printf("\n");
+ 
++    /* Exercise 2: the mix's cost per buffer as channels are added. The
++       probe times MixBuffer on its own — a scratch mixer, re-armed
++       before every trial so every timed buffer has its channels
++       playing — at 0, 1, 2, 4, 8, and 16 active channels. A trial is
++       29 buffers, one short of the tone's thirty, so no channel runs
++       out of sample while it is timed. */
++    static short bench[CHUNK_FRAMES];
++    static const int counts[6] = { 0, 1, 2, 4, 8, 16 };
++    int trials = 200, buffers = 29;
++    for (int n = 0; n < 6; ++n) {
++        Mixer probe;
++        double total = 0.0;
++        for (int t = 0; t < trials; ++t) {
++            MixerInit(probe);
++            for (int c = 0; c < counts[n]; ++c)
++                ChannelPlay(probe.channels[c], sample, AUDIO_VOLUME_FULL);
++            double t0 = platform::Now();
++            for (int b = 0; b < buffers; ++b)
++                MixBuffer(probe, bench, CHUNK_FRAMES);
++            total += platform::Now() - t0;
++        }
++        double per_buffer = total / (double)(trials * buffers);
++        std::printf("engine: mix cost: %2d channels — %.4f ms per %d-frame buffer, %.4f us per output frame\n",
++                    counts[n], per_buffer * 1e3, CHUNK_FRAMES,
++                    per_buffer * 1e6 / CHUNK_FRAMES);
++    }
++
+     double sprite_x = 312.0, sprite_y = 232.0;
+     double started = platform::Now();
+     double last = started;

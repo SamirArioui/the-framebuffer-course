@@ -86,11 +86,24 @@ struct Channel {
    frame. Playing on one channel leaves every other channel alone. */
 void ChannelPlay(Channel &channel, const Sample &sample, int volume);
 
-/* Fills `out` with `frame_count` frames of this channel's output: the
-   sample's frames at the channel's volume, one for one, advancing the
-   cursor. Past the sample's end the channel writes silence and is
-   inactive again — frame_count is the fact that says when. */
-void ChannelFill(Channel &channel, short *out, int frame_count);
+/* The mixer's fixed set of channels. */
+constexpr int AUDIO_MIXER_CHANNELS = 16;
+
+/* The mixer: one fixed pool of channels, decided up front — nothing is
+   allocated while sound plays. */
+struct Mixer {
+    Channel channels[AUDIO_MIXER_CHANNELS];
+};
+
+/* Every channel idle and free. */
+void MixerInit(Mixer &mixer);
+
+/* The mix: `frame_count` frames of stream, each one the sum of every
+   active channel's next frame at its volume, clamped to the format's
+   range. Clamped, never wrapped — a sum past the range lands on the
+   limit instead of jumping to the opposite extreme. Idle and ended
+   channels contribute nothing at all. */
+void MixBuffer(Mixer &mixer, short *out, int frame_count);
 
 } /* namespace engine */
 

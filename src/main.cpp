@@ -162,20 +162,23 @@ int Run(void)
         std::printf(" %d", (int)sample.frames[i]);
     std::printf("\n");
 
-    /* Lesson 063: the sample starts playing on one channel, at half
-       volume — the fixed-point scale is 0-256, so 128 is half. The
-       scaling is checkable byte for byte: at half volume every frame the
-       channel emits is the sample's frame halved, truncated. */
-    Channel channel = {};
-    ChannelPlay(channel, sample, AUDIO_VOLUME_FULL / 2);
-    std::printf("engine: channel: playing %d frames at volume %d of %d\n",
-                sample.frame_count, channel.volume, AUDIO_VOLUME_FULL);
-    std::printf("engine: channel: first frames at that volume:");
-    for (int i = 0; i < 8 && i < sample.frame_count; ++i)
+    /* Lesson 064: two channels playing the same sample at different
+       volumes, so the mix is a real sum and the numbers are checkable —
+       each output frame is the two contributions added, then clamped. */
+    Mixer mixer;
+    MixerInit(mixer);
+    ChannelPlay(mixer.channels[0], sample, AUDIO_VOLUME_FULL / 2);
+    ChannelPlay(mixer.channels[1], sample, AUDIO_VOLUME_FULL / 4);
+    std::printf("engine: mix: channel 0 at volume %d, channel 1 at volume %d of %d\n",
+                mixer.channels[0].volume, mixer.channels[1].volume,
+                AUDIO_VOLUME_FULL);
+    std::printf("engine: mix: first frames (summed):");
+    for (int i = 0; i < 8 && i < sample.frame_count; ++i) {
+        int v = sample.frames[i * sample.channels];
         std::printf(" %d",
-                    (int)(sample.frames[i * sample.channels] *
-                          channel.volume) /
-                        AUDIO_VOLUME_FULL);
+                    (v * mixer.channels[0].volume) / AUDIO_VOLUME_FULL +
+                        (v * mixer.channels[1].volume) / AUDIO_VOLUME_FULL);
+    }
     std::printf("\n");
 
     double sprite_x = 312.0, sprite_y = 232.0;
@@ -342,22 +345,22 @@ int Run(void)
            where no buffer was due — so the phase accounts for all of the
            frame's audio work.
 
-           Lesson 063: the stream is the channel's output. One buffer is
-           what the channel produces — its sample's frames at its volume,
-           and silence past the sample's end. frame_count is the fact that
-           says when the sample ends; the channel never runs past it. */
+           Lesson 064: the stream is the mix. One buffer is every active
+           channel's next frames summed and clamped — silence where no
+           channel has anything to say. frame_count is the fact that says
+           when a sample ends; no channel ever runs past it. */
         double t_audio = platform::Now();
         if (audio.output && t_audio >= next_feed) {
-            int before = channel.cursor;
-            ChannelFill(channel, stream, CHUNK_FRAMES);
-            int take = channel.cursor - before;
+            int before = mixer.channels[0].cursor;
+            MixBuffer(mixer, stream, CHUNK_FRAMES);
+            int take = mixer.channels[0].cursor - before;
 
             if (platform::SubmitSamples(audio.output, stream,
                                         CHUNK_FRAMES)) {
                 sample_fed += take;
                 if (take > 0)
                     sample_feeds += 1;
-                if (!sample_end_named && !channel.active) {
+                if (!sample_end_named && !mixer.channels[0].active) {
                     /* The end, named in the sample's own numbers: what was
                        fed before silence, and how many buffers carried it. */
                     sample_end_named = true;

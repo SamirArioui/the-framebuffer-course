@@ -312,6 +312,10 @@
   - [Solution: ex1 — quarter volume, to the digit](solutions/lesson-063/ex1.md)
   - [Solution: ex2 — the fade to silence](solutions/lesson-063/ex2.md)
 
+- [Lesson 064 — the mix](lessons/part-3/lesson-064-mix.md)
+  - [Solution: ex1 — five channels at the peak](solutions/lesson-064/ex1.md)
+  - [Solution: ex2 — what the mix costs](solutions/lesson-064/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

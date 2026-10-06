@@ -195,25 +195,62 @@ void ChannelPlay(Channel &channel, const Sample &sample, int volume)
     channel.active = true;
 }
 
-void ChannelFill(Channel &channel, short *out, int frame_count)
+namespace {
+
+/* One channel's next output frame at its volume — and the cursor moves.
+   An idle channel, or one whose sample has ended, contributes nothing:
+   silence is not a value here, it is the absence of a contribution. */
+int ChannelFrame(Channel &channel)
+{
+    if (channel.active && channel.sample &&
+        channel.cursor < channel.sample->frame_count) {
+        /* One sample frame, scaled to the channel's volume. A frame is
+           sample.channels values wide; the engine's stream is one
+           channel wide, so it takes the frame's first value. */
+        int frame = channel.sample->frames[channel.cursor *
+                                           channel.sample->channels];
+        channel.cursor += 1;
+        return (frame * channel.volume) / AUDIO_VOLUME_FULL;
+    }
+
+    /* The sample's end — the fact frame_count carries. */
+    channel.active = false;
+    return 0;
+}
+
+/* The format's range, in the same numbers the samples use. */
+constexpr int SAMPLE_LIMIT_HI = 32767;
+constexpr int SAMPLE_LIMIT_LO = -32768;
+
+} /* namespace */
+
+void MixerInit(Mixer &mixer)
+{
+    for (int c = 0; c < AUDIO_MIXER_CHANNELS; ++c) {
+        mixer.channels[c].sample = 0;
+        mixer.channels[c].cursor = 0;
+        mixer.channels[c].volume = 0;
+        mixer.channels[c].active = false;
+    }
+}
+
+void MixBuffer(Mixer &mixer, short *out, int frame_count)
 {
     for (int i = 0; i < frame_count; ++i) {
-        if (channel.active && channel.sample &&
-            channel.cursor < channel.sample->frame_count) {
-            /* One sample frame, scaled to the channel's volume. A frame
-               is sample.channels values wide; the engine's stream is one
-               channel wide, so it takes the frame's first value. */
-            int frame =
-                channel.sample->frames[channel.cursor *
-                                       channel.sample->channels];
-            out[i] = (short)((frame * channel.volume) / AUDIO_VOLUME_FULL);
-            channel.cursor += 1;
-        } else {
-            /* The sample's end — the fact frame_count carries. Silence
-               from here, and the channel is free again. */
-            channel.active = false;
-            out[i] = 0;
-        }
+        /* The 32-bit accumulator for this output frame: sixteen channels
+           of 16-bit samples cannot overflow it, so the clamp below sees
+           the true sum and not a wrapped one. */
+        int sum = 0;
+        for (int c = 0; c < AUDIO_MIXER_CHANNELS; ++c)
+            sum += ChannelFrame(mixer.channels[c]);
+
+        /* Clamped, never wrapped: a sum past the range lands on the
+           limit rather than jumping to the opposite extreme. */
+        if (sum > SAMPLE_LIMIT_HI)
+            sum = SAMPLE_LIMIT_HI;
+        if (sum < SAMPLE_LIMIT_LO)
+            sum = SAMPLE_LIMIT_LO;
+        out[i] = (short)sum;
     }
 }
 
