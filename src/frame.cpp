@@ -14,6 +14,7 @@ void AccountFrame(FrameStats &stats, const FrameRecord &frame)
     stats.present_sum += frame.present;
     stats.total_sum += frame.total;
     stats.sprites_sum += frame.sprites;
+    stats.text_sum += frame.text;
     if (frame.total > stats.worst) {
         stats.worst = frame.total;
         stats.worst_number = frame.number;

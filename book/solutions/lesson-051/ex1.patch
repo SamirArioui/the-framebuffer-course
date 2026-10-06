@@ -1,0 +1,37 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index c60358b..927568b 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -341,6 +341,32 @@ int Run(void)
+     std::printf("engine: arrow keys move the sprite; close the window to stop\n");
+     std::printf("engine: sprite at %d,%d\n", (int)sprite_x, (int)sprite_y);
+ 
++    /* Exercise 1: the HUD that counts — a string built at runtime, drawn
++       like any other, and checked like any other. */
++    {
++        char hud_line[32];
++        std::snprintf(hud_line, sizeof hud_line, "X %d Y %d",
++                      (int)sprite_x, (int)sprite_y);
++        ClearBuffer(*fb, 32, 32, 64);
++        DrawText(*fb, font, hud_line, 8, 24);
++        int slots = TextWidth(hud_line) / FONT_CELL;
++        int with_ink = 0;
++        for (int s = 0; s < slots; ++s) {
++            bool ink = false;
++            for (int j = 0; j < FONT_CELL && !ink; ++j)
++                for (int i = 0; i < FONT_CELL && !ink; ++i) {
++                    unsigned char r, g, b;
++                    GetPixel(*fb, 8 + s * FONT_CELL + i, 24 + j, r, g, b);
++                    if (r != 32 || g != 32 || b != 64)
++                        ink = true;
++                }
++            if (ink)
++                ++with_ink;
++        }
++        std::printf("engine: hud \"%s\": %d slots, %d with ink\n", hud_line,
++                    slots, with_ink);
++    }
++
+     /* The frame step: read news, update from polled state, draw, present —
+        every phase measured, one record per frame. */
+     int exit_code = 0;

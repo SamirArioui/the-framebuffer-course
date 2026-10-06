@@ -23,6 +23,7 @@ struct FrameRecord {
        (lesson 058) grows from. The named times are inside render, never
        instead of it: render stays the phase, these say where it went. */
     double sprites; /* sprite draws through the blit */
+    double text;    /* lesson 051: text drawing — glyphs through the blit */
 };
 
 /* The running account: every frame measured so far. */
@@ -33,6 +34,7 @@ struct FrameStats {
     double present_sum;
     double total_sum;
     double sprites_sum; /* lesson 046's named sub-phase, summed like the rest */
+    double text_sum;
     double worst;      /* the longest frame so far */
     long worst_number; /* and which one it was */
 };

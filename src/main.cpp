@@ -14,6 +14,7 @@
 #include "frame.h"
 #include "platform.h"
 #include "sprite.h"
+#include "text.h"
 
 namespace engine {
 
@@ -289,6 +290,48 @@ int Run(void)
                     ink, key);
     }
 
+    /* Lesson 051: the text claims — glyphs laid out in order, and the
+       missing-glyph rule: the character the font lacks draws nothing and
+       the characters after it keep their slots. */
+    ClearBuffer(*fb, 32, 32, 64);
+    DrawText(*fb, font, "AB", 200, 120);
+    {
+        int slots_with_ink = 0;
+        for (int s = 0; s < 2; ++s) {
+            bool ink = false;
+            for (int j = 0; j < FONT_CELL && !ink; ++j)
+                for (int i = 0; i < FONT_CELL && !ink; ++i) {
+                    unsigned char r, g, b;
+                    GetPixel(*fb, 200 + s * FONT_CELL + i, 120 + j, r, g, b);
+                    if (r != 32 || g != 32 || b != 64)
+                        ink = true;
+                }
+            if (ink)
+                ++slots_with_ink;
+        }
+        std::printf("engine: text check: \"AB\" at 200,120 — %d of 2 slots have ink, width %d\n",
+                    slots_with_ink, TextWidth("AB"));
+    }
+    ClearBuffer(*fb, 32, 32, 64);
+    DrawText(*fb, font, "A\xC2\xB5" "B", 200, 140); /* "AµB": µ is not in the sheet */
+    {
+        /* Four bytes, four slots: the µ is two bytes, and each keeps its
+           slot — the layout follows the bytes, and B lands where the
+           layout says. */
+        int slot_state[4] = { 0, 0, 0, 0 };
+        for (int s = 0; s < 4; ++s) {
+            for (int j = 0; j < FONT_CELL; ++j)
+                for (int i = 0; i < FONT_CELL; ++i) {
+                    unsigned char r, g, b;
+                    GetPixel(*fb, 200 + s * FONT_CELL + i, 140 + j, r, g, b);
+                    if (r != 32 || g != 32 || b != 64)
+                        ++slot_state[s];
+                }
+        }
+        std::printf("engine: text check: \"A?B\" with a missing character — ink pixels per slot: %d, %d, %d, %d\n",
+                    slot_state[0], slot_state[1], slot_state[2], slot_state[3]);
+    }
+
     double sprite_x = (FRAME_WIDTH - sprite.width) / 2.0;
     double sprite_y = (FRAME_HEIGHT - sprite.height) / 2.0;
     double started = platform::Now();
@@ -345,19 +388,15 @@ int Run(void)
                         (int)sprite_y, platform::Now() - started);
 
         /* Render: every frame draws the whole scene — clear, then the
-           sprite through the one blit. The sprite draw is timed as its own
-           named phase: the first subsystem the frame record can name.
-           Glyphs are sprites too (lesson 050) — they count here until
-           lesson 051 names the text phase. */
+           sprite and the text, each timed as its own named phase: the
+           subsystems the frame record can name. */
         ClearBuffer(*fb, 32, 32, 64);
         double t_sprites = platform::Now();
         BlitSprite(*fb, sprite, (int)sprite_x, (int)sprite_y);
-        for (int li = 0; HUD_LABEL[li]; ++li) {
-            const Sprite *glyph = FontGlyph(font, HUD_LABEL[li]);
-            if (glyph)
-                BlitSprite(*fb, *glyph, 8 + li * FONT_CELL, 8);
-        }
         frame.sprites = platform::Now() - t_sprites;
+        double t_text = platform::Now();
+        DrawText(*fb, font, HUD_LABEL, 8, 8);
+        frame.text = platform::Now() - t_text;
 
         frame.render = platform::Now() - t1;
         double t2 = platform::Now();
@@ -380,20 +419,21 @@ int Run(void)
 
         /* The frame log: one line per record — the format grows its named
            fields, one per subsystem, as the parts name them. */
-        std::printf("frame %ld: update %.3f ms, render %.3f ms (sprites %.3f), present %.3f ms, total %.3f ms\n",
+        std::printf("frame %ld: update %.3f ms, render %.3f ms (sprites %.3f, text %.3f), present %.3f ms, total %.3f ms\n",
                     frame.number, frame.update * 1e3, frame.render * 1e3,
-                    frame.sprites * 1e3, frame.present * 1e3,
-                    frame.total * 1e3);
+                    frame.sprites * 1e3, frame.text * 1e3,
+                    frame.present * 1e3, frame.total * 1e3);
     }
 
     /* The account: what the frames actually cost, including the honest
        price of the presentation copy. */
     if (stats.frames) {
         double n = (double)stats.frames;
-        std::printf("engine: %ld frames — avg %.3f ms (update %.3f, render %.3f incl. sprites %.3f, present %.3f)\n",
+        std::printf("engine: %ld frames — avg %.3f ms (update %.3f, render %.3f incl. sprites %.3f, text %.3f, present %.3f)\n",
                     stats.frames, stats.total_sum / n * 1e3,
                     stats.update_sum / n * 1e3, stats.render_sum / n * 1e3,
-                    stats.sprites_sum / n * 1e3, stats.present_sum / n * 1e3);
+                    stats.sprites_sum / n * 1e3, stats.text_sum / n * 1e3,
+                    stats.present_sum / n * 1e3);
         std::printf("engine: worst frame %.3f ms (frame %ld); present is %.0f%% of the frame\n",
                     stats.worst * 1e3, stats.worst_number,
                     100.0 * stats.present_sum / stats.total_sum);

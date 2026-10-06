@@ -1,0 +1,38 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index c60358b..e771aa5 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -332,6 +332,33 @@ int Run(void)
+                     slot_state[0], slot_state[1], slot_state[2], slot_state[3]);
+     }
+ 
++    /* Exercise 2: the two kinds of nothing — a space has a glyph (all
++       key pixels) and a byte the sheet lacks has none at all. */
++    std::printf("engine: space: %s; byte 200: %s\n",
++                FontGlyph(font, ' ') ? "has a glyph" : "no glyph",
++                FontGlyph(font, (char)200) ? "has a glyph" : "no glyph");
++    ClearBuffer(*fb, 32, 32, 64);
++    DrawText(*fb, font, "A B", 200, 160);
++    {
++        int with_ink = 0, without = 0;
++        for (int s = 0; s < 3; ++s) {
++            bool ink = false;
++            for (int j = 0; j < FONT_CELL && !ink; ++j)
++                for (int i = 0; i < FONT_CELL && !ink; ++i) {
++                    unsigned char r, g, b;
++                    GetPixel(*fb, 200 + s * FONT_CELL + i, 160 + j, r, g, b);
++                    if (r != 32 || g != 32 || b != 64)
++                        ink = true;
++                }
++            if (ink)
++                ++with_ink;
++            else
++                ++without;
++        }
++        std::printf("engine: \"A B\": %d slots with ink, %d without\n",
++                    with_ink, without);
++    }
++
+     double sprite_x = (FRAME_WIDTH - sprite.width) / 2.0;
+     double sprite_y = (FRAME_HEIGHT - sprite.height) / 2.0;
+     double started = platform::Now();
