@@ -1,0 +1,4 @@
+# Asset files are binary data, whatever their bytes happen to look like.
+# (Lesson 053: the tile art's pixel bytes contained no NULs and git
+# cheerfully diffed it as text — a one-line fact worth writing down.)
+*.ppm binary

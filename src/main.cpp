@@ -16,6 +16,7 @@
 #include "sprite.h"
 #include "text.h"
 #include "tilemap.h"
+#include "tiles.h"
 
 namespace engine {
 
@@ -382,6 +383,72 @@ int Run(void)
     std::printf("engine: map check: %d cells, %d unknown, %d of 2 corners solid\n",
                 map.width * map.height, unknown, solid_corners);
 
+    /* Lesson 053: tiles are sprites — the sheet, cut per kind. */
+    const char *tiles_path = "assets/tiles.ppm";
+    TileSheetResult tiles_loaded = LoadTileSheet(arena, tiles_path,
+                                                 map.kind_count);
+    if (tiles_loaded.error != TILES_OK) {
+        switch (tiles_loaded.error) {
+        case TILES_MISSING:
+            std::fprintf(stderr, "engine: %s: missing or unreadable\n",
+                         tiles_path);
+            break;
+        case TILES_MALFORMED:
+            std::fprintf(stderr,
+                         "engine: %s: not one %dx%d cell per map kind\n",
+                         tiles_path, TILE_SIZE, TILE_SIZE);
+            break;
+        default:
+            std::fprintf(stderr, "engine: %s: no room in the arena\n",
+                         tiles_path);
+            break;
+        }
+        platform::CloseWindow(opened.window);
+        ArenaRelease(arena);
+        return 1;
+    }
+    TileSheet &sheet = tiles_loaded.sheet;
+    std::printf("engine: tiles %s: %d tiles of %dx%d\n", tiles_path,
+                map.kind_count, TILE_SIZE, TILE_SIZE);
+
+    /* The map bigger than the frame, drawn at two offsets: the same
+       world pixels at world-position minus offset, everywhere the two
+       draws overlap. */
+    unsigned char *snap = (unsigned char *)ArenaAlloc(
+        arena, (size_t)FRAME_WIDTH * FRAME_HEIGHT * 3, 4);
+    if (!snap) {
+        std::fprintf(stderr, "engine: no room for the tilemap check\n");
+        platform::CloseWindow(opened.window);
+        ArenaRelease(arena);
+        return 1;
+    }
+    ClearBuffer(*fb, 32, 32, 64);
+    DrawTileMap(*fb, map, sheet, 0, 0);
+    for (int y = 0; y < FRAME_HEIGHT; ++y)
+        for (int x = 0; x < FRAME_WIDTH; ++x) {
+            unsigned char r, g, b;
+            GetPixel(*fb, x, y, r, g, b);
+            unsigned char *p = &snap[((y * FRAME_WIDTH) + x) * 3];
+            p[0] = r;
+            p[1] = g;
+            p[2] = b;
+        }
+    ClearBuffer(*fb, 32, 32, 64);
+    DrawTileMap(*fb, map, sheet, -37, -25);
+    int compared = 0, moved_mismatches = 0;
+    for (int y = 25; y < FRAME_HEIGHT; ++y)
+        for (int x = 37; x < FRAME_WIDTH; ++x) {
+            unsigned char r, g, b;
+            GetPixel(*fb, x - 37, y - 25, r, g, b);
+            const unsigned char *p = &snap[((y * FRAME_WIDTH) + x) * 3];
+            ++compared;
+            if (r != p[0] || g != p[1] || b != p[2])
+                ++moved_mismatches;
+        }
+    std::printf("engine: tilemap check: map %dx%d px over frame %dx%d — %d pixels compared at offset 37,25, %d mismatches\n",
+                map.width * TILE_SIZE, map.height * TILE_SIZE, FRAME_WIDTH,
+                FRAME_HEIGHT, compared, moved_mismatches);
+
     double sprite_x = (FRAME_WIDTH - sprite.width) / 2.0;
     double sprite_y = (FRAME_HEIGHT - sprite.height) / 2.0;
     double started = platform::Now();
@@ -438,9 +505,12 @@ int Run(void)
                         (int)sprite_y, platform::Now() - started);
 
         /* Render: every frame draws the whole scene — clear, then the
-           sprite and the text, each timed as its own named phase: the
-           subsystems the frame record can name. */
+           map, the sprite, and the text, each timed as its own named
+           phase: the subsystems the frame record can name. */
         ClearBuffer(*fb, 32, 32, 64);
+        double t_tilemap = platform::Now();
+        DrawTileMap(*fb, map, sheet, 0, 0);
+        frame.tilemap = platform::Now() - t_tilemap;
         double t_sprites = platform::Now();
         BlitSprite(*fb, sprite, (int)sprite_x, (int)sprite_y);
         frame.sprites = platform::Now() - t_sprites;
@@ -469,21 +539,22 @@ int Run(void)
 
         /* The frame log: one line per record — the format grows its named
            fields, one per subsystem, as the parts name them. */
-        std::printf("frame %ld: update %.3f ms, render %.3f ms (sprites %.3f, text %.3f), present %.3f ms, total %.3f ms\n",
+        std::printf("frame %ld: update %.3f ms, render %.3f ms (sprites %.3f, text %.3f, tilemap %.3f), present %.3f ms, total %.3f ms\n",
                     frame.number, frame.update * 1e3, frame.render * 1e3,
                     frame.sprites * 1e3, frame.text * 1e3,
-                    frame.present * 1e3, frame.total * 1e3);
+                    frame.tilemap * 1e3, frame.present * 1e3,
+                    frame.total * 1e3);
     }
 
     /* The account: what the frames actually cost, including the honest
        price of the presentation copy. */
     if (stats.frames) {
         double n = (double)stats.frames;
-        std::printf("engine: %ld frames — avg %.3f ms (update %.3f, render %.3f incl. sprites %.3f, text %.3f, present %.3f)\n",
+        std::printf("engine: %ld frames — avg %.3f ms (update %.3f, render %.3f incl. sprites %.3f, text %.3f, tilemap %.3f, present %.3f)\n",
                     stats.frames, stats.total_sum / n * 1e3,
                     stats.update_sum / n * 1e3, stats.render_sum / n * 1e3,
                     stats.sprites_sum / n * 1e3, stats.text_sum / n * 1e3,
-                    stats.present_sum / n * 1e3);
+                    stats.tilemap_sum / n * 1e3, stats.present_sum / n * 1e3);
         std::printf("engine: worst frame %.3f ms (frame %ld); present is %.0f%% of the frame\n",
                     stats.worst * 1e3, stats.worst_number,
                     100.0 * stats.present_sum / stats.total_sum);

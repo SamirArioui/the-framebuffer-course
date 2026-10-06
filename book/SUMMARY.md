@@ -266,6 +266,10 @@
   - [Solution: ex1 — the failure that names itself](solutions/lesson-052/ex1.md)
   - [Solution: ex2 — the map as characters](solutions/lesson-052/ex2.md)
 
+- [Lesson 053 — tilemap drawing](lessons/part-2/lesson-053-tiles.md)
+  - [Solution: ex1 — the tile under the sprite](solutions/lesson-053/ex1.md)
+  - [Solution: ex2 — the empty draw](solutions/lesson-053/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

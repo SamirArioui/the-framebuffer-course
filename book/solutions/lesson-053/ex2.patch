@@ -1,0 +1,25 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 0e77458..7111e4d 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -449,6 +449,20 @@ int Run(void)
+                 map.width * TILE_SIZE, map.height * TILE_SIZE, FRAME_WIDTH,
+                 FRAME_HEIGHT, compared, moved_mismatches);
+ 
++    /* Exercise 2: what the walk costs at three placements — the same
++       1536 cells, from all visible to all clipped away. */
++    {
++        const int offsets[3][2] = { { 0, 0 }, { -400, -300 },
++                                    { -4096, -4096 } };
++        for (int oc = 0; oc < 3; ++oc) {
++            double t0 = platform::Now();
++            DrawTileMap(*fb, map, sheet, offsets[oc][0], offsets[oc][1]);
++            double ms = (platform::Now() - t0) * 1e3;
++            std::printf("engine: map walk at %d,%d: %.3f ms\n",
++                        offsets[oc][0], offsets[oc][1], ms);
++        }
++    }
++
+     double sprite_x = (FRAME_WIDTH - sprite.width) / 2.0;
+     double sprite_y = (FRAME_HEIGHT - sprite.height) / 2.0;
+     double started = platform::Now();

@@ -1,0 +1,43 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 0e77458..d34dfa8 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -458,6 +458,15 @@ int Run(void)
+     std::printf("engine: arrow keys move the sprite; close the window to stop\n");
+     std::printf("engine: sprite at %d,%d\n", (int)sprite_x, (int)sprite_y);
+ 
++    /* Exercise 1: the tile under the sprite — world position to cell. */
++    {
++        int cell_x = (int)sprite_x / TILE_SIZE;
++        int cell_y = (int)sprite_y / TILE_SIZE;
++        int kind = TileAt(map, cell_x, cell_y);
++        std::printf("engine: tile under the sprite: cell %d,%d is kind '%c' (solid %d)\n",
++                    cell_x, cell_y, map.kinds[kind].cell, map.kinds[kind].solid);
++    }
++
+     /* The frame step: read news, update from polled state, draw, present —
+        every phase measured, one record per frame. */
+     int exit_code = 0;
+@@ -518,6 +527,22 @@ int Run(void)
+         DrawText(*fb, font, HUD_LABEL, 8, 8);
+         frame.text = platform::Now() - t_text;
+ 
++        /* Exercise 1: the tile under the sprite gets an outline. */
++        {
++            int cell_x = (int)sprite_x / TILE_SIZE;
++            int cell_y = (int)sprite_y / TILE_SIZE;
++            for (int i = 0; i < TILE_SIZE; ++i) {
++                PutPixel(*fb, cell_x * TILE_SIZE + i, cell_y * TILE_SIZE,
++                         255, 255, 0);
++                PutPixel(*fb, cell_x * TILE_SIZE + i,
++                         cell_y * TILE_SIZE + TILE_SIZE - 1, 255, 255, 0);
++                PutPixel(*fb, cell_x * TILE_SIZE, cell_y * TILE_SIZE + i,
++                         255, 255, 0);
++                PutPixel(*fb, cell_x * TILE_SIZE + TILE_SIZE - 1,
++                         cell_y * TILE_SIZE + i, 255, 255, 0);
++            }
++        }
++
+         frame.render = platform::Now() - t1;
+         double t2 = platform::Now();
+ 
