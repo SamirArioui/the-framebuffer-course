@@ -29,6 +29,8 @@ struct Window {
     ::Window xwindow;
     bool close_requested;
     bool keys[KEY_COUNT];
+    bool pressed[KEY_COUNT]; /* latched: went down since last observed */
+    bool focused;
 };
 
 /* The OS state for one window, in static storage: no new, no delete — the
@@ -99,7 +101,7 @@ WindowResult OpenWindow(int width, int height)
     XSetWMProtocols(display, xwindow, &wm_delete_window, 1);
     XSelectInput(display, xwindow,
                  StructureNotifyMask | ExposureMask | KeyPressMask |
-                     KeyReleaseMask);
+                     KeyReleaseMask | FocusChangeMask);
 
     /* Auto-repeat would otherwise look like release-then-press every
        repeat: a held key would flicker in polled state. Detectable
@@ -114,8 +116,11 @@ WindowResult OpenWindow(int width, int height)
     window_state.display = display;
     window_state.xwindow = xwindow;
     window_state.close_requested = false;
-    for (int i = 0; i < KEY_COUNT; ++i)
+    for (int i = 0; i < KEY_COUNT; ++i) {
         window_state.keys[i] = false;
+        window_state.pressed[i] = false;
+    }
+    window_state.focused = false;
 
     /* The interrupt is part of the window's take: from here on, Ctrl+C is
        news like any other — and X errors are recorded, not fatal. */
@@ -154,14 +159,45 @@ static void HandleEvent(Window *window, XEvent &event)
         window->xwindow = 0;
     } else if (event.type == KeyPress || event.type == KeyRelease) {
         int key = KeyIndex(XLookupKeysym(&event.xkey, 0));
-        if (key >= 0)
-            window->keys[key] = (event.type == KeyPress);
+        if (key >= 0) {
+            if (event.type == KeyPress) {
+                /* The latch lights on the edge — a key going from up to
+                   down. Auto-repeat presses (a held key) arrive as presses
+                   too, but a held key did not go down again. */
+                if (!window->keys[key])
+                    window->pressed[key] = true;
+                window->keys[key] = true;
+            } else {
+                window->keys[key] = false;
+            }
+        }
+    } else if (event.type == FocusIn) {
+        window->focused = true;
+    } else if (event.type == FocusOut) {
+        /* Keys held while focus left will never send their release here —
+           drop them or they stay down forever. */
+        window->focused = false;
+        for (int i = 0; i < KEY_COUNT; ++i)
+            window->keys[i] = false;
     }
 }
 
 bool KeyDown(const Window *window, Key key)
 {
     return window && key >= 0 && key < KEY_COUNT && window->keys[key];
+}
+
+bool KeyPressed(Window *window, Key key)
+{
+    if (!window || key < 0 || key >= KEY_COUNT || !window->pressed[key])
+        return false;
+    window->pressed[key] = false; /* observed; the latch clears */
+    return true;
+}
+
+bool HasFocus(const Window *window)
+{
+    return window && window->focused;
 }
 
 void PumpEvents(Window *window)

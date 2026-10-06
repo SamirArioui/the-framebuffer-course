@@ -74,6 +74,7 @@ int Run(void)
        React first: if the news was "the window is gone", there is nothing
        left to present to. */
     int exit_code = 0;
+    bool had_focus = platform::HasFocus(opened.window);
     while (!platform::CloseRequested(opened.window)) {
         platform::PumpEvents(opened.window);
         if (platform::CloseRequested(opened.window))
@@ -89,6 +90,18 @@ int Run(void)
             }
         }
         std::printf(any ? "\n" : " -\n");
+
+        /* The latches: presses that ended before this poll are not lost. */
+        for (int k = 0; k < platform::KEY_COUNT; ++k)
+            if (platform::KeyPressed(opened.window, (platform::Key)k))
+                std::printf("engine: pressed %s\n", key_names[k]);
+
+        /* Focus: reported when it changes. */
+        bool focus = platform::HasFocus(opened.window);
+        if (focus != had_focus) {
+            std::printf("engine: focus %s\n", focus ? "gained" : "lost");
+            had_focus = focus;
+        }
 
         if (!platform::Present(opened.window, fb->pixels, fb->width,
                                fb->height)) {

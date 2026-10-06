@@ -46,6 +46,16 @@ enum Key {
    call. State, not events — the engine asks, it never consumes a stream. */
 bool KeyDown(const Window *window, Key key);
 
+/* True if the key went down since the last time that key was polled this
+   way. A press that ended before the poll is not lost; the latch clears
+   when the engine has seen it. */
+bool KeyPressed(Window *window, Key key);
+
+/* True while the window has keyboard focus. Keys held when focus is lost
+   are dropped by the platform layer — no release event will ever arrive
+   for them. */
+bool HasFocus(const Window *window);
+
 /* Reads whatever news the OS has about this window and folds it into the
    platform layer's state. The engine never sees an event object — it polls
    state afterwards. Blocks until there is news or the run is interrupted. */

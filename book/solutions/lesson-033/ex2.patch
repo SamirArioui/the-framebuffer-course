@@ -1,0 +1,23 @@
+diff --git a/src/platform_x11.cpp b/src/platform_x11.cpp
+index 4e23966..e485cff 100644
+--- a/src/platform_x11.cpp
++++ b/src/platform_x11.cpp
+@@ -15,6 +15,7 @@
+ #include <X11/Xutil.h>
+ #include <X11/keysym.h>
+ 
++#include <cstdio>
+ #include <cstdio>
+ #include <poll.h>
+ #include <signal.h>
+@@ -172,8 +173,10 @@ static void HandleEvent(Window *window, XEvent &event)
+             }
+         }
+     } else if (event.type == FocusIn) {
++        std::fprintf(stderr, "platform: focus in\n");
+         window->focused = true;
+     } else if (event.type == FocusOut) {
++        std::fprintf(stderr, "platform: focus out — dropping held keys\n");
+         /* Keys held while focus left will never send their release here —
+            drop them or they stay down forever. */
+         window->focused = false;

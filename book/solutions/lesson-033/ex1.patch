@@ -1,0 +1,89 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 0d0d64b..649f7a3 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -91,10 +91,13 @@ int Run(void)
+         }
+         std::printf(any ? "\n" : " -\n");
+ 
+-        /* The latches: presses that ended before this poll are not lost. */
+-        for (int k = 0; k < platform::KEY_COUNT; ++k)
+-            if (platform::KeyPressed(opened.window, (platform::Key)k))
+-                std::printf("engine: pressed %s\n", key_names[k]);
++        /* The latches, counted: presses that ended before this poll are
++           not lost, and taps are not merged. */
++        for (int k = 0; k < platform::KEY_COUNT; ++k) {
++            int n = platform::KeyPressCount(opened.window, (platform::Key)k);
++            if (n)
++                std::printf("engine: pressed %s x%d\n", key_names[k], n);
++        }
+ 
+         /* Focus: reported when it changes. */
+         bool focus = platform::HasFocus(opened.window);
+diff --git a/src/platform.h b/src/platform.h
+index 643bdef..e4a625a 100644
+--- a/src/platform.h
++++ b/src/platform.h
+@@ -51,6 +51,10 @@ bool KeyDown(const Window *window, Key key);
+    when the engine has seen it. */
+ bool KeyPressed(Window *window, Key key);
+ 
++/* How many times the key went down since the last poll of that key — the
++   latch, counted. Two taps in one batch are two, not "at least one". */
++int KeyPressCount(Window *window, Key key);
++
+ /* True while the window has keyboard focus. Keys held when focus is lost
+    are dropped by the platform layer — no release event will ever arrive
+    for them. */
+diff --git a/src/platform_x11.cpp b/src/platform_x11.cpp
+index 4e23966..b6f4ac0 100644
+--- a/src/platform_x11.cpp
++++ b/src/platform_x11.cpp
+@@ -29,7 +29,7 @@ struct Window {
+     ::Window xwindow;
+     bool close_requested;
+     bool keys[KEY_COUNT];
+-    bool pressed[KEY_COUNT]; /* latched: went down since last observed */
++    int presses[KEY_COUNT]; /* latched: downs since last observed */
+     bool focused;
+ };
+ 
+@@ -118,7 +118,7 @@ WindowResult OpenWindow(int width, int height)
+     window_state.close_requested = false;
+     for (int i = 0; i < KEY_COUNT; ++i) {
+         window_state.keys[i] = false;
+-        window_state.pressed[i] = false;
++        window_state.presses[i] = 0;
+     }
+     window_state.focused = false;
+ 
+@@ -165,7 +165,7 @@ static void HandleEvent(Window *window, XEvent &event)
+                    down. Auto-repeat presses (a held key) arrive as presses
+                    too, but a held key did not go down again. */
+                 if (!window->keys[key])
+-                    window->pressed[key] = true;
++                    window->presses[key] += 1;
+                 window->keys[key] = true;
+             } else {
+                 window->keys[key] = false;
+@@ -189,10 +189,16 @@ bool KeyDown(const Window *window, Key key)
+ 
+ bool KeyPressed(Window *window, Key key)
+ {
+-    if (!window || key < 0 || key >= KEY_COUNT || !window->pressed[key])
+-        return false;
+-    window->pressed[key] = false; /* observed; the latch clears */
+-    return true;
++    return KeyPressCount(window, key) > 0;
++}
++
++int KeyPressCount(Window *window, Key key)
++{
++    if (!window || key < 0 || key >= KEY_COUNT)
++        return 0;
++    int count = window->presses[key];
++    window->presses[key] = 0; /* observed; the latch clears */
++    return count;
+ }
+ 
+ bool HasFocus(const Window *window)

@@ -184,6 +184,10 @@
   - [Solution: ex1 — your own keys](solutions/lesson-032/ex1.md)
   - [Solution: ex2 — the press that vanished](solutions/lesson-032/ex2.md)
 
+- [Lesson 033 — latching brief presses and tracking focus](lessons/part-1/lesson-033-latching.md)
+  - [Solution: ex1 — the press count](solutions/lesson-033/ex1.md)
+  - [Solution: ex2 — the key that will not let go](solutions/lesson-033/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)
