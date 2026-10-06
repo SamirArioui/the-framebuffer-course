@@ -17,9 +17,9 @@
 
 ## 4. The mixer (lesson-063…065)
 
-- [ ] 4.1 Author lesson-063 (one channel: the playback cursor, per-channel volume, and the end of a sample) with its exercises and diff solutions; verify a channel plays its sample to its end as documented, the page renders, and the commit is tagged `lesson-063`.
-- [ ] 4.2 Author lesson-064 (the mix: active channels summed per buffer, clamped instead of wrapped, idle channels silent) with its exercises and diff solutions; verify the mix's sums and its clamp behave as documented with byte-level readback, the page renders, and the commit is tagged `lesson-064`.
-- [ ] 4.3 Author lesson-065 (channel allocation: the first free channel, and the busy case's documented reuse policy — the oldest effect channel stolen) with its exercises and diff solutions; verify the busy case behaves as documented under scripted playback, the page renders, and the commit is tagged `lesson-065`.
+- [x] 4.1 Author lesson-063 (one channel: the playback cursor, per-channel volume, and the end of a sample) with its exercises and diff solutions; verify a channel plays its sample to its end as documented, the page renders, and the commit is tagged `lesson-063`.
+- [x] 4.2 Author lesson-064 (the mix: active channels summed per buffer, clamped instead of wrapped, idle channels silent) with its exercises and diff solutions; verify the mix's sums and its clamp behave as documented with byte-level readback, the page renders, and the commit is tagged `lesson-064`.
+- [x] 4.3 Author lesson-065 (channel allocation: the first free channel, and the busy case's documented reuse policy — the oldest effect channel stolen) with its exercises and diff solutions; verify the busy case behaves as documented under scripted playback, the page renders, and the commit is tagged `lesson-065`.
 
 ## 5. Music and effects (lesson-066…068)
 
