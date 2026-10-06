@@ -47,4 +47,4 @@
 ## 9. Part 1 boundary review and integration checks
 
 - [x] 9.1 Write `plan/part1-review.md` recording authoring velocity against the 10-20 h/week review budget from `plan/part0-review.md`, exercise counts per lesson against the conventions density table (Parts 1-2: 1-2 "make it yours" extensions), the gcc/gdb/X11 versions used, and a recommendation on extending the frozen prefix; verify every Part 1 lesson is counted and every Part 1 density expectation is checked.
-- [ ] 9.2 From a clean checkout following only `README.md`: run `./build.sh`, run `mdbook build`, run `openspec validate`, and run the closing demo headlessly; verify all succeed and `git tag` shows consecutive `lesson-026`…`lesson-043` where each consecutive tag diff equals that lesson's code step.
+- [x] 9.2 From a clean checkout following only `README.md`: run `./build.sh`, run `mdbook build`, run `openspec validate`, and run the closing demo headlessly; verify all succeed and `git tag` shows consecutive `lesson-026`…`lesson-043` where each consecutive tag diff equals that lesson's code step.
