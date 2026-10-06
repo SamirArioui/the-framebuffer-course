@@ -1,0 +1,74 @@
+diff --git a/src/audio.cpp b/src/audio.cpp
+index abe239b..6e90c35 100644
+--- a/src/audio.cpp
++++ b/src/audio.cpp
+@@ -262,6 +262,20 @@ int MixerPlay(Mixer &mixer, const Sample &sample, int volume)
+     return oldest;
+ }
+ 
++int MixerTryPlay(Mixer &mixer, const Sample &sample, int volume)
++{
++    /* The same walk as MixerPlay — and a full pool says no instead of
++       stealing. */
++    for (int c = AUDIO_MUSIC_CHANNEL + 1; c < AUDIO_MIXER_CHANNELS; ++c) {
++        if (!mixer.channels[c].active) {
++            ChannelPlay(mixer.channels[c], sample, volume);
++            mixer.channels[c].started = ++mixer.order;
++            return c;
++        }
++    }
++    return AUDIO_NO_CHANNEL;
++}
++
+ void MixBuffer(Mixer &mixer, short *out, int frame_count)
+ {
+     for (int i = 0; i < frame_count; ++i) {
+diff --git a/src/audio.h b/src/audio.h
+index af36e32..a203f16 100644
+--- a/src/audio.h
++++ b/src/audio.h
+@@ -112,6 +112,17 @@ void MixerInit(Mixer &mixer);
+    music channel is never stolen. */
+ int MixerPlay(Mixer &mixer, const Sample &sample, int volume);
+ 
++/* Exercise 2: the policy that refuses. The refusal's answer — no
++   channel was given. */
++constexpr int AUDIO_NO_CHANNEL = -1;
++
++/* Starts `sample` playing at `volume` like `MixerPlay` and says which
++   channel it landed on — but a full pool refuses the new sound instead
++   of stealing: AUDIO_NO_CHANNEL, and every sound that is playing keeps
++   playing. Nothing is dropped; the refused sound simply does not
++   happen. */
++int MixerTryPlay(Mixer &mixer, const Sample &sample, int volume);
++
+ /* The mix: `frame_count` frames of stream, each one the sum of every
+    active channel's next frame at its volume, clamped to the format's
+    range. Clamped, never wrapped — a sum past the range lands on the
+diff --git a/src/main.cpp b/src/main.cpp
+index 1e86986..ef1a4a3 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -179,6 +179,22 @@ int Run(void)
+     std::printf("engine: mix: music channel %d is reserved and was never stolen\n",
+                 AUDIO_MUSIC_CHANNEL);
+ 
++    /* Exercise 2: the same burst through the pool's other documented
++       policy — the first free effect channel, but a full pool refuses
++       the new sound instead of stealing. The sixteenth press is where
++       the two policies part ways. */
++    Mixer refusing;
++    MixerInit(refusing);
++    for (int i = 0; i <= EFFECT_CHANNELS; ++i) {
++        int ch = MixerTryPlay(refusing, sample, AUDIO_VOLUME_FULL / 16);
++        if (ch == AUDIO_NO_CHANNEL)
++            std::printf("engine: refuse: effect %2d -> refused (every effect channel busy)\n",
++                        i + 1);
++        else
++            std::printf("engine: refuse: effect %2d -> channel %2d\n", i + 1,
++                        ch);
++    }
++
+     double sprite_x = 312.0, sprite_y = 232.0;
+     double started = platform::Now();
+     double last = started;

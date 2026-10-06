@@ -162,24 +162,22 @@ int Run(void)
         std::printf(" %d", (int)sample.frames[i]);
     std::printf("\n");
 
-    /* Lesson 064: two channels playing the same sample at different
-       volumes, so the mix is a real sum and the numbers are checkable —
-       each output frame is the two contributions added, then clamped. */
+    /* Lesson 065: a scripted burst of effects — one more than the pool's
+       effect channels — so the allocation policy runs in front of the
+       reader: the first free channel for each sound, and then the oldest
+       effect channel stolen. Volume is low so sixteen of them still sum
+       inside the format. */
     Mixer mixer;
     MixerInit(mixer);
-    ChannelPlay(mixer.channels[0], sample, AUDIO_VOLUME_FULL / 2);
-    ChannelPlay(mixer.channels[1], sample, AUDIO_VOLUME_FULL / 4);
-    std::printf("engine: mix: channel 0 at volume %d, channel 1 at volume %d of %d\n",
-                mixer.channels[0].volume, mixer.channels[1].volume,
-                AUDIO_VOLUME_FULL);
-    std::printf("engine: mix: first frames (summed):");
-    for (int i = 0; i < 8 && i < sample.frame_count; ++i) {
-        int v = sample.frames[i * sample.channels];
-        std::printf(" %d",
-                    (v * mixer.channels[0].volume) / AUDIO_VOLUME_FULL +
-                        (v * mixer.channels[1].volume) / AUDIO_VOLUME_FULL);
+    const int EFFECT_CHANNELS =
+        AUDIO_MIXER_CHANNELS - AUDIO_MUSIC_CHANNEL - 1;
+    for (int i = 0; i <= EFFECT_CHANNELS; ++i) {
+        int ch = MixerPlay(mixer, sample, AUDIO_VOLUME_FULL / 16);
+        std::printf("engine: mix: effect %2d -> channel %2d%s\n", i + 1, ch,
+                    i < EFFECT_CHANNELS ? "" : " (the oldest was stolen)");
     }
-    std::printf("\n");
+    std::printf("engine: mix: music channel %d is reserved and was never stolen\n",
+                AUDIO_MUSIC_CHANNEL);
 
     double sprite_x = 312.0, sprite_y = 232.0;
     double started = platform::Now();
@@ -241,8 +239,7 @@ int Run(void)
        has reached, what has been fed, and whether the end has been
        named. The sample's frame_count is the fact that says when the
        sample ends; nothing here assumes how long it is. */
-    int sample_fed = 0;         /* frames of sample handed to the device */
-    int sample_feeds = 0;       /* feeds that carried sample frames */
+    int sample_feeds = 0;       /* buffers that carried sound */
     bool sample_end_named = false;
     while (!platform::CloseRequested(opened.window)) {
         platform::PumpEvents(opened.window);
@@ -351,21 +348,28 @@ int Run(void)
            when a sample ends; no channel ever runs past it. */
         double t_audio = platform::Now();
         if (audio.output && t_audio >= next_feed) {
-            int before = mixer.channels[0].cursor;
+            /* Did this buffer carry sound? Answered from the cursors: the
+               buffer carried sample frames exactly when some channel's
+               cursor moved during the mix. */
+            long before = 0;
+            for (int c = 0; c < AUDIO_MIXER_CHANNELS; ++c)
+                before += mixer.channels[c].cursor;
             MixBuffer(mixer, stream, CHUNK_FRAMES);
-            int take = mixer.channels[0].cursor - before;
+            long after = 0;
+            for (int c = 0; c < AUDIO_MIXER_CHANNELS; ++c)
+                after += mixer.channels[c].cursor;
+            bool any = after > before;
 
             if (platform::SubmitSamples(audio.output, stream,
                                         CHUNK_FRAMES)) {
-                sample_fed += take;
-                if (take > 0)
+                if (any)
                     sample_feeds += 1;
-                if (!sample_end_named && !mixer.channels[0].active) {
-                    /* The end, named in the sample's own numbers: what was
-                       fed before silence, and how many buffers carried it. */
+                if (!sample_end_named && !any) {
+                    /* The end, named in the mix's own numbers: how many
+                       buffers carried sound before it ran out. */
                     sample_end_named = true;
-                    std::printf("engine: sample: %d frames fed in %d buffers — the sample's end; the stream is silence from here\n",
-                                sample_fed, sample_feeds);
+                    std::printf("engine: mix: %d buffers of sound, then silence\n",
+                                sample_feeds);
                 }
             } else {
                 /* A device that will not take the samples is named once,

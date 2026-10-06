@@ -80,6 +80,7 @@ struct Channel {
     int cursor;           /* the next sample frame to read */
     int volume;           /* 0..AUDIO_VOLUME_FULL, fixed point */
     bool active;          /* playing now */
+    long started;         /* when this channel began, in the mixer's order */
 };
 
 /* Starts `sample` playing on this channel at `volume`, from its first
@@ -89,14 +90,27 @@ void ChannelPlay(Channel &channel, const Sample &sample, int volume);
 /* The mixer's fixed set of channels. */
 constexpr int AUDIO_MIXER_CHANNELS = 16;
 
+/* Channel 0 is the music channel: reserved, and never stolen. Effects
+   take the rest. */
+constexpr int AUDIO_MUSIC_CHANNEL = 0;
+
 /* The mixer: one fixed pool of channels, decided up front — nothing is
    allocated while sound plays. */
 struct Mixer {
     Channel channels[AUDIO_MIXER_CHANNELS];
+    long order; /* how many sounds have started, so "oldest" has a meaning */
 };
 
 /* Every channel idle and free. */
 void MixerInit(Mixer &mixer);
+
+/* Starts `sample` playing at `volume` and says which channel it landed
+   on. An effect takes the first free channel of the pool's effects
+   (everything but the music channel). When they are all busy the mixer
+   steals the **oldest effect channel** — the one that started earliest —
+   so the sound that has had the longest hearing is the one dropped. The
+   music channel is never stolen. */
+int MixerPlay(Mixer &mixer, const Sample &sample, int volume);
 
 /* The mix: `frame_count` frames of stream, each one the sum of every
    active channel's next frame at its volume, clamped to the format's

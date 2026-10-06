@@ -316,6 +316,10 @@
   - [Solution: ex1 — five channels at the peak](solutions/lesson-064/ex1.md)
   - [Solution: ex2 — what the mix costs](solutions/lesson-064/ex2.md)
 
+- [Lesson 065 — channel allocation](lessons/part-3/lesson-065-allocation.md)
+  - [Solution: ex1 — the twenty-first press](solutions/lesson-065/ex1.md)
+  - [Solution: ex2 — the policy that refuses](solutions/lesson-065/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

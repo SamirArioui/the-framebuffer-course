@@ -231,7 +231,35 @@ void MixerInit(Mixer &mixer)
         mixer.channels[c].cursor = 0;
         mixer.channels[c].volume = 0;
         mixer.channels[c].active = false;
+        mixer.channels[c].started = 0;
     }
+    mixer.order = 0;
+}
+
+int MixerPlay(Mixer &mixer, const Sample &sample, int volume)
+{
+    /* The first free channel of the pool's effects — the music channel is
+       reserved, so the walk starts after it. */
+    for (int c = AUDIO_MUSIC_CHANNEL + 1; c < AUDIO_MIXER_CHANNELS; ++c) {
+        if (!mixer.channels[c].active) {
+            ChannelPlay(mixer.channels[c], sample, volume);
+            mixer.channels[c].started = ++mixer.order;
+            return c;
+        }
+    }
+
+    /* Every effect channel is busy. The policy is to steal the oldest —
+       the one that started earliest — because it is the sound the
+       listener has already heard the most of. The music channel is never
+       a candidate. */
+    int oldest = AUDIO_MUSIC_CHANNEL + 1;
+    for (int c = oldest + 1; c < AUDIO_MIXER_CHANNELS; ++c) {
+        if (mixer.channels[c].started < mixer.channels[oldest].started)
+            oldest = c;
+    }
+    ChannelPlay(mixer.channels[oldest], sample, volume);
+    mixer.channels[oldest].started = ++mixer.order;
+    return oldest;
 }
 
 void MixBuffer(Mixer &mixer, short *out, int frame_count)

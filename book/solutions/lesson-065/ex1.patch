@@ -1,0 +1,57 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 1e86986..5033323 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -179,6 +179,52 @@ int Run(void)
+     std::printf("engine: mix: music channel %d is reserved and was never stolen\n",
+                 AUDIO_MUSIC_CHANNEL);
+ 
++    /* Exercise 1: the allocation probe. The scripted sequence of presses
++       and endings as data, on a scratch mixer — every landing channel,
++       every ending, and every dropped sound taken from the allocator's
++       own answers. An ending is the state the mix leaves at a sample's
++       end: the channel goes inactive. */
++    struct Step {
++        int start; /* > 0: this effect asks for a channel */
++        int end;   /* > 0: this effect's sound ends */
++    };
++    const Step script[] = {
++        {1, -1},  {2, -1},  {3, -1},  {4, -1},  {5, -1},  {6, -1},
++        {7, -1},  {8, -1},  {9, -1},  {10, -1}, {11, -1}, {12, -1},
++        {13, -1}, {14, -1}, {15, -1}, {-1, 4},  {-1, 9},  {16, -1},
++        {17, -1}, {18, -1}, {-1, 7},  {19, -1}, {20, -1},
++    };
++    const int step_count = (int)(sizeof(script) / sizeof(script[0]));
++    Mixer probe;
++    MixerInit(probe);
++    int occupant[AUDIO_MIXER_CHANNELS] = {};
++    for (int s = 0; s < step_count; ++s) {
++        if (script[s].end > 0) {
++            for (int c = 0; c < AUDIO_MIXER_CHANNELS; ++c) {
++                if (occupant[c] != script[s].end)
++                    continue;
++                std::printf("engine: alloc: effect %2d ends, channel %2d free\n",
++                            script[s].end, c);
++                probe.channels[c].active = false;
++                occupant[c] = 0;
++            }
++            continue;
++        }
++        int ch = MixerPlay(probe, sample, AUDIO_VOLUME_FULL / 16);
++        if (occupant[ch] != 0)
++            std::printf("engine: alloc: effect %2d -> channel %2d (dropped effect %2d), order %ld\n",
++                        script[s].start, ch, occupant[ch], probe.order);
++        else
++            std::printf("engine: alloc: effect %2d -> channel %2d, order %ld\n",
++                        script[s].start, ch, probe.order);
++        occupant[ch] = script[s].start;
++    }
++
++    /* The boundary: one press past the sequence, against a full pool. */
++    int ch21 = MixerPlay(probe, sample, AUDIO_VOLUME_FULL / 16);
++    std::printf("engine: alloc: effect 21 -> channel %2d (dropped effect %2d), order %ld\n",
++                ch21, occupant[ch21], probe.order);
++
+     double sprite_x = 312.0, sprite_y = 232.0;
+     double started = platform::Now();
+     double last = started;
