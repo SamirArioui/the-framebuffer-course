@@ -1,0 +1,34 @@
+diff --git a/src/platform_x11.cpp b/src/platform_x11.cpp
+index d35cf08..904d634 100644
+--- a/src/platform_x11.cpp
++++ b/src/platform_x11.cpp
+@@ -20,6 +20,7 @@
+ #include <X11/Xutil.h>
+ #include <X11/keysym.h>
+ 
++#include <cstdio>
+ #include <poll.h>
+ #include <signal.h>
+ #include <time.h>
+@@ -263,9 +264,11 @@ bool Present(Window *window, const unsigned char *pixels, int width,
+        cost is real; lesson 036 measures it. (Its return value is not a
+        status in practice — this call either copies or raises an X error,
+        which is the OS error handler's territory.) */
++    double c0 = Now();
+     XPutImage(window->display, window->xwindow,
+               DefaultGC(window->display, screen),
+               image, 0, 0, 0, 0, width, height);
++    double c1 = Now();
+ 
+     /* The image struct is ours to destroy; the bytes under it are the
+        engine's, so they are detached before destruction (the same rule as
+@@ -278,6 +281,9 @@ bool Present(Window *window, const unsigned char *pixels, int width,
+        it. */
+     last_xerror = 0;
+     XSync(window->display, False);
++    double c2 = Now();
++    std::fprintf(stderr, "platform: copy %.3f ms, wait %.3f ms\n",
++                 (c1 - c0) * 1e3, (c2 - c1) * 1e3);
+ 
+     if (last_xerror) {
+         /* An error on our own window means it died mid-copy — the same

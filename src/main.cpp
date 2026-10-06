@@ -8,6 +8,7 @@
 #include <cstdio>
 
 #include "framebuffer.h"
+#include "frame.h"
 #include "platform.h"
 
 namespace engine {
@@ -76,12 +77,19 @@ int Run(void)
 
     /* The frame step: read news, update from polled state, draw, present.
        This is the shape every later part fills in — Part 2 draws into it,
-       Part 5 measures it. */
+       Part 5 measures it. Every phase is now measured: the frame record is
+       data, not guesswork. */
     int exit_code = 0;
+    long frame_number = 0;
+    FrameStats stats = {};
     while (!platform::CloseRequested(opened.window)) {
         platform::PumpEvents(opened.window);
         if (platform::CloseRequested(opened.window))
             break;
+
+        FrameRecord frame;
+        frame.number = ++frame_number;
+        double t0 = platform::Now();
 
         /* Update: a frame reads state — it never handles events. The step
            is speed × elapsed: the marker moves 240 pixels per second no
@@ -110,6 +118,9 @@ int Run(void)
         if (marker_y > FRAME_HEIGHT - MARKER_SIZE)
             marker_y = FRAME_HEIGHT - MARKER_SIZE;
 
+        frame.update = platform::Now() - t0;
+        double t1 = platform::Now();
+
         if ((int)marker_x != old_x || (int)marker_y != old_y)
             std::printf("engine: marker at %d,%d (t=%.3f)\n", (int)marker_x,
                         (int)marker_y, platform::Now() - started);
@@ -117,6 +128,9 @@ int Run(void)
         /* Render: every frame draws the whole scene — clear, then marker. */
         ClearBuffer(*fb, 32, 32, 64);
         DrawMarker(*fb, (int)marker_x, (int)marker_y);
+
+        frame.render = platform::Now() - t1;
+        double t2 = platform::Now();
 
         if (!platform::Present(opened.window, fb->pixels, fb->width,
                                fb->height)) {
@@ -129,6 +143,29 @@ int Run(void)
             exit_code = 1;
             break;
         }
+
+        frame.present = platform::Now() - t2;
+        frame.total = platform::Now() - t0;
+        AccountFrame(stats, frame);
+
+        /* The frame log: one line per record. This is the format Part 2
+           grows and Part 5's frame-budget report reads. */
+        std::printf("frame %ld: update %.3f ms, render %.3f ms, present %.3f ms, total %.3f ms\n",
+                    frame.number, frame.update * 1e3, frame.render * 1e3,
+                    frame.present * 1e3, frame.total * 1e3);
+    }
+
+    /* The account: what the frames actually cost, including the honest
+       price of the presentation copy. */
+    if (stats.frames) {
+        double n = (double)stats.frames;
+        std::printf("engine: %ld frames — avg %.3f ms (update %.3f, render %.3f, present %.3f)\n",
+                    stats.frames, stats.total_sum / n * 1e3,
+                    stats.update_sum / n * 1e3, stats.render_sum / n * 1e3,
+                    stats.present_sum / n * 1e3);
+        std::printf("engine: worst frame %.3f ms (frame %ld); present is %.0f%% of the frame\n",
+                    stats.worst * 1e3, stats.worst_number,
+                    100.0 * stats.present_sum / stats.total_sum);
     }
 
     if (platform::CloseRequested(opened.window))

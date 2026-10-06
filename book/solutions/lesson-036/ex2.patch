@@ -1,0 +1,44 @@
+diff --git a/src/frame.cpp b/src/frame.cpp
+index d5e2920..554fed7 100644
+--- a/src/frame.cpp
++++ b/src/frame.cpp
+@@ -17,6 +17,8 @@ void AccountFrame(FrameStats &stats, const FrameRecord &frame)
+         stats.worst = frame.total;
+         stats.worst_number = frame.number;
+     }
++    if (frame.total <= FRAME_BUDGET)
++        stats.within_budget += 1;
+ }
+ 
+ } /* namespace engine */
+diff --git a/src/frame.h b/src/frame.h
+index 3ca1cdb..2635d56 100644
+--- a/src/frame.h
++++ b/src/frame.h
+@@ -28,8 +28,13 @@ struct FrameStats {
+     double total_sum;
+     double worst;      /* the longest frame so far */
+     long worst_number; /* and which one it was */
++    long within_budget;/* frames that fit the budget below */
+ };
+ 
++/* The frame budget: how long a frame may take. Part 5 turns this number
++   into a report; for now it is the 60 fps line — 16.7 ms. */
++constexpr double FRAME_BUDGET = 1.0 / 60.0;
++
+ void AccountFrame(FrameStats &stats, const FrameRecord &frame);
+ 
+ } /* namespace engine */
+diff --git a/src/main.cpp b/src/main.cpp
+index 942d825..2cf68f0 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -166,6 +166,8 @@ int Run(void)
+         std::printf("engine: worst frame %.3f ms (frame %ld); present is %.0f%% of the frame\n",
+                     stats.worst * 1e3, stats.worst_number,
+                     100.0 * stats.present_sum / stats.total_sum);
++        std::printf("engine: within the %.1f ms budget: %ld/%ld frames\n",
++                    FRAME_BUDGET * 1e3, stats.within_budget, stats.frames);
+     }
+ 
+     if (platform::CloseRequested(opened.window))

@@ -1,0 +1,37 @@
+// frame.h — the per-frame record: what a frame cost, measured on the
+// platform clock.
+//
+// Lesson 036: frame time as measured data. The engine does not guess what
+// its frames cost — it measures each phase and keeps the numbers. Part 2
+// grows this record with its own phases; Part 5's frame-budget report
+// reads it. The format of one line of the log is the format of one record.
+#ifndef FRAME_H
+#define FRAME_H
+
+namespace engine {
+
+/* Seconds, each field: how long one frame's phase took. */
+struct FrameRecord {
+    long number;   /* the frame's count since the run started */
+    double update; /* reading state, moving the world */
+    double render; /* drawing the scene into the framebuffer */
+    double present;/* the copy to the window, sync included */
+    double total;  /* the whole frame step */
+};
+
+/* The running account: every frame measured so far. */
+struct FrameStats {
+    long frames;
+    double update_sum;
+    double render_sum;
+    double present_sum;
+    double total_sum;
+    double worst;      /* the longest frame so far */
+    long worst_number; /* and which one it was */
+};
+
+void AccountFrame(FrameStats &stats, const FrameRecord &frame);
+
+} /* namespace engine */
+
+#endif

@@ -196,6 +196,10 @@
   - [Solution: ex1 — the diagonal is too fast](solutions/lesson-035/ex1.md)
   - [Solution: ex2 — the clock that lies](solutions/lesson-035/ex2.md)
 
+- [Lesson 036 — frame time as measured data](lessons/part-1/lesson-036-frame-time.md)
+  - [Solution: ex1 — the copy, isolated](solutions/lesson-036/ex1.md)
+  - [Solution: ex2 — the frame budget](solutions/lesson-036/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)
