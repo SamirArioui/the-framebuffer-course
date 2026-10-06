@@ -1,0 +1,14 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 75dfaa6..78daf89 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -149,6 +149,9 @@ int Run(void)
+         std::printf("engine: worst frame %.3f ms (frame %ld); present is %.0f%% of the frame\n",
+                     stats.worst * 1e3, stats.worst_number,
+                     100.0 * stats.present_sum / stats.total_sum);
++        double elapsed = platform::Now() - started;
++        std::printf("engine: %.2f s measured, %.1f frames/s while awake\n",
++                    elapsed, (double)stats.frames / elapsed);
+     }
+     std::printf("engine: arena: %zu of %zu bytes used\n", arena.used,
+                 arena.memory.size);

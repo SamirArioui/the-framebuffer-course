@@ -224,6 +224,10 @@
   - [Solution: ex1 — the second os](solutions/lesson-042/ex1.md)
   - [Solution: ex2 — what the check cannot see](solutions/lesson-042/ex2.md)
 
+- [Lesson 043 — the closing demo: platform layer done](lessons/part-1/lesson-043-demo.md)
+  - [Solution: ex1 — platform layer done, on your machine](solutions/lesson-043/ex1.md)
+  - [Solution: ex2 — the acceptance table](solutions/lesson-043/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

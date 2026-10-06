@@ -3,33 +3,23 @@
 // Lesson 030: the same arithmetic Part 0's paint did, on a buffer sized for
 // the window. Offset math, byte order, clipping — nothing else.
 //
-// Lesson 040: the buffer's memory comes from an OS-level reservation, not
-// from static storage and not from an allocator — whole pages, zeroed,
-// released when the engine is done with them.
+// Lesson 043: the buffer's memory comes from the engine's arena — one
+// allocation, owned like everything else in the arena, released by
+// releasing the arena.
 
 #include "framebuffer.h"
-
-#include "platform.h"
 
 namespace engine {
 
 static Framebuffer framebuffer = { 0, FRAME_WIDTH, FRAME_HEIGHT };
-static platform::Reservation storage;
 
-Framebuffer *GetFramebuffer(void)
+Framebuffer *GetFramebuffer(Arena &arena)
 {
     if (!framebuffer.pixels) {
-        storage = platform::ReserveMemory((size_t)FRAME_WIDTH *
-                                          FRAME_HEIGHT * 4);
-        framebuffer.pixels = storage.bytes;
+        framebuffer.pixels = (unsigned char *)ArenaAlloc(
+            arena, (size_t)FRAME_WIDTH * FRAME_HEIGHT * 4, 4096);
     }
     return &framebuffer;
-}
-
-void ReleaseFramebuffer(void)
-{
-    platform::ReleaseMemory(storage);
-    framebuffer.pixels = 0;
 }
 
 void ClearBuffer(Framebuffer &fb, unsigned char r, unsigned char g,

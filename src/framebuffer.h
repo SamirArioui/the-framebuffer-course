@@ -6,6 +6,8 @@
 #ifndef FRAMEBUFFER_H
 #define FRAMEBUFFER_H
 
+#include "arena.h"
+
 namespace engine {
 
 /* The size the window is opened at (lesson 027) and the size of the
@@ -23,12 +25,10 @@ struct Framebuffer {
     int height;
 };
 
-/* The engine's framebuffer. Its bytes come from an OS-level reservation
-   (lesson 040): whole pages, zeroed, released with ReleaseFramebuffer. */
-Framebuffer *GetFramebuffer(void);
-
-/* Gives the framebuffer's pages back to the OS. */
-void ReleaseFramebuffer(void);
+/* The engine's framebuffer: its bytes are allocated from the caller's
+   arena (lesson 043's shape — the arena owns everything in it, and the
+   framebuffer is no exception). */
+Framebuffer *GetFramebuffer(Arena &arena);
 
 /* Fills every pixel with one color. */
 void ClearBuffer(Framebuffer &fb, unsigned char r, unsigned char g,

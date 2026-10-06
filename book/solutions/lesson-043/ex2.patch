@@ -1,0 +1,18 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 75dfaa6..2d3801c 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -60,6 +60,13 @@ int Run(void)
+     double last = started;
+ 
+     std::printf("engine: platform layer done — window, polled input, arena-backed framebuffer, measured frames\n");
++    /* Exercise 2: the contract in use, named — the acceptance table's
++       first column. */
++    std::printf("engine: contract: window + presentation (lessons 027-031)\n");
++    std::printf("engine: contract: polled input (lessons 032-034)\n");
++    std::printf("engine: contract: monotonic clock (lessons 035-036)\n");
++    std::printf("engine: contract: whole-file I/O (lessons 037-038)\n");
++    std::printf("engine: contract: reservations + arena (lessons 040-041)\n");
+     std::printf("engine: arrow keys move the marker; close the window to stop\n");
+     std::printf("engine: marker at %d,%d\n", (int)marker_x, (int)marker_y);
+ 
