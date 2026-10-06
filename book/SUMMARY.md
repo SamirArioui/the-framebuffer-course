@@ -286,6 +286,10 @@
   - [Solution: ex1 — the Part 2 demo on your machine](solutions/lesson-057/ex1.md)
   - [Solution: ex2 — the acceptance table](solutions/lesson-057/ex2.md)
 
+- [Lesson 058 — the frame-budget table](lessons/part-2/lesson-058-budget.md)
+  - [Solution: ex1 — the row that isn't there](solutions/lesson-058/ex1.md)
+  - [Solution: ex2 — the worst frame's column](solutions/lesson-058/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

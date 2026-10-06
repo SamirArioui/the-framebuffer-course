@@ -275,19 +275,10 @@ int Run(void)
                     frame.total * 1e3);
     }
 
-    /* The account: what the frames actually cost, subsystem by subsystem —
-       the frame-budget table's first data (lesson 058 prints the table). */
-    if (stats.frames) {
-        double n = (double)stats.frames;
-        std::printf("engine: %ld frames — avg %.3f ms (update %.3f, render %.3f incl. sprites %.3f, text %.3f, tilemap %.3f, present %.3f)\n",
-                    stats.frames, stats.total_sum / n * 1e3,
-                    stats.update_sum / n * 1e3, stats.render_sum / n * 1e3,
-                    stats.sprites_sum / n * 1e3, stats.text_sum / n * 1e3,
-                    stats.tilemap_sum / n * 1e3, stats.present_sum / n * 1e3);
-        std::printf("engine: worst frame %.3f ms (frame %ld); present is %.0f%% of the frame\n",
-                    stats.worst * 1e3, stats.worst_number,
-                    100.0 * stats.present_sum / stats.total_sum);
-    }
+    /* The account as the frame-budget table (lesson 058): the frame
+       count, the average, the worst frame — and the render attributed to
+       its subsystems, the report Part 5's finale grows. */
+    PrintFrameBudget(stats);
     std::printf("engine: arena: %zu of %zu bytes used\n", arena.used,
                 arena.memory.size);
 

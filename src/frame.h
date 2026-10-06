@@ -43,6 +43,12 @@ struct FrameStats {
 
 void AccountFrame(FrameStats &stats, const FrameRecord &frame);
 
+/* Lesson 058: the frame-budget table — the account, attributed per
+   subsystem, as the report Part 5's finale grows. Every number in it is
+   a measured sum from the frames that actually ran; the shares are of
+   the average frame. */
+void PrintFrameBudget(const FrameStats &stats);
+
 } /* namespace engine */
 
 #endif

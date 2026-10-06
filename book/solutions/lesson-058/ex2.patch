@@ -1,0 +1,35 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 95f09af..aed5ea2 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -130,6 +130,7 @@ int Run(void)
+     int exit_code = 0;
+     long frame_number = 0;
+     FrameStats stats = {};
++    FrameRecord worst_frame = {}; /* exercise 2: the worst frame, kept */
+     Camera camera = { 0, 0, 0, 0 };
+     while (!platform::CloseRequested(opened.window)) {
+         platform::PumpEvents(opened.window);
+@@ -265,6 +266,8 @@ int Run(void)
+         frame.present = platform::Now() - t2;
+         frame.total = platform::Now() - t0;
+         AccountFrame(stats, frame);
++        if (frame.total > worst_frame.total)
++            worst_frame = frame;
+ 
+         /* The frame log: one line per record — the format grows its named
+            fields, one per subsystem, as the parts name them. */
+@@ -279,6 +282,13 @@ int Run(void)
+        count, the average, the worst frame — and the render attributed to
+        its subsystems, the report Part 5's finale grows. */
+     PrintFrameBudget(stats);
++    /* Exercise 2: the worst frame's own attribution. */
++    if (worst_frame.total > 0.0)
++        std::printf("engine:   worst frame %ld: update %.3f, render %.3f (sprites %.3f, text %.3f, tilemap %.3f), present %.3f\n",
++                    worst_frame.number, worst_frame.update * 1e3,
++                    worst_frame.render * 1e3, worst_frame.sprites * 1e3,
++                    worst_frame.text * 1e3, worst_frame.tilemap * 1e3,
++                    worst_frame.present * 1e3);
+     std::printf("engine: arena: %zu of %zu bytes used\n", arena.used,
+                 arena.memory.size);
+ 

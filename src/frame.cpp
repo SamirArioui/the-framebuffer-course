@@ -4,6 +4,8 @@
 
 #include "frame.h"
 
+#include <cstdio>
+
 namespace engine {
 
 void AccountFrame(FrameStats &stats, const FrameRecord &frame)
@@ -20,6 +22,44 @@ void AccountFrame(FrameStats &stats, const FrameRecord &frame)
         stats.worst = frame.total;
         stats.worst_number = frame.number;
     }
+}
+
+void PrintFrameBudget(const FrameStats &stats)
+{
+    if (!stats.frames)
+        return;
+    double n = (double)stats.frames;
+    double avg = stats.total_sum / n;
+
+    /* The account the spec requires: how many frames, what they cost on
+       average, and the worst one by number. */
+    std::printf("engine: frame budget — %ld frames, avg %.3f ms, worst %.3f ms (frame %ld)\n",
+                stats.frames, avg * 1e3, stats.worst * 1e3,
+                stats.worst_number);
+
+    /* The attribution: every row a measured sum, every share of the
+       average frame. The named phases live inside render — they say
+       where it went, they do not replace it. */
+    double update = stats.update_sum / n * 1e3;
+    double render = stats.render_sum / n * 1e3;
+    double sprites = stats.sprites_sum / n * 1e3;
+    double text = stats.text_sum / n * 1e3;
+    double tilemap = stats.tilemap_sum / n * 1e3;
+    double present = stats.present_sum / n * 1e3;
+    std::printf("engine:   subsystem   avg ms    share\n");
+    std::printf("engine:   update      %6.3f      %2.0f%%\n", update,
+                100.0 * update / (avg * 1e3));
+    std::printf("engine:   render      %6.3f      %2.0f%%\n", render,
+                100.0 * render / (avg * 1e3));
+    std::printf("engine:     sprites   %6.3f      %2.0f%%\n", sprites,
+                100.0 * sprites / (avg * 1e3));
+    std::printf("engine:     text      %6.3f      %2.0f%%\n", text,
+                100.0 * text / (avg * 1e3));
+    std::printf("engine:     tilemap   %6.3f      %2.0f%%\n", tilemap,
+                100.0 * tilemap / (avg * 1e3));
+    std::printf("engine:   present     %6.3f      %2.0f%%\n", present,
+                100.0 * present / (avg * 1e3));
+    std::printf("engine:   total       %6.3f     100%%\n", avg * 1e3);
 }
 
 } /* namespace engine */

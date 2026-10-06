@@ -1,0 +1,16 @@
+diff --git a/src/frame.cpp b/src/frame.cpp
+index 3f9f2dd..670a67d 100644
+--- a/src/frame.cpp
++++ b/src/frame.cpp
+@@ -57,6 +57,11 @@ void PrintFrameBudget(const FrameStats &stats)
+                 100.0 * text / (avg * 1e3));
+     std::printf("engine:     tilemap   %6.3f      %2.0f%%\n", tilemap,
+                 100.0 * tilemap / (avg * 1e3));
++    /* Exercise 1: the row that isn't there — what render spent outside
++       the named subsystems (the clear, and the measurement itself). */
++    double rest = render - sprites - text - tilemap;
++    std::printf("engine:     (rest)    %6.3f      %2.0f%%\n", rest,
++                100.0 * rest / (avg * 1e3));
+     std::printf("engine:   present     %6.3f      %2.0f%%\n", present,
+                 100.0 * present / (avg * 1e3));
+     std::printf("engine:   total       %6.3f     100%%\n", avg * 1e3);
