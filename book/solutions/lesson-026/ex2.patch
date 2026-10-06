@@ -1,0 +1,55 @@
+diff --git a/src/engine.cpp b/src/engine.cpp
+new file mode 100644
+index 0000000..3aee58c
+--- /dev/null
++++ b/src/engine.cpp
+@@ -0,0 +1,14 @@
++// engine.cpp — the engine's own translation unit.
++//
++// Lesson 026, exercise 2: the engine's symbols live in namespace engine.
++
++#include "engine.h"
++
++namespace engine {
++
++int Run(void)
++{
++    return 0;
++}
++
++} /* namespace engine */
+diff --git a/src/engine.h b/src/engine.h
+new file mode 100644
+index 0000000..5562fba
+--- /dev/null
++++ b/src/engine.h
+@@ -0,0 +1,14 @@
++// engine.h — the engine's contract with its own entry point.
++//
++// Lesson 026, exercise 2: a header is a contract between translation units.
++// Everything here is what `main.cpp` may rely on.
++#ifndef ENGINE_H
++#define ENGINE_H
++
++namespace engine {
++
++int Run(void);
++
++} /* namespace engine */
++
++#endif
+diff --git a/src/main.cpp b/src/main.cpp
+index 7ecbde3..4329753 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -7,7 +7,9 @@
+ // runtime looks up; every engine symbol that follows lives in
+ // `namespace engine`.
+ 
++#include "engine.h"
++
+ int main(void)
+ {
+-    return 0;
++    return engine::Run();
+ }

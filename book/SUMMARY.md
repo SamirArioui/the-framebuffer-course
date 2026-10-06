@@ -154,6 +154,12 @@
   - [Solution: ex3 — the vtable under the glass](solutions/lesson-025/ex3.md)
   - [Solution: ex4 — the copy that cannot exist](solutions/lesson-025/ex4.md)
 
+# Part 1 — the platform layer
+
+- [Lesson 026 — the codebase is born](lessons/part-1/lesson-026-birth.md)
+  - [Solution: ex1 — the engine speaks its name](solutions/lesson-026/ex1.md)
+  - [Solution: ex2 — two translation units](solutions/lesson-026/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

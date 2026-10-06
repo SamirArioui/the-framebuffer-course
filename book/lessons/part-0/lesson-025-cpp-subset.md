@@ -540,5 +540,5 @@ and what the program would have done if it had been allowed.
 
 **Part:** [Part 0 — C foundations](../../index.md) ·
 **Previous:** [Lesson 024 — the function-pointer command table](lesson-024-command-table.md) ·
-**Next:** — ·
+**Next:** [Lesson 026 — the codebase is born](../part-1/lesson-026-birth.md) ·
 **Code tag:** [`lesson-025`](https://github.com/SamirArioui/the-framebuffer-course/tree/lesson-025)

@@ -23,7 +23,6 @@ placed inside the parts that need them, not filed away as asides.
 | ---------- | ------------------------------------------------------------------------ |
 | `book/`    | The course site: lesson prose, exercises, and solutions (mdBook source)  |
 | `src/`     | The engine: one linear history, each lesson's end state tagged `lesson-NNN` |
-| `sandbox/` | Part 0's four throwaway C programs (discarded when Part 1's engine is born) |
 | `tools/`   | Build, check, and asset tooling                                          |
 | `plan/`    | Authoring artifacts (conventions, contracts, part skeletons) — never published to the site |
 | `build.sh` | The one-command code build                                               |
@@ -32,7 +31,9 @@ placed inside the parts that need them, not filed away as asides.
 | `build/`   | *(generated)* compiled output from `./build.sh`                          |
 
 The site is built only from `book/`, so `plan/`, `src/`, and `openspec/` never
-appear in published output.
+appear in published output. Part 0's `sandbox/` (four throwaway programs) was
+deleted in the `lesson-026` code step, as designed; every Part 0 state remains
+retrievable from its tag (`git checkout lesson-025 -- sandbox/`).
 
 ## Prerequisites
 
@@ -88,9 +89,9 @@ Compiles every C/C++ source under `src/` and links `build/game`. On an empty
 `src/` it reports that there is nothing to compile and exits 0. This one shell
 script is the build — Make and CMake are never curriculum.
 
-## Build the sandbox programs (Part 0)
+## Build the sandbox programs (Part 0 tags)
 
-Part 0's throwaway programs under `sandbox/` do not use `build.sh`. Each one
+Part 0's throwaway programs under `sandbox/` did not use `build.sh`. Each one
 builds standalone with **one literal `gcc` command, run from its own
 directory** — no Makefile, no wrapper script. The lessons grow these commands
 flag by flag; the lines below build each program as it stands at the end of its
@@ -106,8 +107,9 @@ cd sandbox/snek       && g++ -std=c++17 -O0 -g -Wall -Wextra *.cpp -o snek
 Each line leaves the program's binary beside its sources. Through
 `lesson-024` `snek` is C and its line reads `gcc -std=c11 -O0 -g -Wall
 -Wextra snek.c -o snek`; from `lesson-025` on it is C++ and builds as shown
-above. When Part 1's engine is born, `sandbox/` is deleted and these
-commands go with it.
+above. The `sandbox/` directory was deleted in the `lesson-026` code step, as
+designed — restore it from a Part 0 tag (`git checkout lesson-025 -- sandbox/`)
+before using the lines above.
 
 ## Validate the planning
 

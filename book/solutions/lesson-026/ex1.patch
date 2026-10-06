@@ -1,0 +1,28 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 7ecbde3..b869105 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -7,7 +7,22 @@
+ // runtime looks up; every engine symbol that follows lives in
+ // `namespace engine`.
+ 
+-int main(void)
++#include <cstdio>
++
++namespace engine {
++
++constexpr const char *NAME = "the framebuffer engine";
++constexpr int VERSION = 0;
++
++int Run(void)
+ {
++    std::printf("%s v%d\n", NAME, VERSION);
+     return 0;
+ }
++
++} /* namespace engine */
++
++int main(void)
++{
++    return engine::Run();
++}
