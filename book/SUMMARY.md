@@ -204,6 +204,10 @@
   - [Solution: ex1 — read into your own memory](solutions/lesson-037/ex1.md)
   - [Solution: ex2 — the file that never ends](solutions/lesson-037/ex2.md)
 
+- [Lesson 038 — whole-file writes and round-trips](lessons/part-1/lesson-038-file-write.md)
+  - [Solution: ex1 — the screenshot](solutions/lesson-038/ex1.md)
+  - [Solution: ex2 — the device that is always full](solutions/lesson-038/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

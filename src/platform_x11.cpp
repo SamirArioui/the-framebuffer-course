@@ -286,6 +286,31 @@ void ReleaseFile(FileData &file)
     file.size = 0;
 }
 
+FileError WriteFile(const char *path, const unsigned char *data, size_t size)
+{
+    /* Created, or replaced if it exists — exactly these bytes or nothing
+       the caller can mistake for success. */
+    int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+    if (fd < 0)
+        return FILE_UNWRITABLE;
+
+    /* write() may take fewer bytes than offered — a short write is not a
+       finished file. Keep going until they are all in. */
+    size_t total = 0;
+    while (total < size) {
+        ssize_t n = write(fd, data + total, size - total);
+        if (n < 0) {
+            close(fd);
+            return FILE_UNWRITABLE;
+        }
+        total += (size_t)n;
+    }
+
+    if (close(fd) < 0) /* the OS can still refuse at the very end */
+        return FILE_UNWRITABLE;
+    return FILE_OK;
+}
+
 void PumpEvents(Window *window)
 {
     if (!window || !window->display)

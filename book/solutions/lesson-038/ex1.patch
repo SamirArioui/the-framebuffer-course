@@ -1,0 +1,50 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index fafec04..cc9b167 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -13,6 +13,26 @@
+ 
+ namespace engine {
+ 
++/* Lesson 017's image file by hand: PPM is a tiny header, then RGB bytes. */
++static bool SaveScreenshot(const char *path, Framebuffer &fb)
++{
++    static unsigned char out[64 + 640 * 480 * 3];
++    int n = std::snprintf((char *)out, sizeof out, "P6\n%d %d\n255\n",
++                          fb.width, fb.height);
++    unsigned char *rgb = out + n;
++    for (int y = 0; y < fb.height; ++y) {
++        for (int x = 0; x < fb.width; ++x) {
++            unsigned char r, g, b;
++            GetPixel(fb, x, y, r, g, b);
++            *rgb++ = r;
++            *rgb++ = g;
++            *rgb++ = b;
++        }
++    }
++    return platform::WriteFile(path, out, (size_t)(rgb - out)) ==
++           platform::FILE_OK;
++}
++
+ /* The marker: one square the arrow keys move. Its speed is the engine's —
+    pixels per second — and the clock's dt turns it into a per-frame step. */
+ constexpr int MARKER_SIZE = 24;
+@@ -114,6 +134,18 @@ int Run(int argc, char **argv)
+     std::printf("engine: arrow keys move the marker; close the window to stop\n");
+     std::printf("engine: marker at %d,%d\n", (int)marker_x, (int)marker_y);
+ 
++    if (argc > 2) { /* exercise 1: the engine saves its own pixels */
++        ClearBuffer(*fb, 32, 32, 64); /* the scene, as the loop draws it */
++        DrawMarker(*fb, (int)marker_x, (int)marker_y);
++        if (!SaveScreenshot(argv[2], *fb)) {
++            std::printf("engine: %s: could not write screenshot\n", argv[2]);
++            platform::CloseWindow(opened.window);
++            return 1;
++        }
++        std::printf("engine: saved screenshot to %s (%dx%d PPM)\n", argv[2],
++                    FRAME_WIDTH, FRAME_HEIGHT);
++    }
++
+     /* The frame step: read news, update from polled state, draw, present.
+        This is the shape every later part fills in — Part 2 draws into it,
+        Part 5 measures it. Every phase is now measured: the frame record is

@@ -64,24 +64,42 @@ int Run(int argc, char **argv)
     std::printf("engine: clock %s over 100000 samples, finest step %.0f ns\n",
                 backwards ? "WENT BACKWARDS" : "never backwards", finest * 1e9);
 
-    /* Whole-file reads: the file's complete bytes, or a typed failure —
-       never partial data dressed as success. */
+    /* Whole-file writes and reads: bytes leave the engine, come back, and
+       had better be the same bytes — or the failure is the answer. */
     if (argc > 1) {
-        platform::FileData file = platform::ReadFile(argv[1]);
-        if (file.error != platform::FILE_OK) {
-            std::printf("engine: %s: %s\n", argv[1],
-                        file.error == platform::FILE_NOT_FOUND
-                            ? "file not found"
-                            : "unreadable");
+        unsigned char payload[256];
+        for (int i = 0; i < (int)sizeof payload; ++i)
+            payload[i] = (unsigned char)(i * 7); /* a pattern, byte by byte */
+
+        platform::FileError wrote =
+            platform::WriteFile(argv[1], payload, sizeof payload);
+        if (wrote != platform::FILE_OK) {
+            std::printf("engine: %s: could not write\n", argv[1]);
             platform::CloseWindow(opened.window);
             return 1;
         }
-        long lines = 0;
-        for (size_t i = 0; i < file.size; ++i)
-            if (file.data[i] == '\n')
-                ++lines;
-        std::printf("engine: read %s: %zu bytes, %ld lines\n", argv[1],
-                    file.size, lines);
+        std::printf("engine: wrote %s: %zu bytes\n", argv[1], sizeof payload);
+
+        platform::FileData file = platform::ReadFile(argv[1]);
+        if (file.error != platform::FILE_OK) {
+            std::printf("engine: %s: could not read back\n", argv[1]);
+            platform::CloseWindow(opened.window);
+            return 1;
+        }
+
+        long mismatch = -1;
+        size_t checked = file.size < sizeof payload ? file.size : sizeof payload;
+        for (size_t i = 0; i < checked; ++i)
+            if (file.data[i] != payload[i]) {
+                mismatch = (long)i;
+                break;
+            }
+        if (file.size == sizeof payload && mismatch < 0) {
+            std::printf("engine: round-trip ok: %zu bytes match\n", file.size);
+        } else {
+            std::printf("engine: round-trip FAILED: %zu bytes back (wanted %zu), first mismatch %ld\n",
+                        file.size, sizeof payload, mismatch);
+        }
         platform::ReleaseFile(file);
     }
 

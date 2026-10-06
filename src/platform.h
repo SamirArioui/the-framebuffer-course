@@ -68,8 +68,9 @@ double Now(void);
    presented as success. */
 enum FileError {
     FILE_OK = 0,
-    FILE_NOT_FOUND,  /* nothing is there */
-    FILE_UNREADABLE, /* something is there and the OS says no */
+    FILE_NOT_FOUND,   /* nothing is there */
+    FILE_UNREADABLE,  /* something is there and the OS says no */
+    FILE_UNWRITABLE,  /* the OS refused to take the bytes */
 };
 
 struct FileData {
@@ -85,6 +86,11 @@ FileData ReadFile(const char *path);
 
 /* Gives the file's bytes back to the OS. */
 void ReleaseFile(FileData &file);
+
+/* Writes a whole file to the OS: the file is created, or replaced if it
+   already exists, with exactly the bytes given — or the write is a typed
+   failure. */
+FileError WriteFile(const char *path, const unsigned char *data, size_t size);
 
 /* Reads whatever news the OS has about this window and folds it into the
    platform layer's state. The engine never sees an event object — it polls
