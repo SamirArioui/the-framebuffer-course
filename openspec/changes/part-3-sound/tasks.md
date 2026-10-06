@@ -12,8 +12,8 @@
 
 ## 3. The sample asset (lesson-061…062)
 
-- [ ] 3.1 Author lesson-061 (the WAV container defined by hand: the RIFF chunk walk, a sample loaded whole into the arena, typed failures) with its exercises and diff solutions; verify a sample loads completely, malformed and missing files fail typed as documented, the page renders, and the commit is tagged `lesson-061`.
-- [ ] 3.2 Author lesson-062 (the sample's playback facts — length and format carried with the data — and a loaded sample played to its end) with its exercises and diff solutions; verify a sample plays exactly its frame count as documented, the page renders, and the commit is tagged `lesson-062`.
+- [x] 3.1 Author lesson-061 (the WAV container defined by hand: the RIFF chunk walk, a sample loaded whole into the arena, typed failures) with its exercises and diff solutions; verify a sample loads completely, malformed and missing files fail typed as documented, the page renders, and the commit is tagged `lesson-061`.
+- [x] 3.2 Author lesson-062 (the sample's playback facts — length and format carried with the data — and a loaded sample played to its end) with its exercises and diff solutions; verify a sample plays exactly its frame count as documented, the page renders, and the commit is tagged `lesson-062`.
 
 ## 4. The mixer (lesson-063…065)
 
