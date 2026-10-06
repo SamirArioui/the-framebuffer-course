@@ -1,0 +1,31 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 9aba782..163d541 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -289,6 +289,26 @@ int Run(void)
+                     ink, key);
+     }
+ 
++    /* Exercise 2: the sheet's edge — the bytes it does not cover, and
++       what the label loop does with a character bigger than the sheet. */
++    const char probes[5] = { 'A', '\n', (char)0, (char)200, (char)0xC3 };
++    for (int pi = 0; pi < 5; ++pi) {
++        const Sprite *glyph = FontGlyph(font, probes[pi]);
++        std::printf("engine: glyph for byte %3d: %s\n",
++                    (int)(unsigned char)probes[pi],
++                    glyph ? "found" : "missing");
++    }
++    const char mixed[] = "SC\xC3\x96RE"; /* "SCORE" with an O-umlaut, in UTF-8 */
++    int drew = 0, skipped = 0;
++    for (int li = 0; mixed[li]; ++li) {
++        if (FontGlyph(font, mixed[li]))
++            ++drew;
++        else
++            ++skipped;
++    }
++    std::printf("engine: label of %d bytes: %d drew glyphs, %d skipped\n",
++                (int)(sizeof mixed - 1), drew, skipped);
++
+     double sprite_x = (FRAME_WIDTH - sprite.width) / 2.0;
+     double sprite_y = (FRAME_HEIGHT - sprite.height) / 2.0;
+     double started = platform::Now();

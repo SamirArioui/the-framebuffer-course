@@ -9,6 +9,7 @@
 
 #include "arena.h"
 #include "blit.h"
+#include "font.h"
 #include "framebuffer.h"
 #include "frame.h"
 #include "platform.h"
@@ -20,6 +21,11 @@ namespace engine {
    the engine's — pixels per second — and the clock's dt turns it into a
    per-frame step. */
 constexpr double SPRITE_SPEED = 240.0; /* pixels per second */
+
+/* Lesson 050: the label the demo lays out by hand — one glyph per
+   blit, one position per glyph. Lesson 051 replaces the hand with a
+   layout loop. */
+constexpr char HUD_LABEL[] = "SCORE";
 
 /* Lesson 047: the caches deep dive's evidence — a copy walk over arena
    memory at two strides, timed at working-set sizes that cross this
@@ -224,6 +230,65 @@ int Run(void)
     /* Lesson 047's evidence, measured before the loop starts. */
     CacheProbe(arena);
 
+    /* Lesson 050: the font is an asset too — a glyph sheet the loader
+       cuts into sprites. */
+    const char *font_path = "assets/font.ppm";
+    FontResult font_loaded = LoadFont(arena, font_path);
+    if (font_loaded.error != FONT_OK) {
+        switch (font_loaded.error) {
+        case FONT_MISSING:
+            std::fprintf(stderr, "engine: %s: missing or unreadable\n",
+                         font_path);
+            break;
+        case FONT_MALFORMED:
+            std::fprintf(stderr,
+                         "engine: %s: not a 16x6 sheet of 8x8 glyphs\n",
+                         font_path);
+            break;
+        default:
+            std::fprintf(stderr, "engine: %s: no room in the arena\n",
+                         font_path);
+            break;
+        }
+        platform::CloseWindow(opened.window);
+        ArenaRelease(arena);
+        return 1;
+    }
+    Font &font = font_loaded.font;
+    std::printf("engine: font %s: %d glyphs of %dx%d from a %dx%d sheet\n",
+                font_path, FONT_COUNT, FONT_CELL, FONT_CELL,
+                FONT_COLS * FONT_CELL, FONT_ROWS * FONT_CELL);
+
+    /* The glyph claim, checked against the framebuffer's bytes: a glyph
+       drawn through the blit is the sheet's cell, pixel for pixel. */
+    const char checked[2] = { 'A', 'g' };
+    for (int gi = 0; gi < 2; ++gi) {
+        const Sprite *glyph = FontGlyph(font, checked[gi]);
+        ClearBuffer(*fb, 32, 32, 64);
+        BlitSprite(*fb, *glyph, 200 + gi * 16, 64);
+        int ink = 0, key = 0, mismatches = 0;
+        for (int j = 0; j < glyph->height; ++j)
+            for (int i = 0; i < glyph->width; ++i) {
+                const unsigned char *p = &glyph->pixels[(j * glyph->width + i) * 3];
+                unsigned char r, g, b;
+                GetPixel(*fb, 200 + gi * 16 + i, 64 + j, r, g, b);
+                bool is_key = p[0] == glyph->key_r && p[1] == glyph->key_g &&
+                              p[2] == glyph->key_b;
+                if (is_key) {
+                    ++key;
+                    if (r != 32 || g != 32 || b != 64)
+                        ++mismatches;
+                } else {
+                    ++ink;
+                    if (r != p[0] || g != p[1] || b != p[2])
+                        ++mismatches;
+                }
+            }
+        std::printf("engine: font check: glyph '%c' — %d pixels read back, %d mismatches (%d ink, %d key)\n",
+                    checked[gi], glyph->width * glyph->height, mismatches,
+                    ink, key);
+    }
+
     double sprite_x = (FRAME_WIDTH - sprite.width) / 2.0;
     double sprite_y = (FRAME_HEIGHT - sprite.height) / 2.0;
     double started = platform::Now();
@@ -281,10 +346,17 @@ int Run(void)
 
         /* Render: every frame draws the whole scene — clear, then the
            sprite through the one blit. The sprite draw is timed as its own
-           named phase: the first subsystem the frame record can name. */
+           named phase: the first subsystem the frame record can name.
+           Glyphs are sprites too (lesson 050) — they count here until
+           lesson 051 names the text phase. */
         ClearBuffer(*fb, 32, 32, 64);
         double t_sprites = platform::Now();
         BlitSprite(*fb, sprite, (int)sprite_x, (int)sprite_y);
+        for (int li = 0; HUD_LABEL[li]; ++li) {
+            const Sprite *glyph = FontGlyph(font, HUD_LABEL[li]);
+            if (glyph)
+                BlitSprite(*fb, *glyph, 8 + li * FONT_CELL, 8);
+        }
         frame.sprites = platform::Now() - t_sprites;
 
         frame.render = platform::Now() - t1;

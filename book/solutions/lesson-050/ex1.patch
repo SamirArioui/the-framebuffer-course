@@ -1,0 +1,37 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 9aba782..19dfe8d 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -289,6 +289,32 @@ int Run(void)
+                     ink, key);
+     }
+ 
++    /* Exercise 1: the font dump — the whole sheet, redrawn glyph by
++       glyph through the blit, and read back against the glyphs' bytes. */
++    ClearBuffer(*fb, 32, 32, 64);
++    for (int k = 0; k < FONT_COUNT; ++k)
++        BlitSprite(*fb, font.glyphs[k], 32 + (k % FONT_COLS) * FONT_CELL,
++                   32 + (k / FONT_COLS) * FONT_CELL);
++    int dump_mismatch = 0;
++    for (int k = 0; k < FONT_COUNT; ++k) {
++        const Sprite &glyph = font.glyphs[k];
++        for (int j = 0; j < glyph.height; ++j)
++            for (int i = 0; i < glyph.width; ++i) {
++                const unsigned char *p =
++                    &glyph.pixels[(j * glyph.width + i) * 3];
++                unsigned char r, g, b;
++                GetPixel(*fb, 32 + (k % FONT_COLS) * FONT_CELL + i,
++                         32 + (k / FONT_COLS) * FONT_CELL + j, r, g, b);
++                bool is_key = p[0] == glyph.key_r && p[1] == glyph.key_g &&
++                              p[2] == glyph.key_b;
++                if (is_key ? (r != 32 || g != 32 || b != 64)
++                           : (r != p[0] || g != p[1] || b != p[2]))
++                    ++dump_mismatch;
++            }
++    }
++    std::printf("engine: font dump: %d glyphs drawn, %d pixel mismatches\n",
++                FONT_COUNT, dump_mismatch);
++
+     double sprite_x = (FRAME_WIDTH - sprite.width) / 2.0;
+     double sprite_y = (FRAME_HEIGHT - sprite.height) / 2.0;
+     double started = platform::Now();

@@ -254,6 +254,10 @@
   - [Solution: ex1 — two fills, predicted](solutions/lesson-049/ex1.md)
   - [Solution: ex2 — your compiler's register width](solutions/lesson-049/ex2.md)
 
+- [Lesson 050 — the bitmap font as an asset](lessons/part-2/lesson-050-font.md)
+  - [Solution: ex1 — the font dump](solutions/lesson-050/ex1.md)
+  - [Solution: ex2 — the bytes the sheet never heard of](solutions/lesson-050/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)
