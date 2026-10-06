@@ -220,6 +220,10 @@
   - [Solution: ex1 — the marker's trail](solutions/lesson-041/ex1.md)
   - [Solution: ex2 — the bug asan cannot see](solutions/lesson-041/ex2.md)
 
+- [Lesson 042 — the interface as a contract](lessons/part-1/lesson-042-contract.md)
+  - [Solution: ex1 — the second os](solutions/lesson-042/ex1.md)
+  - [Solution: ex2 — what the check cannot see](solutions/lesson-042/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

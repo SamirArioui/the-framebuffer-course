@@ -1,0 +1,27 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 06eba6e..f6b91f1 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -6,6 +6,7 @@
+ // lesson 026 holds.
+ 
+ #include <cstdio>
++#include <cstdlib>
+ 
+ #include "arena.h"
+ #include "framebuffer.h"
+@@ -125,6 +126,14 @@ int Run(int argc, char **argv)
+                 (double)fb_bytes / (double)page,
+                 (size_t)fb->pixels % page == 0 ? "yes" : "no");
+ 
++    /* DELIBERATE teaching state (exercise 2): a boundary leak the check
++       does not know to look for. system() is the OS, in one call, from
++       engine code — and check-boundary.sh passes this tree. */
++    if (argc > 1 && argv[1][0] == '#') {
++        std::fprintf(stderr, "engine: calling the OS behind the seam's back\n");
++        std::system("true");
++    }
++
+     std::printf("engine: arrow keys move the marker; close the window to stop\n");
+     std::printf("engine: marker at %d,%d\n", (int)marker_x, (int)marker_y);
+ 

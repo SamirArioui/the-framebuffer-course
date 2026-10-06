@@ -1,0 +1,99 @@
+diff --git a/tools/platform_stub.cpp b/tools/platform_stub.cpp
+new file mode 100644
+index 0000000..37862d7
+--- /dev/null
++++ b/tools/platform_stub.cpp
+@@ -0,0 +1,93 @@
++// platform_stub.cpp — a second OS: the contract, implemented by refusal.
++//
++// Lesson 042, exercise 1: what must a second OS provide? Exactly the
++// functions this file defines — the seam's contract, satisfied by typed
++// failure where this implementation has nothing to give. Not one line of
++// it knows X11; not one engine file changes to use it.
++#include "platform.h"
++
++namespace platform {
++
++struct Window {
++    int placeholder;
++};
++
++WindowResult OpenWindow(int width, int height)
++{
++    (void)width;
++    (void)height;
++    WindowResult result = { 0, OPEN_NO_DISPLAY };
++    return result;
++}
++
++void PumpEvents(Window *window) { (void)window; }
++
++bool CloseRequested(const Window *window)
++{
++    (void)window;
++    return true;
++}
++
++bool KeyDown(const Window *window, Key key)
++{
++    (void)window;
++    (void)key;
++    return false;
++}
++
++bool KeyPressed(Window *window, Key key)
++{
++    (void)window;
++    (void)key;
++    return false;
++}
++
++bool HasFocus(const Window *window)
++{
++    (void)window;
++    return false;
++}
++
++bool Present(Window *window, const unsigned char *pixels, int width,
++             int height)
++{
++    (void)window;
++    (void)pixels;
++    (void)width;
++    (void)height;
++    return false;
++}
++
++void CloseWindow(Window *window) { (void)window; }
++
++double Now(void) { return 0.0; }
++
++size_t PageSize(void) { return 4096; }
++
++Reservation ReserveMemory(size_t bytes)
++{
++    (void)bytes;
++    Reservation reservation = { 0, 0, MEMORY_NO_MEMORY };
++    return reservation;
++}
++
++void ReleaseMemory(Reservation &reservation) { (void)reservation; }
++
++FileData ReadFile(const char *path)
++{
++    (void)path;
++    FileData file = { 0, 0, FILE_NOT_FOUND };
++    return file;
++}
++
++void ReleaseFile(FileData &file) { (void)file; }
++
++FileError WriteFile(const char *path, const unsigned char *data, size_t size)
++{
++    (void)path;
++    (void)data;
++    (void)size;
++    return FILE_UNWRITABLE;
++}
++
++} /* namespace platform */
