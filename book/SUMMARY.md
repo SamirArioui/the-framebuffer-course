@@ -250,6 +250,10 @@
   - [Solution: ex1 — the instruction budget](solutions/lesson-048/ex1.md)
   - [Solution: ex2 — the compiler's signature](solutions/lesson-048/ex2.md)
 
+- [Lesson 049 — the SIMD lens](lessons/part-2/lesson-049-simd.md)
+  - [Solution: ex1 — two fills, predicted](solutions/lesson-049/ex1.md)
+  - [Solution: ex2 — your compiler's register width](solutions/lesson-049/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

@@ -1,0 +1,30 @@
+diff --git a/tools/disasm.sh b/tools/disasm.sh
+index 794c8b5..4aefb06 100755
+--- a/tools/disasm.sh
++++ b/tools/disasm.sh
+@@ -36,14 +36,22 @@ listing() {
+ 
+ if [ "$SYMBOL" = "--census" ]; then
+     # The SIMD lens: how many vector-register instructions (xmm/ymm/zmm)
+-    # each function's compiled code actually uses.
++    # each function's compiled code uses, and the widest register it
++    # touches — 16 bytes for xmm, 32 for ymm, 64 for zmm.
+     objdump -d -C --no-show-raw-insn build/game |
+         awk '/^[0-9a-f]+ <.*>:$/ { name = $0
+                                   sub(/^[0-9a-f]+ </, "", name)
+                                   sub(/>:$/, "", name)
+                                   next }
+-             /%[xyz]mm/ { count[name]++ }
+-             END { for (n in count) printf "%5d  %s\n", count[n], n }' |
++             /%[xyz]mm/ {
++                 count[name]++
++                 w = 16
++                 if (index($0, "%ymm") > 0) w = 32
++                 if (index($0, "%zmm") > 0) w = 64
++                 if (w > width[name]) width[name] = w
++             }
++             END { for (n in count)
++                       printf "%5d  %2d B  %s\n", count[n], width[n], n }' |
+         sort -rn
+     exit 0
+ fi

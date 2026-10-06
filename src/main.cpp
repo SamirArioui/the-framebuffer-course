@@ -25,17 +25,18 @@ constexpr double SPRITE_SPEED = 240.0; /* pixels per second */
    memory at two strides, timed at working-set sizes that cross this
    machine's caches. The walk is the blit's inner copy with the
    bookkeeping removed: source bytes into destination bytes, nothing
-   else — so what it costs is what the blitter's copy costs. */
+   else — so what it costs is what the blitter's copy costs.
+   Lesson 049: the walkers lose their `static` so the compiler must emit
+   each one as a named function — the SIMD lens needs a listing to read. */
 
-static void CopySequential(unsigned char *dst, const unsigned char *src,
-                           size_t n)
+void CopySequential(unsigned char *dst, const unsigned char *src, size_t n)
 {
     for (size_t i = 0; i < n; ++i)
         dst[i] = src[i];
 }
 
-static void CopyStrided(unsigned char *dst, const unsigned char *src,
-                        size_t n, size_t stride)
+void CopyStrided(unsigned char *dst, const unsigned char *src, size_t n,
+                 size_t stride)
 {
     for (size_t i = 0; i < n; i += stride)
         dst[i] = src[i];
