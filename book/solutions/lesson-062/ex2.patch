@@ -1,0 +1,46 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index fbfd37d..ea5ec98 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -225,6 +225,8 @@ int Run(void)
+     int sample_cursor = 0;      /* the next frame the feed takes */
+     int sample_fed = 0;         /* frames of sample handed to the device */
+     int sample_feeds = 0;       /* feeds that carried sample frames */
++    int silence_buffers = 0;    /* feeds that carried no sample at all */
++    double sample_end_at = 0.0; /* when the sample's end was named */
+     bool sample_end_named = false;
+     while (!platform::CloseRequested(opened.window)) {
+         platform::PumpEvents(opened.window);
+@@ -351,11 +353,14 @@ int Run(void)
+                 sample_fed += take;
+                 if (take > 0)
+                     sample_feeds += 1;
++                else
++                    silence_buffers += 1;
+                 if (!sample_end_named &&
+                     sample_cursor == sample.frame_count) {
+                     /* The end, named in the sample's own numbers: what was
+                        fed before silence, and how many buffers carried it. */
+                     sample_end_named = true;
++                    sample_end_at = platform::Now();
+                     std::printf("engine: sample: %d frames fed in %d buffers — the sample's end; the stream is silence from here\n",
+                                 sample_fed, sample_feeds);
+                 }
+@@ -433,6 +438,17 @@ int Run(void)
+        count, the average, the worst frame — and the render attributed to
+        its subsystems, the report Part 5's finale grows. */
+     PrintFrameBudget(stats);
++
++    /* Exercise 2: the stream's account at the close — what the run fed
++       after the sample's end, and for how long: the log's own evidence
++       that silence is a stream the device keeps getting. */
++    if (sample_end_named)
++        std::printf("engine: sample: %d frames in %d buffers, then %d buffers of silence over %.1f s\n",
++                    sample_fed, sample_feeds, silence_buffers,
++                    platform::Now() - sample_end_at);
++    else
++        std::printf("engine: sample: %d frames in %d buffers — the run ended before the sample did\n",
++                    sample_fed, sample_feeds);
+     std::printf("engine: arena: %zu of %zu bytes used\n", arena.used,
+                 arena.memory.size);
+ 

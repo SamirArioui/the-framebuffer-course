@@ -1,0 +1,16 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index fbfd37d..a2f3726 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -347,6 +347,11 @@ int Run(void)
+ 
+             if (platform::SubmitSamples(audio.output, stream,
+                                         CHUNK_FRAMES)) {
++                /* Exercise 1: the probe — every buffer's make-up, so the
++                   run's log records the sequence the sample's length
++                   makes. */
++                std::printf("engine: feed: %d frames from the sample, %d of silence\n",
++                            take, CHUNK_FRAMES - take);
+                 sample_cursor += take;
+                 sample_fed += take;
+                 if (take > 0)

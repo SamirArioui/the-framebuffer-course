@@ -304,6 +304,10 @@
   - [Solution: ex1 — write the file back](solutions/lesson-061/ex1.md)
   - [Solution: ex2 — the file that ends too soon](solutions/lesson-061/ex2.md)
 
+- [Lesson 062 — the sample's playback facts](lessons/part-3/lesson-062-playback.md)
+  - [Solution: ex1 — the sample that is not thirty buffers](solutions/lesson-062/ex1.md)
+  - [Solution: ex2 — hear it stop](solutions/lesson-062/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)
