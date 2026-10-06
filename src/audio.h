@@ -67,6 +67,31 @@ struct SampleResult {
    what the engine keeps is its copy, and a refused load keeps nothing. */
 SampleResult LoadSample(Arena &arena, const char *path);
 
+/* Volume in fixed point: AUDIO_VOLUME_FULL is full scale and 0 is
+   silence. The scale runs 0-256 so the mix is integer arithmetic a
+   learner can follow byte for byte. */
+constexpr int AUDIO_VOLUME_FULL = 256;
+
+/* Lesson 063: one channel — the unit of playback. What it is playing,
+   where it is in the sample, and how loud: three plain values, not a
+   device. A channel plays its sample to its end and then is free again. */
+struct Channel {
+    const Sample *sample; /* what it is playing, or 0 */
+    int cursor;           /* the next sample frame to read */
+    int volume;           /* 0..AUDIO_VOLUME_FULL, fixed point */
+    bool active;          /* playing now */
+};
+
+/* Starts `sample` playing on this channel at `volume`, from its first
+   frame. Playing on one channel leaves every other channel alone. */
+void ChannelPlay(Channel &channel, const Sample &sample, int volume);
+
+/* Fills `out` with `frame_count` frames of this channel's output: the
+   sample's frames at the channel's volume, one for one, advancing the
+   cursor. Past the sample's end the channel writes silence and is
+   inactive again — frame_count is the fact that says when. */
+void ChannelFill(Channel &channel, short *out, int frame_count);
+
 } /* namespace engine */
 
 #endif

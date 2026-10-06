@@ -1,0 +1,36 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 732ac22..329253e 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -162,12 +162,10 @@ int Run(void)
+         std::printf(" %d", (int)sample.frames[i]);
+     std::printf("\n");
+ 
+-    /* Lesson 063: the sample starts playing on one channel, at half
+-       volume — the fixed-point scale is 0-256, so 128 is half. The
+-       scaling is checkable byte for byte: at half volume every frame the
+-       channel emits is the sample's frame halved, truncated. */
++    /* Exercise 2: the sample starts playing on one channel at full
++       volume, and the fade below walks the volume down from there. */
+     Channel channel = {};
+-    ChannelPlay(channel, sample, AUDIO_VOLUME_FULL / 2);
++    ChannelPlay(channel, sample, AUDIO_VOLUME_FULL);
+     std::printf("engine: channel: playing %d frames at volume %d of %d\n",
+                 sample.frame_count, channel.volume, AUDIO_VOLUME_FULL);
+     std::printf("engine: channel: first frames at that volume:");
+@@ -352,6 +350,15 @@ int Run(void)
+             ChannelFill(channel, stream, CHUNK_FRAMES);
+             int take = channel.cursor - before;
+ 
++            /* Exercise 2: the fade — volume is live state, read per fill:
++               dropping it between fills changes what the next fill's
++               frames become. The cursor is untouched. */
++            if (channel.volume > 0) {
++                channel.volume -= 16;
++                std::printf("engine: fade: volume %d of %d\n",
++                            channel.volume, AUDIO_VOLUME_FULL);
++            }
++
+             if (platform::SubmitSamples(audio.output, stream,
+                                         CHUNK_FRAMES)) {
+                 sample_fed += take;

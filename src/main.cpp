@@ -162,6 +162,22 @@ int Run(void)
         std::printf(" %d", (int)sample.frames[i]);
     std::printf("\n");
 
+    /* Lesson 063: the sample starts playing on one channel, at half
+       volume — the fixed-point scale is 0-256, so 128 is half. The
+       scaling is checkable byte for byte: at half volume every frame the
+       channel emits is the sample's frame halved, truncated. */
+    Channel channel = {};
+    ChannelPlay(channel, sample, AUDIO_VOLUME_FULL / 2);
+    std::printf("engine: channel: playing %d frames at volume %d of %d\n",
+                sample.frame_count, channel.volume, AUDIO_VOLUME_FULL);
+    std::printf("engine: channel: first frames at that volume:");
+    for (int i = 0; i < 8 && i < sample.frame_count; ++i)
+        std::printf(" %d",
+                    (int)(sample.frames[i * sample.channels] *
+                          channel.volume) /
+                        AUDIO_VOLUME_FULL);
+    std::printf("\n");
+
     double sprite_x = 312.0, sprite_y = 232.0;
     double started = platform::Now();
     double last = started;
@@ -222,7 +238,6 @@ int Run(void)
        has reached, what has been fed, and whether the end has been
        named. The sample's frame_count is the fact that says when the
        sample ends; nothing here assumes how long it is. */
-    int sample_cursor = 0;      /* the next frame the feed takes */
     int sample_fed = 0;         /* frames of sample handed to the device */
     int sample_feeds = 0;       /* feeds that carried sample frames */
     bool sample_end_named = false;
@@ -327,32 +342,22 @@ int Run(void)
            where no buffer was due — so the phase accounts for all of the
            frame's audio work.
 
-           Lesson 062: the stream is the sample. One buffer is filled from
-           the sample's frames where the sample has them and with silence
-           beyond its end — silence is a stream too, and the device keeps
-           getting its buffers. frame_count is the fact that says when the
-           sample ends; the fill never runs past it. */
+           Lesson 063: the stream is the channel's output. One buffer is
+           what the channel produces — its sample's frames at its volume,
+           and silence past the sample's end. frame_count is the fact that
+           says when the sample ends; the channel never runs past it. */
         double t_audio = platform::Now();
-        if (audio.output && sample.frames && t_audio >= next_feed) {
-            /* Each frame is sample.channels values wide — one here, the
-               loader refuses anything else — and the engine's stream is
-               one channel wide, so a frame is its first (only) channel. */
-            int left = sample.frame_count - sample_cursor;
-            int take = left < CHUNK_FRAMES ? left : CHUNK_FRAMES;
-            for (int i = 0; i < take; ++i)
-                stream[i] =
-                    sample.frames[(sample_cursor + i) * sample.channels];
-            for (int i = take; i < CHUNK_FRAMES; ++i)
-                stream[i] = 0;
+        if (audio.output && t_audio >= next_feed) {
+            int before = channel.cursor;
+            ChannelFill(channel, stream, CHUNK_FRAMES);
+            int take = channel.cursor - before;
 
             if (platform::SubmitSamples(audio.output, stream,
                                         CHUNK_FRAMES)) {
-                sample_cursor += take;
                 sample_fed += take;
                 if (take > 0)
                     sample_feeds += 1;
-                if (!sample_end_named &&
-                    sample_cursor == sample.frame_count) {
+                if (!sample_end_named && !channel.active) {
                     /* The end, named in the sample's own numbers: what was
                        fed before silence, and how many buffers carried it. */
                     sample_end_named = true;

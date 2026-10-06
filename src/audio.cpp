@@ -187,4 +187,34 @@ SampleResult LoadSample(Arena &arena, const char *path)
     return result;
 }
 
+void ChannelPlay(Channel &channel, const Sample &sample, int volume)
+{
+    channel.sample = &sample;
+    channel.cursor = 0;
+    channel.volume = volume;
+    channel.active = true;
+}
+
+void ChannelFill(Channel &channel, short *out, int frame_count)
+{
+    for (int i = 0; i < frame_count; ++i) {
+        if (channel.active && channel.sample &&
+            channel.cursor < channel.sample->frame_count) {
+            /* One sample frame, scaled to the channel's volume. A frame
+               is sample.channels values wide; the engine's stream is one
+               channel wide, so it takes the frame's first value. */
+            int frame =
+                channel.sample->frames[channel.cursor *
+                                       channel.sample->channels];
+            out[i] = (short)((frame * channel.volume) / AUDIO_VOLUME_FULL);
+            channel.cursor += 1;
+        } else {
+            /* The sample's end — the fact frame_count carries. Silence
+               from here, and the channel is free again. */
+            channel.active = false;
+            out[i] = 0;
+        }
+    }
+}
+
 } /* namespace engine */

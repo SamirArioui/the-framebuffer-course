@@ -308,6 +308,10 @@
   - [Solution: ex1 — the sample that is not thirty buffers](solutions/lesson-062/ex1.md)
   - [Solution: ex2 — hear it stop](solutions/lesson-062/ex2.md)
 
+- [Lesson 063 — one channel](lessons/part-3/lesson-063-channel.md)
+  - [Solution: ex1 — quarter volume, to the digit](solutions/lesson-063/ex1.md)
+  - [Solution: ex2 — the fade to silence](solutions/lesson-063/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)
