@@ -117,7 +117,9 @@ FileError WriteFile(const char *path, const unsigned char *data, size_t size);
 
 /* Reads whatever news the OS has about this window and folds it into the
    platform layer's state. The engine never sees an event object — it polls
-   state afterwards. Blocks until there is news or the run is interrupted. */
+   state afterwards. Blocks until there is news or the run is interrupted —
+   or until an open audio output needs its next buffer, whichever comes
+   first. */
 void PumpEvents(Window *window);
 
 /* True once the user has asked for this window to close. An interrupted run

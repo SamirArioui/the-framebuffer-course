@@ -1,0 +1,57 @@
+diff --git a/src/platform_alsa.cpp b/src/platform_alsa.cpp
+index fdb7fb6..5eff054 100644
+--- a/src/platform_alsa.cpp
++++ b/src/platform_alsa.cpp
+@@ -22,6 +22,7 @@
+ 
+ #include <alsa/asoundlib.h>
+ 
++#include <cstdio> /* std::printf */
+ #include <stdlib.h> /* getenv */
+ 
+ namespace platform {
+@@ -64,6 +65,12 @@ constexpr int DEVICE_CHANNELS = 2;
+ constexpr int STAGE_FRAMES = 1024;
+ static short stage[STAGE_FRAMES * DEVICE_CHANNELS];
+ 
++/* Exercise 2: the port's probe — what the device made the loop wait.
++   Static, like the rest of this file. */
++static int write_count;
++static double wait_total; /* seconds spent inside the device's writes */
++static double wait_worst; /* and the worst single wait */
++
+ AudioResult OpenAudioOutput(int rate, int channels)
+ {
+     AudioResult result = { 0, AUDIO_NO_DEVICE };
+@@ -133,8 +140,19 @@ bool SubmitSamples(AudioOutput *output, const short *samples, int frames)
+ 
+         /* The device takes what it has room for; the rest comes back
+            around. When it takes nothing at all, the caller hears false. */
++        double t0 = Now();
+         snd_pcm_sframes_t took = snd_pcm_writei(
+             output->device, stage, (snd_pcm_uframes_t)chunk);
++        double waited = Now() - t0;
++
++        /* Exercise 2: the shadow of back-pressure. Hardware that will not
++           take samples until it has room makes the loop wait here; a
++           device that takes everything at once makes it wait not at all. */
++        write_count += 1;
++        wait_total += waited;
++        if (waited > wait_worst)
++            wait_worst = waited;
++
+         if (took < 0)
+             return false;
+         at += (int)took * output->engine_channels;
+@@ -180,6 +198,11 @@ void CloseAudioOutput(AudioOutput *output)
+     snd_pcm_close(output->device);
+     output->device = 0;
+     output->deadline = 0.0; /* a closed output stops bounding the wait */
++
++    /* Exercise 2: the report the ears cannot write — how hard the device
++       pushed back over the run, in the engine's own milliseconds. */
++    std::printf("platform: audio: %d writes, %.3f ms waiting on the device (worst %.3f ms)\n",
++                write_count, wait_total * 1e3, wait_worst * 1e3);
+ }
+ 
+ } /* namespace platform */

@@ -12,6 +12,7 @@ void AccountFrame(FrameStats &stats, const FrameRecord &frame)
 {
     stats.frames += 1;
     stats.update_sum += frame.update;
+    stats.audio_sum += frame.audio;
     stats.render_sum += frame.render;
     stats.present_sum += frame.present;
     stats.total_sum += frame.total;
@@ -39,7 +40,9 @@ void PrintFrameBudget(const FrameStats &stats)
 
     /* The attribution: every row a measured sum, every share of the
        average frame. The named phases live inside render — they say
-       where it went, they do not replace it. */
+       where it went, they do not replace it. The audio phase (lesson
+       060) is summed like the rest but gets no row here: the table's
+       sound rows are lesson 070's, and that is deliberate. */
     double update = stats.update_sum / n * 1e3;
     double render = stats.render_sum / n * 1e3;
     double sprites = stats.sprites_sum / n * 1e3;

@@ -9,9 +9,16 @@
 // Which device this run opens is this file's business too: a machine with
 // no usable output reports AUDIO_NO_DEVICE, and a machine that has none
 // still runs.
+//
+// Lesson 060: the deadline bookkeeping. A device consumes samples at its
+// own rate, so this file also knows when the device will have consumed
+// what it was given — the bound the run's paced wait obeys. That number is
+// platform state, shared with the event pump through platform_internal.h
+// and not part of the seam's contract.
 #define _POSIX_C_SOURCE 200809L
 
 #include "platform.h"
+#include "platform_internal.h"
 
 #include <alsa/asoundlib.h>
 
@@ -26,6 +33,10 @@ struct AudioOutput {
     snd_pcm_t *device;
     int engine_channels; /* the seam's frame width, and the device's own */
     int device_channels; /* layout, which this file maps between */
+    int rate;            /* the sample rate it was opened at */
+    double deadline;     /* lesson 060: when the device will have consumed
+                            everything submitted so far — the boundary
+                            AudioWaitSeconds reports */
 };
 
 /* The one output, in static storage: no new, no delete — the language law
@@ -88,6 +99,9 @@ AudioResult OpenAudioOutput(int rate, int channels)
     audio_state.engine_channels = channels;
     audio_state.device = device;
     audio_state.device_channels = DEVICE_CHANNELS;
+    audio_state.rate = rate;
+    /* Nothing is queued yet, so the first buffer is due at once. */
+    audio_state.deadline = 0.0;
     result.output = &audio_state;
     result.error = AUDIO_OK;
     return result;
@@ -126,7 +140,33 @@ bool SubmitSamples(AudioOutput *output, const short *samples, int frames)
         at += (int)took * output->engine_channels;
         left -= (int)took;
     }
+
+    /* Lesson 060: when will the device have consumed what this call gave
+       it? On the platform clock, the answer is the device's own deadline —
+       and it accumulates: a submit made while an earlier one is still
+       playing lands after that backlog, never before it, so overlapping
+       submits can only move the deadline later. `deadline > now` keeps the
+       backlog's end when there is one; `now` is where consumption starts
+       when the device has already caught up (a call that waited for room
+       finds its deadline in the past). */
+    double now = Now();
+    output->deadline = (output->deadline > now ? output->deadline : now) +
+                       (double)frames / (double)output->rate;
     return true;
+}
+
+double AudioWaitSeconds(void)
+{
+    if (!audio_state.device)
+        return -1.0; /* no output to feed: the wait is unbounded, as before
+                        sound — and a negative answer means exactly that */
+
+    /* The time left until the device needs what comes next — zero once the
+       buffer is already due. Zero, and never a negative: zero bounds the
+       wait at once, a negative removes the bound, and confusing the two
+       would make a due buffer sleep instead of feed. */
+    double left = audio_state.deadline - Now();
+    return left > 0.0 ? left : 0.0;
 }
 
 void CloseAudioOutput(AudioOutput *output)
@@ -139,6 +179,7 @@ void CloseAudioOutput(AudioOutput *output)
     snd_pcm_drain(output->device);
     snd_pcm_close(output->device);
     output->device = 0;
+    output->deadline = 0.0; /* a closed output stops bounding the wait */
 }
 
 } /* namespace platform */

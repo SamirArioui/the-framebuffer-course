@@ -29,8 +29,20 @@ namespace engine {
    per-frame step. */
 constexpr double SPRITE_SPEED = 240.0; /* pixels per second */
 
-/* Lesson 059: the run's first sound is half a second of tone. */
-constexpr int TONE_FRAMES = AUDIO_RATE / 2;
+/* Lesson 059: the run's sound is half a second of tone — 22050 frames.
+   One second of a 440 Hz tone is exactly 440 cycles at AUDIO_RATE, so
+   this buffer holds a whole 220 cycles and its end meets its beginning
+   with no click: the wrap lesson 059 found, which lesson 060's feeding
+   cursor leans on when it hands the same run of frames to the device
+   again and again. */
+constexpr int TONE_FRAMES = AUDIO_RATE / 2; /* 22050 */
+
+/* Lesson 060: one buffer of stream per feed — one sixtieth of a second,
+   the horizon the loop keeps queued. The cursor relies on the tone's
+   length dividing evenly into buffers: 22050 / 735 = 30 exactly, so it
+   wraps at a buffer boundary and no feed ever has to copy across the
+   tone's end. */
+constexpr int CHUNK_FRAMES = AUDIO_RATE / 60;   /* 735 */
 
 /* Lesson 054: the scene, drawn through the camera. The camera's summed
    offset is applied once, at each draw's origin — the map's and the
@@ -129,12 +141,16 @@ int Run(void)
     std::printf("engine: arrow keys move the sprite, space shakes the camera; close the window to stop\n");
     std::printf("engine: sprite at %d,%d\n", (int)sprite_x, (int)sprite_y);
 
-    /* Lesson 059: the run's first sound. A sample is a frame of amplitude
-       at the engine's rate — here a tone computed by code instead of read
+    /* Lesson 059: the run's sound. A sample is a frame of amplitude at
+       the engine's rate — here a tone computed by code instead of read
        from a file — and the seam's audio output is what puts those frames
-       in front of a device. */
+       in front of a device. Lesson 060: those frames are a *stream*, not
+       one submission done at startup — the frame loop feeds the device
+       buffer by buffer, for as long as the run lasts. */
     platform::AudioResult audio =
         platform::OpenAudioOutput(AUDIO_RATE, AUDIO_OUTPUT_CHANNELS);
+    short *tone = 0;
+    int tone_cursor = 0; /* where the stream's next buffer starts */
     if (!audio.output) {
         switch (audio.error) {
         case platform::AUDIO_NO_DEVICE:
@@ -148,8 +164,8 @@ int Run(void)
            still runs — this one continues without sound. */
         std::fprintf(stderr, "engine: continuing without sound\n");
     } else {
-        short *tone = (short *)ArenaAlloc(arena, TONE_FRAMES * sizeof(short),
-                                          sizeof(short));
+        tone = (short *)ArenaAlloc(arena, TONE_FRAMES * sizeof(short),
+                                   sizeof(short));
         if (!tone) {
             std::fprintf(stderr, "engine: no room for the tone\n");
         } else {
@@ -163,20 +179,25 @@ int Run(void)
                 std::printf(" %d", (int)tone[i]);
             std::printf("\n");
 
-            if (platform::SubmitSamples(audio.output, tone, TONE_FRAMES))
-                std::printf("engine: tone played\n");
-            else
-                std::fprintf(stderr,
-                             "engine: the output would not take the samples\n");
+            /* And what the loop does with them: one buffer of stream per
+               feed — the horizon the paced wait keeps queued. */
+            std::printf("engine: stream: %d-frame buffers, horizon %.1f ms; the loop feeds one when it is due\n",
+                        CHUNK_FRAMES, 1e3 * CHUNK_FRAMES / AUDIO_RATE);
         }
     }
 
-    /* The frame step: read news, update from polled state, draw, present —
-       every phase measured, one record per frame. */
+    /* The frame step: read news, update from polled state, feed the
+       stream, draw, present — every phase measured, one record per
+       frame. */
     int exit_code = 0;
     long frame_number = 0;
     FrameStats stats = {};
     Camera camera = { 0, 0, 0, 0 };
+
+    /* Lesson 060: the run's own feeding schedule. The device consumes at
+       the engine's rate, so the next buffer is due one horizon from the
+       last one — and the loop knows that without asking the platform. */
+    double next_feed = platform::Now();
     while (!platform::CloseRequested(opened.window)) {
         platform::PumpEvents(opened.window);
         if (platform::CloseRequested(opened.window))
@@ -269,6 +290,35 @@ int Run(void)
         }
 
         frame.update = platform::Now() - t0;
+
+        /* Lesson 060: the audio step — the loop feeds the device the next
+           buffer of the stream, and only when the buffer is due. Input
+           news can wake a frame early; a frame woken early must not queue
+           extra audio, or the run would bury the device in buffers instead
+           of pacing them. The step is measured on every frame — it is ~0
+           where no buffer was due — so the phase accounts for all of the
+           frame's audio work. */
+        double t_audio = platform::Now();
+        if (audio.output && tone && t_audio >= next_feed) {
+            if (platform::SubmitSamples(audio.output, tone + tone_cursor,
+                                        CHUNK_FRAMES)) {
+                tone_cursor = (tone_cursor + CHUNK_FRAMES) % TONE_FRAMES;
+            } else {
+                /* A device that will not take the samples is named once,
+                   not once per frame: the run closes the output and carries
+                   on in silence — its wait unbounded again. */
+                std::fprintf(stderr,
+                             "engine: the output would not take the samples\n");
+                platform::CloseAudioOutput(audio.output);
+                audio.output = 0;
+            }
+            /* The schedule restarts from now, not from the missed slot: a
+               long frame is caught up by one buffer, never by a backlog. */
+            next_feed = platform::Now() +
+                        (double)CHUNK_FRAMES / (double)AUDIO_RATE;
+        }
+        frame.audio = platform::Now() - t_audio;
+
         double t1 = platform::Now();
 
         /* Render: every frame draws the whole scene — clear, the world
@@ -313,9 +363,11 @@ int Run(void)
         AccountFrame(stats, frame);
 
         /* The frame log: one line per record — the format grows its named
-           fields, one per subsystem, as the parts name them. */
-        std::printf("frame %ld: update %.3f ms, render %.3f ms (sprites %.3f, text %.3f, tilemap %.3f), present %.3f ms, total %.3f ms\n",
-                    frame.number, frame.update * 1e3, frame.render * 1e3,
+           fields, one per subsystem, as the parts name them. The audio
+           phase (lesson 060) joins in the record's own order. */
+        std::printf("frame %ld: update %.3f ms, audio %.3f ms, render %.3f ms (sprites %.3f, text %.3f, tilemap %.3f), present %.3f ms, total %.3f ms\n",
+                    frame.number, frame.update * 1e3, frame.audio * 1e3,
+                    frame.render * 1e3,
                     frame.sprites * 1e3, frame.text * 1e3,
                     frame.tilemap * 1e3, frame.present * 1e3,
                     frame.total * 1e3);

@@ -14,6 +14,8 @@ namespace engine {
 struct FrameRecord {
     long number;   /* the frame's count since the run started */
     double update; /* reading state, moving the world */
+    double audio;  /* lesson 060: the run's audio step — mixing and
+                      submitting the stream */
     double render; /* drawing the scene into the framebuffer */
     double present;/* the copy to the window, sync included */
     double total;  /* the whole frame step */
@@ -31,6 +33,7 @@ struct FrameRecord {
 struct FrameStats {
     long frames;
     double update_sum;
+    double audio_sum; /* lesson 060's phase, summed like the rest */
     double render_sum;
     double present_sum;
     double total_sum;

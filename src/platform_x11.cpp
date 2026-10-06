@@ -15,9 +15,15 @@
 // Lesson 037: whole-file reads. File I/O is OS surface too — POSIX here,
 // a second OS's own calls there. Everything in this file is one
 // implementation behind the seam.
+//
+// Lesson 060: the paced wait. The wait for news is no longer unbounded —
+// with an audio output open it is bounded by how long the queued samples
+// will last, so the run wakes to feed the device on schedule. The bound is
+// platform state, asked for through platform_internal.h.
 #define _POSIX_C_SOURCE 200809L
 
 #include "platform.h"
+#include "platform_internal.h"
 
 #include <X11/XKBlib.h>
 #include <X11/Xlib.h>
@@ -357,9 +363,18 @@ void PumpEvents(Window *window)
     /* Wait for news where a signal can wake us. Lesson 028 slept inside
        XNextEvent, where Ctrl+C could not reach it; poll on the OS
        connection returns when there is news *or* when a signal interrupts
-       it — then the flag below is folded in like any other news. */
+       it — then the flag below is folded in like any other news.
+
+       Lesson 060: the wait is bounded. An open audio output needs its next
+       buffer before long, so the wait may not outlast it — and when it
+       ends early it ends because the output needs feeding, not because
+       anything happened. The ceiling to whole milliseconds keeps the wait
+       from ending before the buffer is due; AudioWaitSeconds is negative
+       with no output to feed, and the wait is then the old unbounded one. */
+    double wait = AudioWaitSeconds();
+    int timeout_ms = wait < 0.0 ? -1 : (int)(wait * 1000.0 + 0.999);
     struct pollfd pfd = { ConnectionNumber(window->display), POLLIN, 0 };
-    poll(&pfd, 1, -1);
+    poll(&pfd, 1, timeout_ms);
 
     if (interrupted)
         window->close_requested = true;

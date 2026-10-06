@@ -296,6 +296,10 @@
   - [Solution: ex1 — the first eight frames](solutions/lesson-059/ex1.md)
   - [Solution: ex2 — hear it on real speakers](solutions/lesson-059/ex2.md)
 
+- [Lesson 060 — the stream's shape](lessons/part-3/lesson-060-stream.md)
+  - [Solution: ex1 — the horizon, doubled](solutions/lesson-060/ex1.md)
+  - [Solution: ex2 — starvation on real speakers](solutions/lesson-060/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)
