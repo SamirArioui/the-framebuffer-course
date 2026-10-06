@@ -1,0 +1,25 @@
+diff --git a/src/platform_alsa.cpp b/src/platform_alsa.cpp
+index 59e1fe6..d1a8073 100644
+--- a/src/platform_alsa.cpp
++++ b/src/platform_alsa.cpp
+@@ -15,6 +15,7 @@
+ 
+ #include <alsa/asoundlib.h>
+ 
++#include <cstdio> /* std::printf */
+ #include <stdlib.h> /* getenv */
+ 
+ namespace platform {
+@@ -90,6 +91,12 @@
+     audio_state.device_channels = DEVICE_CHANNELS;
+     result.output = &audio_state;
+     result.error = AUDIO_OK;
++
++    /* Exercise 2: the port's report — the device this run opened, and the
++       shape it settled at. The name is OS business, so it is printed here
++       and never crosses the seam. */
++    std::printf("platform: audio output: %s (%d Hz, %d device ch)\n",
++                DeviceName(), rate, DEVICE_CHANNELS);
+     return result;
+ }
+ 

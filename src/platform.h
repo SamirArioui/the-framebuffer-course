@@ -137,6 +137,38 @@ bool Present(Window *window, const unsigned char *pixels, int width,
 /* Releases everything OpenWindow took from the OS. */
 void CloseWindow(Window *window);
 
+/* The audio output: the OS's sound device behind the seam, beside the
+   window. The sample format is this interface's contract, not any OS's —
+   `rate` mono sample frames per second, each frame one signed 16-bit
+   value. What the device itself wants is the implementation's business:
+   it maps these samples into the device's own layout, exactly as Present
+   maps the framebuffer's pixels into the window's. */
+enum AudioError {
+    AUDIO_OK = 0,
+    AUDIO_NO_DEVICE, /* the OS has no usable output */
+};
+
+struct AudioOutput;
+
+struct AudioResult {
+    AudioOutput *output; /* the open output, or 0 on failure */
+    AudioError error;    /* AUDIO_OK exactly when output is non-0 */
+};
+
+/* Opens the OS's audio output at the engine's fixed sample format, or
+   names the step that failed. A machine with no usable output is a typed
+   failure — and a run that hears it may continue without sound. */
+AudioResult OpenAudioOutput(int rate, int channels);
+
+/* Hands the device the next `frames` sample frames of mixed samples —
+   `frames` * `channels` values, one frame after another. The samples are
+   consumed before the call returns, so the buffer is the caller's again.
+   Returns false when the device could not take them. */
+bool SubmitSamples(AudioOutput *output, const short *samples, int frames);
+
+/* Releases everything OpenAudioOutput took from the OS. */
+void CloseAudioOutput(AudioOutput *output);
+
 } /* namespace platform */
 
 #endif

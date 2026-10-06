@@ -1,0 +1,29 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index a848cad..4688e19 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -159,10 +159,23 @@ int Run(void)
+                frames of the tone, in the engine's own format. */
+             std::printf("engine: tone: %d frames at %d Hz, first frames:",
+                         TONE_FRAMES, AUDIO_RATE);
+-            for (int i = 0; i < 4; ++i)
++            for (int i = 0; i < 8; ++i)
+                 std::printf(" %d", (int)tone[i]);
+             std::printf("\n");
+ 
++            /* Exercise 1: the loudest frame in the buffer, and the frame
++               number it lands on. */
++            int peak = 0, peak_frame = 0;
++            for (int i = 0; i < TONE_FRAMES; ++i) {
++                int loud = tone[i] < 0 ? -tone[i] : tone[i];
++                if (loud > peak) {
++                    peak = loud;
++                    peak_frame = i;
++                }
++            }
++            std::printf("engine: tone: peak %d at frame %d\n", peak,
++                        peak_frame);
++
+             if (platform::SubmitSamples(audio.output, tone, TONE_FRAMES))
+                 std::printf("engine: tone played\n");
+             else

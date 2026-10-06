@@ -10,6 +10,7 @@
 #include <cstdio>
 
 #include "arena.h"
+#include "audio.h"
 #include "blit.h"
 #include "camera.h"
 #include "font.h"
@@ -27,6 +28,9 @@ namespace engine {
    the engine's — pixels per second — and the clock's dt turns it into a
    per-frame step. */
 constexpr double SPRITE_SPEED = 240.0; /* pixels per second */
+
+/* Lesson 059: the run's first sound is half a second of tone. */
+constexpr int TONE_FRAMES = AUDIO_RATE / 2;
 
 /* Lesson 054: the scene, drawn through the camera. The camera's summed
    offset is applied once, at each draw's origin — the map's and the
@@ -124,6 +128,48 @@ int Run(void)
                 sprite.width, sprite.height);
     std::printf("engine: arrow keys move the sprite, space shakes the camera; close the window to stop\n");
     std::printf("engine: sprite at %d,%d\n", (int)sprite_x, (int)sprite_y);
+
+    /* Lesson 059: the run's first sound. A sample is a frame of amplitude
+       at the engine's rate — here a tone computed by code instead of read
+       from a file — and the seam's audio output is what puts those frames
+       in front of a device. */
+    platform::AudioResult audio =
+        platform::OpenAudioOutput(AUDIO_RATE, AUDIO_OUTPUT_CHANNELS);
+    if (!audio.output) {
+        switch (audio.error) {
+        case platform::AUDIO_NO_DEVICE:
+            std::fprintf(stderr, "engine: no audio output on this machine\n");
+            break;
+        default:
+            std::fprintf(stderr, "engine: audio error %d\n", audio.error);
+            break;
+        }
+        /* The failure is a value, not an ending: a machine with no output
+           still runs — this one continues without sound. */
+        std::fprintf(stderr, "engine: continuing without sound\n");
+    } else {
+        short *tone = (short *)ArenaAlloc(arena, TONE_FRAMES * sizeof(short),
+                                          sizeof(short));
+        if (!tone) {
+            std::fprintf(stderr, "engine: no room for the tone\n");
+        } else {
+            GenerateTone(tone, TONE_FRAMES, 440.0, 0.25);
+
+            /* The bytes are checkable before they are audible: the first
+               frames of the tone, in the engine's own format. */
+            std::printf("engine: tone: %d frames at %d Hz, first frames:",
+                        TONE_FRAMES, AUDIO_RATE);
+            for (int i = 0; i < 4; ++i)
+                std::printf(" %d", (int)tone[i]);
+            std::printf("\n");
+
+            if (platform::SubmitSamples(audio.output, tone, TONE_FRAMES))
+                std::printf("engine: tone played\n");
+            else
+                std::fprintf(stderr,
+                             "engine: the output would not take the samples\n");
+        }
+    }
 
     /* The frame step: read news, update from polled state, draw, present —
        every phase measured, one record per frame. */
@@ -284,6 +330,7 @@ int Run(void)
 
     if (platform::CloseRequested(opened.window))
         std::printf("engine: close reported\n");
+    platform::CloseAudioOutput(audio.output);
     platform::CloseWindow(opened.window);
     ArenaRelease(arena);
     std::printf("engine: closed\n");

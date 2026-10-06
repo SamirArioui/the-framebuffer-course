@@ -25,10 +25,10 @@ IMPL="src/platform_x11.cpp src/platform_alsa.cpp"
 
 # Headers that only an OS has. The language's own headers (<cstdio>,
 # <cstring>, <stddef.h>, ...) are fine anywhere — they are not an OS.
-OS_HEADERS='<X11/|<sys/|<unistd\.h>|<fcntl\.h>|<poll\.h>|<signal\.h>|<errno\.h>|<time\.h>'
+OS_HEADERS='<X11/|<alsa/|<sys/|<unistd\.h>|<fcntl\.h>|<poll\.h>|<signal\.h>|<errno\.h>|<time\.h>'
 
 # Calls only an OS answers. The list grows with the seam.
-OS_CALLS='(^|[^A-Za-z0-9_:])(X[A-Z][A-Za-z]+|mmap|munmap|mprotect|clock_gettime|nanosleep|sysconf|open|close|read|write|fstat|poll|signal)\s*\('
+OS_CALLS='(^|[^A-Za-z0-9_:])(X[A-Z][A-Za-z]+|snd_[a-z_]+|mmap|munmap|mprotect|clock_gettime|nanosleep|sysconf|open|close|read|write|fstat|poll|signal)\s*\('
 
 status=0
 

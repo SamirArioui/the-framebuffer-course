@@ -290,6 +290,12 @@
   - [Solution: ex1 — the row that isn't there](solutions/lesson-058/ex1.md)
   - [Solution: ex2 — the worst frame's column](solutions/lesson-058/ex2.md)
 
+# Part 3 — sound
+
+- [Lesson 059 — sound as samples](lessons/part-3/lesson-059-samples.md)
+  - [Solution: ex1 — the first eight frames](solutions/lesson-059/ex1.md)
+  - [Solution: ex2 — hear it on real speakers](solutions/lesson-059/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)
