@@ -182,6 +182,43 @@ can wait for room in the device's buffer, the same way `present` includes
 the copy's sync; lesson-070 names this and routes it to the port
 exercise.
 
+### Decisions taken where the artifacts were ambiguous
+
+Two points the proposal/design/tasks left open were settled at authoring
+time and are recorded here, as design D1's open questions permit.
+
+1. **When the `audio` phase is named (design's risk entry says "from the
+   first mixer lesson"; D8 says "one `audio` phase inside the frame").**
+   Settled at **lesson-060**, not 063. The frame has audio work from the
+   lesson where the loop starts feeding the device, and `frame-accounting`
+   requires every frame's work to be attributed — leaving 060-062's audio
+   unattributed would break the arithmetic that lesson-058's prose says
+   closes. Naming at 060 also satisfies the risk's mitigation (measure
+   early) a fortiori. **The budget-table row still first appears at
+   lesson-070**, exactly as task 6.2 says: the record carries the phase
+   and the log line names it from 060, and 070 is where the table finally
+   shows it. Between 060 and 070 the table's rows therefore cover
+   `update + render + present` and not the whole frame; lesson-060's prose
+   says so out loud and names 070 as the close's job.
+
+2. **Who makes the device's channel layout.** Settled as: the seam's
+   contract is the engine's own samples (mono, 16-bit signed, at
+   `AUDIO_RATE`) and the platform implementation maps them into the
+   device's own layout — on this machine, stereo interleaved, each engine
+   sample duplicated across both channels. This is the same division of
+   labour as `Present` (the interface's format is the contract; the OS
+   file converts), keeps the mixer's arithmetic mono and byte-checkable
+   (task 4.2's readback), and still gives D2's "the mix duplicated across
+   both channels" — in the file where the device lives. The mixer's
+   channel count will be named `AUDIO_MIXER_CHANNELS` (D5's
+   `AUDIO_CHANNELS = 16`) so it cannot be confused with the output's.
+
+   Follows from the same decision: `PumpEvents`' bounded wait is platform
+   state, so the platform's two implementation files share it through a
+   small internal header (`src/platform_internal.h`) that is explicitly
+   *not* the seam's contract — `platform.h` stays the whole interface, and
+   D4's "three functions" is kept.
+
 ### A verification finding that bounds what the lessons may claim
 
 ALSA's `null` device **accepts samples instantly and discards them** —
