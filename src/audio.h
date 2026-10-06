@@ -3,11 +3,18 @@
 // Lesson 059: sound is data before it is sound. A sample is a frame of
 // amplitude — one number saying where the speaker sits at that instant —
 // and a sound is a run of those frames at a fixed rate. Nothing here knows
-// about devices, files, or mixing: this is the format the engine's output
-// speaks, the format lesson 061's loader accepts and refuses everything
-// else, and the format the mixer of lessons 063-065 sums.
+// about devices or mixing: this is the format the engine's output speaks
+// and the format the mixer of lessons 063-065 sums.
+//
+// Lesson 061: the format is now loadable. A sample is authored as a file
+// — the same bytes GenerateTone computes, in a RIFF/WAVE container — and
+// the loader below either hands over the complete sample or names what
+// went wrong. From there on the sample carries its own playback facts, so
+// lesson 062 plays it from the sample alone.
 #ifndef AUDIO_H
 #define AUDIO_H
+
+#include "arena.h"
 
 namespace engine {
 
@@ -31,6 +38,34 @@ constexpr int AUDIO_OUTPUT_CHANNELS = 1;
    the engine plays samples, it does not design sounds. */
 void GenerateTone(short *frames, int frame_count, double frequency,
                   double amplitude);
+
+/* A loaded sample: the frames, and the facts playback needs carried with
+   them — its length in sample frames and its format. */
+struct Sample {
+    short *frames;
+    int frame_count;
+    int rate;
+    int channels;
+};
+
+enum SampleError {
+    SAMPLE_OK = 0,
+    SAMPLE_MISSING,   /* the file is not there or cannot be read */
+    SAMPLE_MALFORMED, /* the bytes are not a complete sample in the engine's format */
+    SAMPLE_NO_ROOM,   /* the arena had no room for the frames */
+};
+
+struct SampleResult {
+    Sample sample;
+    SampleError error; /* SAMPLE_OK exactly when sample.frames is non-0 */
+};
+
+/* Loads a sample from a RIFF/WAVE file. The container is walked chunk by
+   chunk and byte by byte — no library reads it — and anything that is not
+   a complete sample in the engine's format is refused typed. The frames
+   are copied into the arena and the file's own bytes go back to the OS:
+   what the engine keeps is its copy, and a refused load keeps nothing. */
+SampleResult LoadSample(Arena &arena, const char *path);
 
 } /* namespace engine */
 

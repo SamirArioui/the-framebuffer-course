@@ -126,6 +126,42 @@ int Run(void)
     }
     TileSheet &sheet = tiles_loaded.sheet;
 
+    /* Lesson 061: the run's sound as a file's bytes. A sample is frames
+       of amplitude in a container, and the load either yields the
+       complete sample or names what went wrong — like every asset above.
+       A failure ends the run by name, like every asset above. */
+    SampleResult sample_loaded = LoadSample(arena, "assets/tone.wav");
+    if (sample_loaded.error != SAMPLE_OK) {
+        switch (sample_loaded.error) {
+        case SAMPLE_MISSING:
+            std::fprintf(stderr,
+                         "engine: assets/tone.wav: could not load (missing)\n");
+            break;
+        case SAMPLE_MALFORMED:
+            std::fprintf(stderr,
+                         "engine: assets/tone.wav: could not load (malformed)\n");
+            break;
+        default:
+            std::fprintf(stderr,
+                         "engine: assets/tone.wav: could not load (no room)\n");
+            break;
+        }
+        platform::CloseWindow(opened.window);
+        ArenaRelease(arena);
+        return 1;
+    }
+    Sample &sample = sample_loaded.sample;
+
+    /* The byte-level check, before anything is played: the sample's facts
+       and its first frames — the same bytes lesson 059 computed, now read
+       from a file instead. */
+    std::printf("engine: sample: %d frames at %d Hz, %d channel%s, first frames:",
+                sample.frame_count, sample.rate, sample.channels,
+                sample.channels == 1 ? "" : "s");
+    for (int i = 0; i < 8 && i < sample.frame_count; ++i)
+        std::printf(" %d", (int)sample.frames[i]);
+    std::printf("\n");
+
     double sprite_x = 312.0, sprite_y = 232.0;
     double started = platform::Now();
     double last = started;

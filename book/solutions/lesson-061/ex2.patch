@@ -1,0 +1,24 @@
+diff --git a/src/audio.cpp b/src/audio.cpp
+index 82223bd..856cc9c 100644
+--- a/src/audio.cpp
++++ b/src/audio.cpp
+@@ -166,6 +166,19 @@ SampleResult LoadSample(Arena &arena, const char *path)
+         platform::ReleaseFile(file);
+         return result;
+     }
++
++    /* The copy's own promise: no frame is taken from bytes the file does
++       not have. The walk refused any chunk whose claim ran past the file;
++       the copy checks the same claim against the bytes it is about to
++       read, so a check missed upstream costs a typed failure and never an
++       overrun — and what was allocated is rolled back. */
++    if (frames_at + frames_bytes > size) {
++        ArenaRollback(arena, mark);
++        result.error = SAMPLE_MALFORMED;
++        platform::ReleaseFile(file);
++        return result;
++    }
++
+     for (int i = 0; i < frame_count; ++i)
+         frames[i] = ReadFrame(data + frames_at + (size_t)i * 2);
+     platform::ReleaseFile(file);

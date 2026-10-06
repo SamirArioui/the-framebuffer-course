@@ -300,6 +300,10 @@
   - [Solution: ex1 — the horizon, doubled](solutions/lesson-060/ex1.md)
   - [Solution: ex2 — starvation on real speakers](solutions/lesson-060/ex2.md)
 
+- [Lesson 061 — the WAV container](lessons/part-3/lesson-061-wav.md)
+  - [Solution: ex1 — write the file back](solutions/lesson-061/ex1.md)
+  - [Solution: ex2 — the file that ends too soon](solutions/lesson-061/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)
