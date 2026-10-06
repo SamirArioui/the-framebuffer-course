@@ -117,6 +117,11 @@ optimizer lesson (018) carry the highest toolchain-drift exposure and deserve
 one more pass, and the L25 C++ subset wording will get a consistency read
 against Part 1's engine-opening lesson when that is planned.
 
+**Decision (2026-10-06):** the review pass having found no remaining
+blockers, `lesson-001`…`lesson-006` are frozen — `book/stability-horizon.md`
+now names them as the frozen prefix and 007-025 as the volatile tail. From
+here on, changes inside the prefix follow the three-class revision policy.
+
 ## Review pass status (pre-freeze)
 
 The independent review pass over `lesson-001`…`lesson-006` (contents +

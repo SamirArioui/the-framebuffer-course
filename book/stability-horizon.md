@@ -5,7 +5,10 @@
   name the frozen lessons and the volatile tail here.
 -->
 
-> **Stability horizon — no lessons are frozen yet.** The frozen prefix is
-> empty: every published `lesson-NNN` state is volatile and may still change.
-> If a tag moves under you, restore your working tree with
-> `git checkout lesson-NNN -- src/`.
+> **Stability horizon — `lesson-001`…`lesson-006` are frozen.** The frozen
+> prefix is the `wordcount` arc: those `lesson-NNN` states do not move except
+> for behavior-changing correctness fixes. Everything from `lesson-007` on
+> is the volatile tail and may still change. If a tag moves under you,
+> restore your working tree to the current lesson state with
+> `git checkout lesson-NNN -- sandbox/` (Part 0's code; Part 1's engine
+> states restore `src/`).
