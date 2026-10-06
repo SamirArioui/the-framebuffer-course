@@ -1,0 +1,43 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 9bfc720..0b41f24 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -586,6 +586,17 @@ int Run(void)
+     std::printf("engine: collision check: %d of %d answers as documented (out-of-bounds is solid)\n",
+                 passed, (int)(sizeof cases / sizeof cases[0]));
+ 
++    /* Exercise 1: the hitbox — the same position, two boxes. At x=15 the
++       full 16px box still touches the wall's last column; the 2px inset
++       box does not. */
++    {
++        bool full = TileRectSolid(map, 15, 232, sprite.width, sprite.height);
++        bool inset = TileRectSolid(map, 16, 232, sprite.width - 2,
++                                   sprite.height - 2);
++        std::printf("engine: hitbox check: at x=15 — full box %s, 2px inset %s\n",
++                    full ? "solid" : "free", inset ? "solid" : "free");
++    }
++
+     double sprite_x = (FRAME_WIDTH - sprite.width) / 2.0;
+     double sprite_y = (FRAME_HEIGHT - sprite.height) / 2.0;
+     double started = platform::Now();
+@@ -633,14 +644,15 @@ int Run(void)
+            map allows it. One axis at a time, so a wall blocks the
+            movement into it and the movement along it still works. The
+            clamp of lesson 054 retires: the world's edge is solid, and
+-           the queries are the boundary now. */
++           the queries are the boundary now.
++           Exercise 1: the hitbox is 2 pixels smaller than the art. */
+         double next_x = sprite_x + move_x;
+-        if (!TileRectSolid(map, (int)next_x, (int)sprite_y, sprite.width,
+-                           sprite.height))
++        if (!TileRectSolid(map, (int)next_x + 1, (int)sprite_y + 1,
++                           sprite.width - 2, sprite.height - 2))
+             sprite_x = next_x;
+         double next_y = sprite_y + move_y;
+-        if (!TileRectSolid(map, (int)sprite_x, (int)next_y, sprite.width,
+-                           sprite.height))
++        if (!TileRectSolid(map, (int)sprite_x + 1, (int)next_y + 1,
++                           sprite.width - 2, sprite.height - 2))
+             sprite_y = next_y;
+ 
+         /* The mover reports its state on transitions: moving, or pushed

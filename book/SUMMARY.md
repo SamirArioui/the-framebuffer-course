@@ -278,6 +278,10 @@
   - [Solution: ex1 — the policy is yours](solutions/lesson-055/ex1.md)
   - [Solution: ex2 — the rectangle at the boundary](solutions/lesson-055/ex2.md)
 
+- [Lesson 056 — the mover that stops at walls](lessons/part-2/lesson-056-mover.md)
+  - [Solution: ex1 — the hitbox](solutions/lesson-056/ex1.md)
+  - [Solution: ex2 — the step and the wall](solutions/lesson-056/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

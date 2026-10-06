@@ -591,9 +591,11 @@ int Run(void)
     double started = platform::Now();
     double last = started;
     int shake_frames = 0; /* lesson 054: the additive hook's demo */
+    bool was_blocked = false; /* lesson 056: the mover's state report */
 
     std::printf("engine: platform layer done — window, polled input, arena-backed framebuffer, measured frames\n");
     std::printf("engine: arrow keys move the sprite, space shakes the camera; close the window to stop\n");
+    std::printf("engine: the sprite stops at walls (lesson 056's mover)\n");
     std::printf("engine: sprite at %d,%d\n", (int)sprite_x, (int)sprite_y);
 
     /* The frame step: read news, update from polled state, draw, present —
@@ -616,25 +618,42 @@ int Run(void)
         last = now;
 
         int old_x = (int)sprite_x, old_y = (int)sprite_y;
+        double was_x = sprite_x, was_y = sprite_y;
+        double move_x = 0.0, move_y = 0.0;
         if (platform::KeyDown(opened.window, platform::KEY_LEFT))
-            sprite_x -= SPRITE_SPEED * dt;
+            move_x -= SPRITE_SPEED * dt;
         if (platform::KeyDown(opened.window, platform::KEY_RIGHT))
-            sprite_x += SPRITE_SPEED * dt;
+            move_x += SPRITE_SPEED * dt;
         if (platform::KeyDown(opened.window, platform::KEY_UP))
-            sprite_y -= SPRITE_SPEED * dt;
+            move_y -= SPRITE_SPEED * dt;
         if (platform::KeyDown(opened.window, platform::KEY_DOWN))
-            sprite_y += SPRITE_SPEED * dt;
+            move_y += SPRITE_SPEED * dt;
 
-        /* The sprite stays in the world — the map's bounds now, not the
-           screen's: the camera moves the view, the world is bigger. */
-        if (sprite_x < 0)
-            sprite_x = 0;
-        if (sprite_x > map.width * TILE_SIZE - sprite.width)
-            sprite_x = map.width * TILE_SIZE - sprite.width;
-        if (sprite_y < 0)
-            sprite_y = 0;
-        if (sprite_y > map.height * TILE_SIZE - sprite.height)
-            sprite_y = map.height * TILE_SIZE - sprite.height;
+        /* Lesson 056: the mover — intent becomes motion only where the
+           map allows it. One axis at a time, so a wall blocks the
+           movement into it and the movement along it still works. The
+           clamp of lesson 054 retires: the world's edge is solid, and
+           the queries are the boundary now. */
+        double next_x = sprite_x + move_x;
+        if (!TileRectSolid(map, (int)next_x, (int)sprite_y, sprite.width,
+                           sprite.height))
+            sprite_x = next_x;
+        double next_y = sprite_y + move_y;
+        if (!TileRectSolid(map, (int)sprite_x, (int)next_y, sprite.width,
+                           sprite.height))
+            sprite_y = next_y;
+
+        /* The mover reports its state on transitions: moving, or pushed
+           against something that will not move. The comparison is on the
+           exact positions — a sub-pixel step is movement, not a wall. */
+        bool blocked = (move_x != 0.0 || move_y != 0.0) &&
+                       sprite_x == was_x && sprite_y == was_y;
+        if (blocked != was_blocked) {
+            std::printf("engine: sprite %s at %d,%d (t=%.3f)\n",
+                        blocked ? "blocked" : "unblocked", (int)sprite_x,
+                        (int)sprite_y, platform::Now() - started);
+            was_blocked = blocked;
+        }
 
         /* Lesson 054: the camera's base follows the sprite — the world
            scrolls under the movement — clamped to the map's bounds. */
