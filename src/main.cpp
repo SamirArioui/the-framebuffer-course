@@ -15,6 +15,7 @@
 #include "platform.h"
 #include "sprite.h"
 #include "text.h"
+#include "tilemap.h"
 
 namespace engine {
 
@@ -331,6 +332,55 @@ int Run(void)
         std::printf("engine: text check: \"A?B\" with a missing character — ink pixels per slot: %d, %d, %d, %d\n",
                     slot_state[0], slot_state[1], slot_state[2], slot_state[3]);
     }
+
+    /* Lesson 052: the world as data — the map file, loaded whole, its
+       cells counted against the file's own rows. */
+    const char *map_path = "assets/map.txt";
+    TileResult map_loaded = LoadTileMap(arena, map_path);
+    if (map_loaded.error != TILE_OK) {
+        switch (map_loaded.error) {
+        case TILE_MISSING:
+            std::fprintf(stderr, "engine: %s: missing or unreadable\n",
+                         map_path);
+            break;
+        case TILE_MALFORMED:
+            std::fprintf(stderr,
+                         "engine: %s: not a complete map\n", map_path);
+            break;
+        default:
+            std::fprintf(stderr, "engine: %s: no room in the arena\n",
+                         map_path);
+            break;
+        }
+        platform::CloseWindow(opened.window);
+        ArenaRelease(arena);
+        return 1;
+    }
+    TileMap &map = map_loaded.map;
+    std::printf("engine: map %s: %dx%d, %d kinds\n", map_path, map.width,
+                map.height, map.kind_count);
+    for (int k = 0; k < map.kind_count; ++k) {
+        int count = 0;
+        for (int y = 0; y < map.height; ++y)
+            for (int x = 0; x < map.width; ++x)
+                if (TileAt(map, x, y) == k)
+                    ++count;
+        std::printf("engine: map kind '%c' (solid %d): %d cells\n",
+                    map.kinds[k].cell, map.kinds[k].solid, count);
+    }
+    int unknown = 0, solid_corners = 0;
+    for (int y = 0; y < map.height; ++y)
+        for (int x = 0; x < map.width; ++x) {
+            int kind = TileAt(map, x, y);
+            if (kind < 0 || kind >= map.kind_count)
+                ++unknown;
+        }
+    if (map.kinds[TileAt(map, 0, 0)].solid)
+        ++solid_corners;
+    if (map.kinds[TileAt(map, map.width - 1, map.height - 1)].solid)
+        ++solid_corners;
+    std::printf("engine: map check: %d cells, %d unknown, %d of 2 corners solid\n",
+                map.width * map.height, unknown, solid_corners);
 
     double sprite_x = (FRAME_WIDTH - sprite.width) / 2.0;
     double sprite_y = (FRAME_HEIGHT - sprite.height) / 2.0;

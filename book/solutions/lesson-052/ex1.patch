@@ -1,0 +1,103 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index b63c353..64bcabb 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -343,9 +343,25 @@ int Run(void)
+             std::fprintf(stderr, "engine: %s: missing or unreadable\n",
+                          map_path);
+             break;
+-        case TILE_MALFORMED:
++        case TILE_BAD_HEADER:
+             std::fprintf(stderr,
+-                         "engine: %s: not a complete map\n", map_path);
++                         "engine: %s: the first line is not width height kinds\n",
++                         map_path);
++            break;
++        case TILE_BAD_KINDS:
++            std::fprintf(stderr,
++                         "engine: %s: the kind table is malformed\n",
++                         map_path);
++            break;
++        case TILE_BAD_ROWS:
++            std::fprintf(stderr,
++                         "engine: %s: the rows are wrong (length, count, or an unknown character)\n",
++                         map_path);
++            break;
++        case TILE_TRAILING:
++            std::fprintf(stderr,
++                         "engine: %s: there is content after the last row\n",
++                         map_path);
+             break;
+         default:
+             std::fprintf(stderr, "engine: %s: no room in the arena\n",
+diff --git a/src/tilemap.cpp b/src/tilemap.cpp
+index fadf9fe..a9c10a7 100644
+--- a/src/tilemap.cpp
++++ b/src/tilemap.cpp
+@@ -67,6 +67,7 @@ TileResult LoadTileMap(Arena &arena, const char *path)
+     const unsigned char *line = 0;
+     int len = 0;
+     bool ok = true;
++    int stage = 0; /* 0 header, 1 kinds, 2 rows, 3 trailing — where it broke */
+ 
+     /* The first line: width height kind-count — the file's only numbers,
+        and the counts every later line is checked against. */
+@@ -80,6 +81,8 @@ TileResult LoadTileMap(Arena &arena, const char *path)
+     ok = ok && width > 0 && width <= TILE_MAX_DIM;
+     ok = ok && height > 0 && height <= TILE_MAX_DIM;
+     ok = ok && kind_count > 0 && kind_count <= TILE_MAX_KINDS;
++    if (ok)
++        stage = 1;
+ 
+     /* The kind table: one character and its solidity per kind, in order. */
+     TileKind kinds[TILE_MAX_KINDS];
+@@ -99,6 +102,8 @@ TileResult LoadTileMap(Arena &arena, const char *path)
+             if (kinds[prev].cell == kinds[k].cell)
+                 ok = false; /* one character, one kind */
+     }
++    if (ok)
++        stage = 2;
+ 
+     /* The cells: exactly height rows of exactly width characters, every
+        character one the kind table names. */
+@@ -129,6 +134,8 @@ TileResult LoadTileMap(Arena &arena, const char *path)
+                 cells[y * width + x] = (unsigned char)kind;
+         }
+     }
++    if (ok)
++        stage = 3;
+ 
+     /* After the last row: trailing blank lines, and nothing else. */
+     while (ok && lines.at < lines.size) {
+@@ -139,7 +146,10 @@ TileResult LoadTileMap(Arena &arena, const char *path)
+     if (!ok) {
+         ArenaRollback(arena, mark);
+         platform::ReleaseFile(file);
+-        result.error = TILE_MALFORMED;
++        result.error = stage == 0 ? TILE_BAD_HEADER
++                      : stage == 1 ? TILE_BAD_KINDS
++                      : stage == 2 ? TILE_BAD_ROWS
++                                   : TILE_TRAILING;
+         return result;
+     }
+ 
+diff --git a/src/tilemap.h b/src/tilemap.h
+index 1c076cf..429847c 100644
+--- a/src/tilemap.h
++++ b/src/tilemap.h
+@@ -43,9 +43,12 @@ struct TileMap {
+    never a partial map presented as success. */
+ enum TileError {
+     TILE_OK = 0,
+-    TILE_MISSING,   /* the file is not there or cannot be read */
+-    TILE_MALFORMED, /* the bytes do not form a complete map */
+-    TILE_NO_ROOM,   /* the arena had no room for the cells */
++    TILE_MISSING,     /* the file is not there or cannot be read */
++    TILE_BAD_HEADER,  /* the first line is not three numbers in range */
++    TILE_BAD_KINDS,   /* the kind table is malformed or claims one char twice */
++    TILE_BAD_ROWS,    /* a row is the wrong length or uses an unknown char */
++    TILE_TRAILING,    /* there is content after the last row */
++    TILE_NO_ROOM,     /* the arena had no room for the cells */
+ };
+ 
+ struct TileResult {

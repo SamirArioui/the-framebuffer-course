@@ -262,6 +262,10 @@
   - [Solution: ex1 — the HUD that counts](solutions/lesson-051/ex1.md)
   - [Solution: ex2 — the two kinds of nothing](solutions/lesson-051/ex2.md)
 
+- [Lesson 052 — the tilemap asset format](lessons/part-2/lesson-052-tilemap.md)
+  - [Solution: ex1 — the failure that names itself](solutions/lesson-052/ex1.md)
+  - [Solution: ex2 — the map as characters](solutions/lesson-052/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)
