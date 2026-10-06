@@ -192,6 +192,10 @@
   - [Solution: ex1 — eight directions](solutions/lesson-034/ex1.md)
   - [Solution: ex2 — the speed that belongs to the keyboard](solutions/lesson-034/ex2.md)
 
+- [Lesson 035 — the platform clock](lessons/part-1/lesson-035-clock.md)
+  - [Solution: ex1 — the diagonal is too fast](solutions/lesson-035/ex1.md)
+  - [Solution: ex2 — the clock that lies](solutions/lesson-035/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

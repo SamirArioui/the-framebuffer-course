@@ -1,0 +1,29 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index c66a75f..ca2cb64 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -91,14 +91,20 @@ int Run(void)
+         last = now;
+ 
+         int old_x = (int)marker_x, old_y = (int)marker_y;
++        double dx = 0.0, dy = 0.0;
+         if (platform::KeyDown(opened.window, platform::KEY_LEFT))
+-            marker_x -= MARKER_SPEED * dt;
++            dx -= 1.0;
+         if (platform::KeyDown(opened.window, platform::KEY_RIGHT))
+-            marker_x += MARKER_SPEED * dt;
++            dx += 1.0;
+         if (platform::KeyDown(opened.window, platform::KEY_UP))
+-            marker_y -= MARKER_SPEED * dt;
++            dy -= 1.0;
+         if (platform::KeyDown(opened.window, platform::KEY_DOWN))
+-            marker_y += MARKER_SPEED * dt;
++            dy += 1.0;
++        /* The diagonal is one direction, not two: normalize, so every
++           direction moves at MARKER_SPEED and none moves faster. */
++        double len = (dx != 0.0 && dy != 0.0) ? 1.4142135623730951 : 1.0;
++        marker_x += dx / len * MARKER_SPEED * dt;
++        marker_y += dy / len * MARKER_SPEED * dt;
+ 
+         /* The marker stays on screen — lesson 015's fold at frame scale. */
+         if (marker_x < 0)

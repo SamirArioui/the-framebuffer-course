@@ -7,6 +7,11 @@
 //
 // Lesson 028: the event pump. The OS's news arrives here as X events and is
 // folded into state the engine polls — the engine never reads an event.
+//
+// Lesson 035: the platform clock. POSIX, not ISO C — clock_gettime is the
+// OS's clock interface (the one lesson 020 taught inside snek, now behind
+// the seam), so the feature-test macro goes before the includes.
+#define _POSIX_C_SOURCE 200809L
 
 #include "platform.h"
 
@@ -15,9 +20,9 @@
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
 
-#include <cstdio>
 #include <poll.h>
 #include <signal.h>
+#include <time.h>
 
 namespace platform {
 
@@ -198,6 +203,13 @@ bool KeyPressed(Window *window, Key key)
 bool HasFocus(const Window *window)
 {
     return window && window->focused;
+}
+
+double Now(void)
+{
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (double)ts.tv_sec + (double)ts.tv_nsec / 1e9;
 }
 
 void PumpEvents(Window *window)

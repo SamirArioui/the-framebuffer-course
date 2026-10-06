@@ -56,6 +56,12 @@ bool KeyPressed(Window *window, Key key);
    for them. */
 bool HasFocus(const Window *window);
 
+/* The platform clock: seconds since an arbitrary starting point. It is
+   monotonic — it never goes backwards, and the wall clock cannot move it —
+   and its resolution is fine enough to measure one frame. This is the
+   clock Part 2's frame timing and Part 5's frame-budget report stand on. */
+double Now(void);
+
 /* Reads whatever news the OS has about this window and folds it into the
    platform layer's state. The engine never sees an event object — it polls
    state afterwards. Blocks until there is news or the run is interrupted. */

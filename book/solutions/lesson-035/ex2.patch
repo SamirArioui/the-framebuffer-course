@@ -1,0 +1,46 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index c66a75f..80256e2 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -62,6 +62,8 @@ int Run(void)
+     }
+     std::printf("engine: clock %s over 100000 samples, finest step %.0f ns\n",
+                 backwards ? "WENT BACKWARDS" : "never backwards", finest * 1e9);
++    std::printf("engine: monotonic %.6f vs wall %.6f\n", platform::Now(),
++                platform::WallNow());
+ 
+     /* The scene: a marker the arrow keys move. The report below is its
+        position and the time it moved — the interactive frame makes itself
+diff --git a/src/platform.h b/src/platform.h
+index cea5fc6..f207f2c 100644
+--- a/src/platform.h
++++ b/src/platform.h
+@@ -62,6 +62,10 @@ bool HasFocus(const Window *window);
+    clock Part 2's frame timing and Part 5's frame-budget report stand on. */
+ double Now(void);
+ 
++/* Instrumenting only — the wall clock lesson 020 warned about. It counts
++   seconds since 1970 and the system can move it at any time. */
++double WallNow(void);
++
+ /* Reads whatever news the OS has about this window and folds it into the
+    platform layer's state. The engine never sees an event object — it polls
+    state afterwards. Blocks until there is news or the run is interrupted. */
+diff --git a/src/platform_x11.cpp b/src/platform_x11.cpp
+index d35cf08..d0c9966 100644
+--- a/src/platform_x11.cpp
++++ b/src/platform_x11.cpp
+@@ -212,6 +212,13 @@ double Now(void)
+     return (double)ts.tv_sec + (double)ts.tv_nsec / 1e9;
+ }
+ 
++double WallNow(void)
++{
++    struct timespec ts;
++    clock_gettime(CLOCK_REALTIME, &ts);
++    return (double)ts.tv_sec + (double)ts.tv_nsec / 1e9;
++}
++
+ void PumpEvents(Window *window)
+ {
+     if (!window || !window->display)
