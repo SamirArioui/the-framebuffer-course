@@ -20,6 +20,7 @@
 #include "frame.h"
 #include "platform.h"
 #include "sprite.h"
+#include "table.h"
 #include "text.h"
 #include "tilemap.h"
 #include "tiles.h"
@@ -161,6 +162,43 @@ int Run(void)
         return 1;
     }
     TileSheet &sheet = tiles_loaded.sheet;
+
+    /* Lesson 071: the run's entities are data. The table file holds one
+       row per definition — its columns named by its header — and the load
+       either hands over every definition or names what went wrong, like
+       every asset above. */
+    TableResult table_loaded = LoadTable("assets/entities.txt");
+    if (table_loaded.error != TABLE_OK) {
+        switch (table_loaded.error) {
+        case TABLE_MISSING:
+            std::fprintf(stderr,
+                         "engine: assets/entities.txt: could not load (missing)\n");
+            break;
+        case TABLE_MALFORMED:
+            std::fprintf(stderr,
+                         "engine: assets/entities.txt: could not load (malformed)\n");
+            break;
+        default:
+            std::fprintf(stderr,
+                         "engine: assets/entities.txt: could not load (too many rows)\n");
+            break;
+        }
+        platform::CloseWindow(opened.window);
+        ArenaRelease(arena);
+        return 1;
+    }
+    EntityTable &table = table_loaded.table;
+
+    /* The byte-level check, before anything uses the table: every
+       definition, carrying the values its row states. */
+    std::printf("engine: table: %d definition%s\n", table.count,
+                table.count == 1 ? "" : "s");
+    for (int i = 0; i < table.count; ++i) {
+        const EntityDef &def = table.rows[i];
+        std::printf("engine: def %s: x %d y %d facing %d speed %d health %d sprite %s\n",
+                    def.name, def.x, def.y, def.facing, def.speed, def.health,
+                    def.sprite);
+    }
 
     /* Lesson 066: the run's two sounds as files' bytes — the music that
        loops and the effect that plays once. Lesson 061's tone leaves the

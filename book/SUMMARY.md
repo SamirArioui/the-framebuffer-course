@@ -340,6 +340,12 @@
   - [Solution: ex1 — the row's two insides](solutions/lesson-070/ex1.md)
   - [Solution: ex2 — the row's two populations](solutions/lesson-070/ex2.md)
 
+# Part 4 — services
+
+- [Lesson 071 — the archetype table](lessons/part-4/lesson-071-table.md)
+  - [Solution: ex1 — the header, reordered](solutions/lesson-071/ex1.md)
+  - [Solution: ex2 — the table written back](solutions/lesson-071/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

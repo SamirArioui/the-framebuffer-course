@@ -1,0 +1,182 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 7ddd340..07726f5 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -10,6 +10,7 @@
+ // shows. The language law of lesson 026 still holds over all of it.
+ 
+ #include <cstdio>
++#include <cstring>
+ 
+ #include "arena.h"
+ #include "audio.h"
+@@ -200,6 +201,57 @@ int Run(void)
+                     def.sprite);
+     }
+ 
++    /* Exercise 2: the round trip. The table is written back out by hand
++       — the format assembled into bytes — read in again through the
++       loader, and every field of every definition compared against the
++       table that went out. */
++    platform::FileError written =
++        WriteTable(arena, "assets/table-roundtrip.txt", table);
++    if (written != platform::FILE_OK) {
++        std::fprintf(stderr,
++                     "engine: assets/table-roundtrip.txt: could not write\n");
++        platform::CloseWindow(opened.window);
++        ArenaRelease(arena);
++        return 1;
++    }
++    TableResult again = LoadTable("assets/table-roundtrip.txt");
++    if (again.error != TABLE_OK) {
++        std::fprintf(stderr,
++                     "engine: assets/table-roundtrip.txt: could not load\n");
++        platform::CloseWindow(opened.window);
++        ArenaRelease(arena);
++        return 1;
++    }
++    const char *field = 0;
++    bool agree = again.table.count == table.count;
++    if (!agree)
++        field = "count";
++    for (int i = 0; agree && i < table.count; ++i) {
++        const EntityDef &out = table.rows[i], &back = again.table.rows[i];
++        if (std::strcmp(out.name, back.name) != 0)
++            field = "name";
++        else if (out.x != back.x)
++            field = "x";
++        else if (out.y != back.y)
++            field = "y";
++        else if (out.facing != back.facing)
++            field = "facing";
++        else if (out.speed != back.speed)
++            field = "speed";
++        else if (out.health != back.health)
++            field = "health";
++        else if (std::strcmp(out.sprite, back.sprite) != 0)
++            field = "sprite";
++        if (field) {
++            std::printf("engine: round trip: definition %d disagrees on %s\n",
++                        i, field);
++            agree = false;
++        }
++    }
++    if (agree)
++        std::printf("engine: round trip: %d definitions written and read back, every field agrees\n",
++                    table.count);
++
+     /* Lesson 066: the run's two sounds as files' bytes — the music that
+        loops and the effect that plays once. Lesson 061's tone leaves the
+        run here (it stays on disk: the file lessons 059-065 were built
+diff --git a/src/table.cpp b/src/table.cpp
+index 76e6d98..d2a5d87 100644
+--- a/src/table.cpp
++++ b/src/table.cpp
+@@ -260,4 +260,77 @@ TableResult LoadTable(const char *path)
+     return result;
+ }
+ 
++namespace {
++
++/* Exercise 2: one whole number, digit by digit, into the image. */
++int PutInt(unsigned char *out, int at, int value)
++{
++    char digits[16];
++    int n = 0;
++    do {
++        digits[n++] = (char)('0' + value % 10);
++        value /= 10;
++    } while (value > 0);
++    while (n > 0)
++        out[at++] = (unsigned char)digits[--n];
++    return at;
++}
++
++/* Exercise 2: one text value — the bytes it has, and the space after. */
++int PutText(unsigned char *out, int at, const char *text)
++{
++    int i = 0;
++    while (text[i]) {
++        out[at++] = (unsigned char)text[i];
++        ++i;
++    }
++    return at;
++}
++
++} /* namespace */
++
++platform::FileError WriteTable(Arena &arena, const char *path,
++                               const EntityTable &table)
++{
++    /* The image is scratch: a bound over the widest possible header and
++       row, never a guess about the actual one — the bytes handed to the
++       write are exactly the ones assembled, and the arena takes the
++       bound back either way. */
++    size_t mark = ArenaMark(arena);
++    size_t bound = 64 + (size_t)table.count * 128;
++    unsigned char *image = (unsigned char *)ArenaAlloc(arena, bound, 1);
++    if (!image)
++        return platform::FILE_UNWRITABLE;
++
++    static const char *const HEADER[COL_COUNT] = {
++        "name", "x", "y", "facing", "speed", "health", "sprite"
++    };
++    int at = 0;
++    for (int c = 0; c < COL_COUNT; ++c) {
++        at = PutText(image, at, HEADER[c]);
++        image[at++] = (unsigned char)(c + 1 == COL_COUNT ? '\n' : ' ');
++    }
++    for (int i = 0; i < table.count; ++i) {
++        const EntityDef &def = table.rows[i];
++        at = PutText(image, at, def.name);
++        image[at++] = ' ';
++        at = PutInt(image, at, def.x);
++        image[at++] = ' ';
++        at = PutInt(image, at, def.y);
++        image[at++] = ' ';
++        at = PutInt(image, at, def.facing);
++        image[at++] = ' ';
++        at = PutInt(image, at, def.speed);
++        image[at++] = ' ';
++        at = PutInt(image, at, def.health);
++        image[at++] = ' ';
++        at = PutText(image, at, def.sprite);
++        image[at++] = '\n';
++    }
++
++    platform::FileError error = platform::WriteFile(path, image, (size_t)at);
++    ArenaRollback(arena, mark); /* kept or refused, the image is scratch */
++    return error;
++}
++
+ } /* namespace engine */
+diff --git a/src/table.h b/src/table.h
+index 06e0a89..80dbf41 100644
+--- a/src/table.h
++++ b/src/table.h
+@@ -18,6 +18,8 @@
+ #ifndef TABLE_H
+ #define TABLE_H
+ 
++#include "arena.h"
++
+ namespace engine {
+ 
+ /* The parse's destination is a fixed array of rows, like the map's kinds
+@@ -67,6 +69,16 @@ struct TableResult {
+    value where text is, a name the table already holds. */
+ TableResult LoadTable(const char *path);
+ 
++/* Exercise 2: the writer — the reader's inverse. The format is assembled
++   by hand into bytes (the header this lesson defines, then one row per
++   definition) and handed to the seam's whole-file write: the file is
++   created, or replaced, with exactly those bytes — or the write is a
++   typed failure. Every field a reader will check is written to pass that
++   check; the writer is not a second opinion about the format, it is the
++   same opinion in the other direction. */
++platform::FileError WriteTable(Arena &arena, const char *path,
++                               const EntityTable &table);
++
+ } /* namespace engine */
+ 
+ #endif

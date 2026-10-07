@@ -1,0 +1,78 @@
+diff --git a/assets/reordered.txt b/assets/reordered.txt
+new file mode 100644
+index 0000000..a219abd
+--- /dev/null
++++ b/assets/reordered.txt
+@@ -0,0 +1,3 @@
++speed name sprite health y facing x
++240 hero assets/sprite.ppm 3 232 0 312
++96 slime assets/sprite.ppm 1 320 2 400
+diff --git a/assets/swapped.txt b/assets/swapped.txt
+new file mode 100644
+index 0000000..002eca0
+--- /dev/null
++++ b/assets/swapped.txt
+@@ -0,0 +1,3 @@
++speed name sprite health y facing x
++3 hero assets/sprite.ppm 240 232 0 312
++96 slime assets/sprite.ppm 1 320 2 400
+diff --git a/src/main.cpp b/src/main.cpp
+index 7ddd340..3b07ffa 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -71,6 +71,20 @@ static void PrintSample(const char *name, const Sample &sample)
+                                    : 0);
+ }
+ 
++/* Exercise 1: one table's report — every definition, carrying the values
++   its row states — under the name the run loaded it by. */
++static void PrintTable(const char *name, const EntityTable &table)
++{
++    std::printf("engine: %s: %d definition%s\n", name, table.count,
++                table.count == 1 ? "" : "s");
++    for (int i = 0; i < table.count; ++i) {
++        const EntityDef &def = table.rows[i];
++        std::printf("engine: def %s: x %d y %d facing %d speed %d health %d sprite %s\n",
++                    def.name, def.x, def.y, def.facing, def.speed, def.health,
++                    def.sprite);
++    }
++}
++
+ /* Lesson 066: one asset load's whole failure path — a failed load is
+    named typed and ends the run by name, exactly like the loads above it. */
+ static bool LoadRunSample(Arena &arena, const char *path, Sample &into)
+@@ -191,14 +205,27 @@ int Run(void)
+ 
+     /* The byte-level check, before anything uses the table: every
+        definition, carrying the values its row states. */
+-    std::printf("engine: table: %d definition%s\n", table.count,
+-                table.count == 1 ? "" : "s");
+-    for (int i = 0; i < table.count; ++i) {
+-        const EntityDef &def = table.rows[i];
+-        std::printf("engine: def %s: x %d y %d facing %d speed %d health %d sprite %s\n",
+-                    def.name, def.x, def.y, def.facing, def.speed, def.health,
+-                    def.sprite);
++    PrintTable("table", table);
++
++    /* Exercise 1: the same two definitions under a reordered header, and
++       one row with two of its values swapped — loaded beside the course's
++       own table so the three reports can be compared. */
++    TableResult reordered = LoadTable("assets/reordered.txt");
++    if (reordered.error != TABLE_OK) {
++        std::fprintf(stderr, "engine: assets/reordered.txt: could not load\n");
++        platform::CloseWindow(opened.window);
++        ArenaRelease(arena);
++        return 1;
++    }
++    PrintTable("reordered", reordered.table);
++    TableResult swapped = LoadTable("assets/swapped.txt");
++    if (swapped.error != TABLE_OK) {
++        std::fprintf(stderr, "engine: assets/swapped.txt: could not load\n");
++        platform::CloseWindow(opened.window);
++        ArenaRelease(arena);
++        return 1;
+     }
++    PrintTable("swapped", swapped.table);
+ 
+     /* Lesson 066: the run's two sounds as files' bytes — the music that
+        loops and the effect that plays once. Lesson 061's tone leaves the
