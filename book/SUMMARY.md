@@ -370,6 +370,10 @@
   - [Solution: ex1 — the corner, predicted](solutions/lesson-077/ex1.md)
   - [Solution: ex2 — which wall said no](solutions/lesson-077/ex2.md)
 
+- [Lesson 078 — the game-time scale](lessons/part-4/lesson-078-game-time.md)
+  - [Solution: ex1 — hitstop that ends](solutions/lesson-078/ex1.md)
+  - [Solution: ex2 — one knob, not three](solutions/lesson-078/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

@@ -1,0 +1,51 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index ee2f1b4..d00858c 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -305,9 +305,9 @@ int Run(void)
+     double started = platform::Now();
+     double last = started;
+     double distance = 0.0; /* the score: the world the hero has walked */
+-    int shake_frames = 0; /* lesson 054: the additive hook's demo */
+     GameTime game_time = { GAMETIME_FULL }; /* lesson 078: the scale, at play */
+     int scale_phase = 0;  /* lesson 078: the demo's script, by wall seconds */
++    double hitstop_until = 0.0; /* exercise 1: when the hitstop is over */
+     bool was_blocked = false; /* lesson 077: the mover's state report */
+ 
+     /* The demo's identity: what the run is, named at once — the hero,
+@@ -522,23 +522,19 @@ int Run(void)
+                         base_y, platform::Now() - started);
+         }
+ 
+-        /* The additive offset: the hook the juice toolkit will drive.
+-           Here SPACE demonstrates it — a shake that ends at zero, which
+-           is where it lives at rest. */
+-        if (platform::KeyPressed(opened.window, platform::KEY_SPACE) &&
+-            shake_frames <= 0) {
+-            shake_frames = 30;
+-            std::printf("engine: camera additive 6,0 (shake starts)\n");
++        /* Exercise 1: the hitstop that ends — fired on SPACE, the scale
++           down to a quarter for 0.2 s of *wall* time, then back to
++           play. The countdown is wall time's on purpose: a timer in
++           game time cannot end anything while the game is stopped. */
++        if (platform::KeyPressed(opened.window, platform::KEY_SPACE)) {
++            GameTimeSetScale(game_time, 0.25);
++            hitstop_until = platform::Now() + 0.2;
++            std::printf("engine: game-time: hitstop fired — scale 0.25 for 0.2 s of wall time\n");
+         }
+-        if (shake_frames > 0) {
+-            --shake_frames;
+-            camera.add_x = (shake_frames % 2) ? 6 : -6;
+-            camera.add_y = 0;
+-            if (shake_frames == 0) {
+-                camera.add_x = 0;
+-                camera.add_y = 0;
+-                std::printf("engine: camera additive 0,0 (at rest)\n");
+-            }
++        if (hitstop_until != 0.0 && platform::Now() >= hitstop_until) {
++            GameTimeSetScale(game_time, GAMETIME_FULL);
++            hitstop_until = 0.0;
++            std::printf("engine: game-time: hitstop over — scale 1.00\n");
+         }
+ 
+         frame.update = platform::Now() - t0;

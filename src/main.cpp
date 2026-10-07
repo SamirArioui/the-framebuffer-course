@@ -19,6 +19,7 @@
 #include "font.h"
 #include "framebuffer.h"
 #include "frame.h"
+#include "gametime.h"
 #include "platform.h"
 #include "sprite.h"
 #include "table.h"
@@ -305,6 +306,8 @@ int Run(void)
     double last = started;
     double distance = 0.0; /* the score: the world the hero has walked */
     int shake_frames = 0; /* lesson 054: the additive hook's demo */
+    GameTime game_time = { GAMETIME_FULL }; /* lesson 078: the scale, at play */
+    int scale_phase = 0;  /* lesson 078: the demo's script, by wall seconds */
     bool was_blocked = false; /* lesson 077: the mover's state report */
 
     /* The demo's identity: what the run is, named at once — the hero,
@@ -378,8 +381,40 @@ int Run(void)
 
         /* Update: a frame reads state — it never handles events. */
         double now = platform::Now();
-        double dt = now - last;
+        double wall_dt = now - last;
         last = now;
+
+        /* Lesson 078: the game-time scale — the one knob the game sets.
+           The demo's script is the game here: play, then hitstop (a
+           fraction of full speed), then pause (0), then play again —
+           the same three settings Part 5's juice toolkit and pause
+           screen will make. Each transition names the step that comes
+           out: the wall clock's step, scaled. */
+        double running = now - started;
+        if (scale_phase == 0 && running >= 3.0) {
+            GameTimeSetScale(game_time, 0.25);
+            scale_phase = 1;
+            std::printf("engine: game-time: scale %.2f (hitstop) — step %.3f ms of a %.3f ms wall step\n",
+                        game_time.scale, GameTimeStep(game_time, wall_dt) * 1e3,
+                        wall_dt * 1e3);
+        } else if (scale_phase == 1 && running >= 5.0) {
+            GameTimeSetScale(game_time, 0.0);
+            scale_phase = 2;
+            std::printf("engine: game-time: scale %.2f (pause) — step %.3f ms of a %.3f ms wall step\n",
+                        game_time.scale, GameTimeStep(game_time, wall_dt) * 1e3,
+                        wall_dt * 1e3);
+        } else if (scale_phase == 2 && running >= 7.0) {
+            GameTimeSetScale(game_time, GAMETIME_FULL);
+            scale_phase = 3;
+            std::printf("engine: game-time: scale %.2f (play) — step %.3f ms of a %.3f ms wall step\n",
+                        game_time.scale, GameTimeStep(game_time, wall_dt) * 1e3,
+                        wall_dt * 1e3);
+        }
+
+        /* Lesson 078: the update advances by game time — the wall
+           clock's step, scaled. Everything the simulation does with dt
+           is scaled; nothing else is. */
+        double dt = GameTimeStep(game_time, wall_dt);
 
         /* Lesson 076: the hero's intent — polled input state, read once
            per frame and written to the hero's own movement request. The

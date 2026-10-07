@@ -1,0 +1,28 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index ee2f1b4..aff97f7 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -308,6 +308,7 @@ int Run(void)
+     int shake_frames = 0; /* lesson 054: the additive hook's demo */
+     GameTime game_time = { GAMETIME_FULL }; /* lesson 078: the scale, at play */
+     int scale_phase = 0;  /* lesson 078: the demo's script, by wall seconds */
++    double reported_scale = GAMETIME_FULL; /* exercise 2: the probe's state */
+     bool was_blocked = false; /* lesson 077: the mover's state report */
+ 
+     /* The demo's identity: what the run is, named at once — the hero,
+@@ -469,6 +470,15 @@ int Run(void)
+             std::printf("engine: walk (frame 1): visited %d live entities, once each, in slot order; live %d of %d\n",
+                         visited, store.live, ENTITY_CAP);
+ 
++        /* Exercise 2: what the update still does at any scale — the
++           input was read, the walk ran, and only the step is scaled. */
++        if (reported_scale != game_time.scale) {
++            std::printf("engine: game-time: at scale %.2f — %d entities walked, update %.3f ms of wall clock\n",
++                        game_time.scale, visited,
++                        (platform::Now() - t0) * 1e3);
++            reported_scale = game_time.scale;
++        }
++
+         /* Lesson 075: the reuse — three requests once the walk has
+            freed three slots. Each lands in a freed slot, before any
+            slot that has never been used. */
