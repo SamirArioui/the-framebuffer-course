@@ -346,6 +346,10 @@
   - [Solution: ex1 — the header, reordered](solutions/lesson-071/ex1.md)
   - [Solution: ex2 — the table written back](solutions/lesson-071/ex2.md)
 
+- [Lesson 072 — the load, complete or named](lessons/part-4/lesson-072-load.md)
+  - [Solution: ex1 — the table with a hole in it](solutions/lesson-072/ex1.md)
+  - [Solution: ex2 — the load's cost, measured](solutions/lesson-072/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

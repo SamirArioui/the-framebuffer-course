@@ -7,7 +7,7 @@
 
 ## 2. The table as data (lesson-071…072)
 
-- [ ] 2.1 Author lesson-071 (the archetype table defined by hand: a header naming its columns, one row per definition, parsed byte by byte like the other formats in this course) — prose + one code step + 1-2 mixed exercises written before the prose with diff solutions linked after each prompt; verify a table loads completely and every definition carries the values its row states, the page renders, and the co-committed commit is tagged `lesson-071`.
+- [x] 2.1 Author lesson-071 (the archetype table defined by hand: a header naming its columns, one row per definition, parsed byte by byte like the other formats in this course) — prose + one code step + 1-2 mixed exercises written before the prose with diff solutions linked after each prompt; verify a table loads completely and every definition carries the values its row states, the page renders, and the co-committed commit is tagged `lesson-071`.
 - [ ] 2.2 Author lesson-072 (tables loaded whole into the arena with typed failures: a missing, malformed, or wrong-shaped file refused, nothing partial kept) with its exercises and diff solutions; verify missing and malformed files fail typed as documented including a row with the wrong field count and a value where a number is required, the page renders, and the commit is tagged `lesson-072`.
 
 ## 3. Entity storage (lesson-073…075)

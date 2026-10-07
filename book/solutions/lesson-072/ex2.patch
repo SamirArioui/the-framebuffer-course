@@ -1,0 +1,27 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 3f07b8b..01cde38 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -201,6 +201,22 @@ int Run(void)
+                     def.sprite);
+     }
+ 
++    /* Exercise 2: the load's cost, measured — the same loader at four
++       table sizes, timed on the platform clock and accounted in the
++       arena. The four files are generated once, by hand, outside the
++       run (the solution's walkthrough has the command). */
++    const char *sizes[4] = { "assets/rows2.txt", "assets/rows20.txt",
++                             "assets/rows200.txt", "assets/rows2000.txt" };
++    for (int i = 0; i < 4; ++i) {
++        size_t before_sized = arena.used;
++        double t_load0 = platform::Now();
++        TableResult sized = LoadTable(arena, sizes[i]);
++        double t_load1 = platform::Now();
++        std::printf("engine: load %s: %d rows, %zu -> %zu bytes, %.4f ms\n",
++                    sizes[i], sized.error == TABLE_OK ? sized.table.count : 0,
++                    before_sized, arena.used, (t_load1 - t_load0) * 1e3);
++    }
++
+     /* Lesson 066: the run's two sounds as files' bytes — the music that
+        loops and the effect that plays once. Lesson 061's tone leaves the
+        run here (it stays on disk: the file lessons 059-065 were built

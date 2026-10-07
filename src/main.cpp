@@ -166,8 +166,9 @@ int Run(void)
     /* Lesson 071: the run's entities are data. The table file holds one
        row per definition — its columns named by its header — and the load
        either hands over every definition or names what went wrong, like
-       every asset above. */
-    TableResult table_loaded = LoadTable("assets/entities.txt");
+       every asset above. Lesson 072: the rows are the arena's, and a
+       refused load keeps none of them. */
+    TableResult table_loaded = LoadTable(arena, "assets/entities.txt");
     if (table_loaded.error != TABLE_OK) {
         switch (table_loaded.error) {
         case TABLE_MISSING:
@@ -180,7 +181,7 @@ int Run(void)
             break;
         default:
             std::fprintf(stderr,
-                         "engine: assets/entities.txt: could not load (too many rows)\n");
+                         "engine: assets/entities.txt: could not load (no room)\n");
             break;
         }
         platform::CloseWindow(opened.window);

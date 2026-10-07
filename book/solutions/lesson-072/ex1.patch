@@ -1,0 +1,36 @@
+diff --git a/assets/holed.txt b/assets/holed.txt
+new file mode 100644
+index 0000000..4d585d2
+--- /dev/null
++++ b/assets/holed.txt
+@@ -0,0 +1,4 @@
++name x y facing speed health sprite
++hero 312 232 0 240 3 assets/sprite.ppm
++
++slime 400 320 2 96 1 assets/sprite.ppm
+diff --git a/src/main.cpp b/src/main.cpp
+index 3f07b8b..42e2aa5 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -201,6 +201,21 @@ int Run(void)
+                     def.sprite);
+     }
+ 
++    /* Exercise 1: the table with a hole in it, loaded beside the
++       course's own table — the verdict, the rows, and the arena's count
++       watched across it. */
++    size_t before_hole = arena.used;
++    TableResult holed = LoadTable(arena, "assets/holed.txt");
++    const char *verdict = holed.error == TABLE_OK
++                              ? "loaded"
++                              : holed.error == TABLE_MISSING
++                                    ? "missing"
++                                    : holed.error == TABLE_MALFORMED
++                                          ? "malformed"
++                                          : "no room";
++    std::printf("engine: holed: %s, %d rows, arena %zu -> %zu\n", verdict,
++                holed.table.count, before_hole, arena.used);
++
+     /* Lesson 066: the run's two sounds as files' bytes — the music that
+        loops and the effect that plays once. Lesson 061's tone leaves the
+        run here (it stays on disk: the file lessons 059-065 were built

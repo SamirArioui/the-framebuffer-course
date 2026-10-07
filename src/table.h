@@ -18,14 +18,15 @@
 #ifndef TABLE_H
 #define TABLE_H
 
+#include "arena.h"
+
 namespace engine {
 
-/* The parse's destination is a fixed array of rows, like the map's kinds
-   are. How many rows a table holds is the file's fact and not this
-   constant's — lesson 072 moves the rows where the file's count is what
-   lands. The name and path widths are the fields' own bounds: a value
-   longer than its field is refused, never truncated into one. */
-constexpr int TABLE_MAX_ROWS = 16;
+/* The parse's destination is the arena: a table's rows are the file's
+   fact — how many there are is what the file says, and the arena gives
+   exactly that many. The name and path widths are the fields' own
+   bounds: a value longer than its field is refused, never truncated into
+   one. */
 constexpr int TABLE_NAME_MAX = 16;
 constexpr int TABLE_PATH_MAX = 64;
 
@@ -40,19 +41,21 @@ struct EntityDef {
     char sprite[TABLE_PATH_MAX]; /* the art file it draws */
 };
 
-/* A loaded table: one definition per row. */
+/* A loaded table: one definition per row, in the arena — as many rows as
+   the file has, and not one more. */
 struct EntityTable {
-    EntityDef rows[TABLE_MAX_ROWS];
+    EntityDef *rows;
     int count;
 };
 
 /* A load either hands over a complete table or names what went wrong —
-   never a partial table presented as success. */
+   never a partial table presented as success. These are the loaders'
+   failures, the same three every asset in this engine answers with. */
 enum TableError {
     TABLE_OK = 0,
     TABLE_MISSING,   /* the file is not there or cannot be read */
     TABLE_MALFORMED, /* the bytes are not a complete table in the format */
-    TABLE_FULL,      /* more rows than the parse's array holds */
+    TABLE_NO_ROOM,   /* the arena had no room for the rows */
 };
 
 struct TableResult {
@@ -64,8 +67,10 @@ struct TableResult {
    are parsed byte by byte — no library reads it — and anything the format
    does not describe is refused typed: a column it does not know, a row
    with the wrong number of values, a value where a number is required, a
-   value where text is, a name the table already holds. */
-TableResult LoadTable(const char *path);
+   value where text is, a name the table already holds. The rows are
+   copied into the arena behind a mark, and every refusal path rolls back
+   to it: a load that refuses leaves nothing behind. */
+TableResult LoadTable(Arena &arena, const char *path);
 
 } /* namespace engine */
 

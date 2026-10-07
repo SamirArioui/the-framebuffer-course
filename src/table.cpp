@@ -7,6 +7,11 @@
 // column that claims it: a whole number where a number belongs, a run of
 // non-space bytes where text belongs, and exactly as many values as the
 // header names.
+//
+// Lesson 072: the rows live in the arena. How many there are is the
+// file's fact, so the file is walked once to count them and once to fill
+// them, and the whole load is bracketed by a mark — a refused load rolls
+// the arena back and keeps nothing.
 
 #include "table.h"
 
@@ -141,7 +146,7 @@ int FindColumn(const unsigned char *token, int token_len)
 
 } /* namespace */
 
-TableResult LoadTable(const char *path)
+TableResult LoadTable(Arena &arena, const char *path)
 {
     TableResult result = {};
 
@@ -151,22 +156,51 @@ TableResult LoadTable(const char *path)
         return result;
     }
 
+    /* The first walk: the header's line, then the rows, counted. How many
+       rows a table holds is the file's fact — never a capacity the engine
+       picked — so the count comes first and the arena is asked for
+       exactly that many rows. The rows end at the first blank line; what
+       follows them is checked against the format in the second walk. */
     Lines lines = { file.data, file.size, 0 };
     const unsigned char *line = 0;
     int len = 0;
-    bool ok = true;
-    TableError failure = TABLE_MALFORMED;
+    bool ok = NextLine(lines, line, len); /* the header's line */
+    int rows = 0;
+    while (ok && NextLine(lines, line, len)) {
+        if (len == 0)
+            break;
+        rows += 1;
+    }
 
-    /* The header: the columns this file's rows carry, named one after
-       another. The order is the file's — the loader fills the fields the
-       header declares — but every column the format knows is named, and
-       named once. A name the format does not know is refused here rather
-       than read as something else later. */
+    /* The rows, into the arena. The mark is the load's transaction: from
+       here on a refusal rolls the arena back, and a refused load leaves
+       no partial rows behind — the used count does not move. */
+    size_t mark = ArenaMark(arena);
+    EntityDef *defs = 0;
+    if (ok && rows > 0) {
+        defs = (EntityDef *)ArenaAlloc(arena, (size_t)rows * sizeof(EntityDef),
+                                       4);
+        if (!defs) {
+            ArenaRollback(arena, mark);
+            platform::ReleaseFile(file);
+            result.error = TABLE_NO_ROOM;
+            return result;
+        }
+    }
+
+    /* The second walk: the header and the rows, byte by byte — every
+       value landing in the field its column names. A row is refused — the
+       whole file is — when a value is missing or one too many, when a
+       value is not what its column requires, when the facing is not one
+       of the four the format defines, or when the name is one the table
+       already holds. The fill never writes past the count the first walk
+       promised. */
+    lines.at = 0;
+    ok = ok && NextLine(lines, line, len);
+    int at = 0;
     int order[COL_COUNT];
     for (int c = 0; c < COL_COUNT; ++c)
         order[c] = -1;
-    ok = ok && NextLine(lines, line, len);
-    int at = 0;
     for (int i = 0; ok && i < COL_COUNT; ++i) {
         const unsigned char *token = 0;
         int token_len = 0;
@@ -183,24 +217,17 @@ TableResult LoadTable(const char *path)
     int extra_len = 0;
     ok = ok && !NextToken(line, len, at, extra, extra_len);
 
-    /* The rows: one definition each, every value landing in the field
-       its column names. The row is refused — the whole file is — when a
-       value is missing or one too many, when a value is not what its
-       column requires, when the facing is not one of the four the format
-       defines, or when the name is one the table already holds (one
-       name, one definition — the map's kind table has the same rule). */
     while (ok) {
         if (!NextLine(lines, line, len))
             break;
         if (len == 0)
             break; /* the rows end here; the tail is checked below */
-        if (result.table.count >= TABLE_MAX_ROWS) {
-            failure = TABLE_FULL;
-            ok = false;
+        if (result.table.count >= rows) {
+            ok = false; /* the fill never writes past the count's promise */
             break;
         }
 
-        EntityDef &def = result.table.rows[result.table.count];
+        EntityDef &def = defs[result.table.count];
         at = 0;
         for (int i = 0; ok && i < COL_COUNT; ++i) {
             switch (order[i]) {
@@ -235,7 +262,7 @@ TableResult LoadTable(const char *path)
             ++at;
         ok = ok && at == len; /* nothing else on the line */
         for (int prev = 0; ok && prev < result.table.count; ++prev)
-            ok = ok && !SameText(result.table.rows[prev].name, def.name);
+            ok = ok && !SameText(defs[prev].name, def.name);
         if (ok)
             result.table.count += 1;
     }
@@ -251,11 +278,13 @@ TableResult LoadTable(const char *path)
 
     platform::ReleaseFile(file);
     if (!ok) {
+        ArenaRollback(arena, mark);
         result.table.count = 0;
-        result.error = failure;
+        result.error = TABLE_MALFORMED;
         return result;
     }
 
+    result.table.rows = defs;
     result.error = TABLE_OK;
     return result;
 }
