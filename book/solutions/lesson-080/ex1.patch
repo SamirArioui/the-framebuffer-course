@@ -1,0 +1,20 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index edb88b1..2c05962 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -484,6 +484,15 @@ int Run(void)
+ 
+         /* Lesson 054: the camera's base follows the hero — the world
+            scrolls under the movement — clamped to the map's bounds. */
++        /* Exercise 1: the camera probe — the hero forced to one edge
++           position per frame for five frames, so the update's own clamp
++           computes and reports each base. */
++        if (frame_number >= 1 && frame_number <= 5) {
++            static const double probe_x[5] = { 400, 734, 312, 734, 0 };
++            static const double probe_y[5] = { 232, 480, 232, 232, 0 };
++            hero.x = probe_x[frame_number - 1];
++            hero.y = probe_y[frame_number - 1];
++        }
+         int base_x = (int)hero.x + hero.sprite->width / 2 - FRAME_WIDTH / 2;
+         int base_y = (int)hero.y + hero.sprite->height / 2 - FRAME_HEIGHT / 2;
+         if (base_x < 0)

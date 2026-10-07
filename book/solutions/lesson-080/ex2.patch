@@ -1,0 +1,20 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index edb88b1..70af913 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -317,6 +317,15 @@ int Run(void)
+        gate this part closes on. Every service it uses was finished
+        before this lesson; the lesson is the fit. */
+     std::printf("engine: part 4 done — the vertical slice: a hero walks the tilemap, the camera follows\n");
++
++    /* Exercise 2: the gate's left column — the run names the services
++       it composes, one line per group. */
++    std::printf("engine: data: the archetype table loaded whole — definitions carrying their rows' values\n");
++    std::printf("engine: entities: one fixed store, created from the table, walked once per frame\n");
++    std::printf("engine: mover: the map's collision queries, one axis at a time\n");
++    std::printf("engine: view: the camera's clamped follow, the blit at each entity's position\n");
++    std::printf("engine: time: the game-time scale on the update's step, the record wall-clock at any scale\n");
++    std::printf("engine: sound: samples on channels through the one mixer\n");
+     std::printf("engine: world %dx%d cells (%dx%d px), %d kinds; %d glyphs; hero %dx%d\n",
+                 map.width, map.height, map.width * TILE_SIZE,
+                 map.height * TILE_SIZE, map.kind_count, FONT_COUNT,

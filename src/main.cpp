@@ -239,24 +239,27 @@ int Run(void)
                 hero.name, hero.x, hero.y, hero.facing, hero.speed, hero.health,
                 hero.sprite->width, hero.sprite->height);
 
-    /* Lesson 074: the creation policy — the first free slot, and never
-       a live entity's. Lesson 075: the demo keeps a small world — eight
-       entities, three of them killed before the first walk — so the
-       store has free slots and the report can tell a freed slot from one
-       that has never been used. */
-    int created = 0;
-    while (store.live < 8) {
-        EntityResult made =
-            EntityCreate(store, table.rows[store.live % table.count]);
-        if (made.error != ENTITY_OK)
-            break;
+    /* Lesson 080: the vertical slice — the game's shape, and nothing
+       else. The hero is the row the game asks for by name (it is the
+       one the player controls); the world's other kinds come from the
+       same table, one entity per row. A new row is a new entity; the
+       run has no per-kind code to grow. */
+    int created = 1;
+    for (int i = 0; i < table.count; ++i) {
+        if (&table.rows[i] == hero_def.def)
+            continue;
+        EntityResult made = EntityCreate(store, table.rows[i]);
+        if (made.error != ENTITY_OK) {
+            std::fprintf(stderr, "engine: the store refused %s\n",
+                         table.rows[i].name);
+            platform::CloseWindow(opened.window);
+            ArenaRelease(arena);
+            return 1;
+        }
         created += 1;
     }
-    store.slots[2].health = 0;
-    store.slots[4].health = 0;
-    store.slots[6].health = 0;
-    std::printf("engine: store: live %d of %d — the hero and %d from the script; slots 2, 4, 6 killed\n",
-                store.live, ENTITY_CAP, created);
+    std::printf("engine: world: %d entities from the table's rows, live %d of %d\n",
+                created, store.live, ENTITY_CAP);
 
     /* The lookup's typed failure, checked on purpose: a definition the
        table does not hold is a value — never an entity with assumed
@@ -310,9 +313,10 @@ int Run(void)
     int scale_phase = 0;  /* lesson 078: the demo's script, by wall seconds */
     bool was_blocked = false; /* lesson 077: the mover's state report */
 
-    /* The demo's identity: what the run is, named at once — the hero,
-       an entity the game moves, over the world the map draws. */
-    std::printf("engine: the hero, as an entity — a row the game moves, a camera that follows\n");
+    /* The slice's identity: what the run is, named at once — L0*, the
+       gate this part closes on. Every service it uses was finished
+       before this lesson; the lesson is the fit. */
+    std::printf("engine: part 4 done — the vertical slice: a hero walks the tilemap, the camera follows\n");
     std::printf("engine: world %dx%d cells (%dx%d px), %d kinds; %d glyphs; hero %dx%d\n",
                 map.width, map.height, map.width * TILE_SIZE,
                 map.height * TILE_SIZE, map.kind_count, FONT_COUNT,
@@ -437,26 +441,16 @@ int Run(void)
 
         /* Lesson 075: the walk — every live entity, once per frame, in
            slot order. The per-entity work is expressed here, once, and
-           not per type; lesson 076 makes it the entity's step — its
-           movement request becomes motion, and its facing follows where
-           it is going. An entity retired in passing is not visited again
-           and no other is skipped — the slots do not move under the
-           walk. */
+           not per type: the entity's step — its movement request becomes
+           motion through the mover, and its facing follows where it is
+           going. Lesson 080: the walk is the game's now, and its work is
+           the world's — no demo scaffolding, no per-kind branches. */
         int visited = 0;
         for (int i = 0; i < ENTITY_CAP; ++i) {
             if (!store.slots[i].live)
                 continue;
             visited += 1;
-            if (store.slots[i].health <= 0) {
-                std::printf("engine: walk (frame %ld): retiring slot %d in passing\n",
-                            frame.number, i);
-                EntityRetire(store, store.slots[i]);
-                continue;
-            }
             Entity &e = store.slots[i];
-
-            /* Lesson 077: the mover, on the entity — the request
-               becomes motion only where the map allows it. */
             MoveEntity(map, e, e.move_x * e.speed * dt, e.move_y * e.speed * dt);
             if (e.move_x > 0.0)
                 e.facing = 0;
@@ -468,24 +462,6 @@ int Run(void)
                 e.facing = 3;
         }
         walk_visits += visited;
-        if (frame_number == 1)
-            std::printf("engine: walk (frame 1): visited %d live entities, once each, in slot order; live %d of %d\n",
-                        visited, store.live, ENTITY_CAP);
-
-        /* Lesson 075: the reuse — three requests once the walk has
-           freed three slots. Each lands in a freed slot, before any
-           slot that has never been used. */
-        if (frame_number == 2) {
-            for (int k = 0; k < 3; ++k) {
-                EntityResult made =
-                    EntityCreate(store, table.rows[k % table.count]);
-                if (made.error != ENTITY_OK)
-                    break;
-                std::printf("engine: store: created in slot %d (freed before never-used)\n",
-                            (int)(made.entity - store.slots));
-            }
-            std::printf("engine: store: live %d of %d\n", store.live, ENTITY_CAP);
-        }
 
         /* The score, and the hero's own report: where the entity the
            game moves has got to. */

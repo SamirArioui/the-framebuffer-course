@@ -378,6 +378,10 @@
   - [Solution: ex1 — the paused frame, predicted](solutions/lesson-079/ex1.md)
   - [Solution: ex2 — what a paused game costs](solutions/lesson-079/ex2.md)
 
+- [Lesson 080 — the vertical slice](lessons/part-4/lesson-080-slice.md)
+  - [Solution: ex1 — the camera at the map's edges](solutions/lesson-080/ex1.md)
+  - [Solution: ex2 — the gate, answered](solutions/lesson-080/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)
