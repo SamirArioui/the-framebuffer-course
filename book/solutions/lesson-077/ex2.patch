@@ -1,0 +1,103 @@
+diff --git a/src/entity.cpp b/src/entity.cpp
+index d3c7d3b..1521bc1 100644
+--- a/src/entity.cpp
++++ b/src/entity.cpp
+@@ -56,20 +56,26 @@ void EntityRetire(EntityStore &store, Entity &entity)
+     store.live -= 1;
+ }
+ 
+-void MoveEntity(const TileMap &map, Entity &entity, double dx, double dy)
++MoveResult MoveEntity(const TileMap &map, Entity &entity, double dx, double dy)
+ {
+     /* One axis at a time: a wall blocks the movement into it and the
+        movement along it still works — the slide is this shape, not a
+        special case. The rectangle the map is asked about is the
+        entity's art: what it draws is what it collides as. */
++    MoveResult result = { true, true };
+     double next_x = entity.x + dx;
+     if (!TileRectSolid(map, (int)next_x, (int)entity.y,
+                        entity.sprite->width, entity.sprite->height))
+         entity.x = next_x;
++    else
++        result.landed_x = false;
+     double next_y = entity.y + dy;
+     if (!TileRectSolid(map, (int)entity.x, (int)next_y,
+                        entity.sprite->width, entity.sprite->height))
+         entity.y = next_y;
++    else
++        result.landed_y = false;
++    return result;
+ }
+ 
+ } /* namespace engine */
+diff --git a/src/entity.h b/src/entity.h
+index c0ec0e7..3330fa6 100644
+--- a/src/entity.h
++++ b/src/entity.h
+@@ -86,7 +86,13 @@ void EntityRetire(EntityStore &store, Entity &entity);
+    wall still does (one axis at a time, which is what makes the slide
+    work). Empty space is free: the entity arrives at the requested
+    position. */
+-void MoveEntity(const TileMap &map, Entity &entity, double dx, double dy);
++struct MoveResult {
++    bool landed_x; /* the x step landed */
++    bool landed_y; /* the y step landed */
++};
++
++MoveResult MoveEntity(const TileMap &map, Entity &entity, double dx,
++                      double dy);
+ 
+ /* Lesson 075: the walk — the shape the game's per-entity work takes:
+ 
+diff --git a/src/main.cpp b/src/main.cpp
+index dbc83e7..b02ea9b 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -305,7 +305,9 @@ int Run(void)
+     double last = started;
+     double distance = 0.0; /* the score: the world the hero has walked */
+     int shake_frames = 0; /* lesson 054: the additive hook's demo */
+-    bool was_blocked = false; /* lesson 077: the mover's state report */
++    int hero_slot = (int)(&hero - store.slots);   /* exercise 2: which slot is the hero's */
++    MoveResult hero_step = { true, true };        /* exercise 2: what the world did */
++    int was_refused = 0;                          /* exercise 2: the report's state */
+ 
+     /* The demo's identity: what the run is, named at once — the hero,
+        an entity the game moves, over the world the map draws. */
+@@ -419,7 +421,10 @@ int Run(void)
+ 
+             /* Lesson 077: the mover, on the entity — the request
+                becomes motion only where the map allows it. */
+-            MoveEntity(map, e, e.move_x * e.speed * dt, e.move_y * e.speed * dt);
++            MoveResult moved = MoveEntity(map, e, e.move_x * e.speed * dt,
++                                          e.move_y * e.speed * dt);
++            if (i == hero_slot)
++                hero_step = moved;
+             if (e.move_x > 0.0)
+                 e.facing = 0;
+             else if (e.move_y > 0.0)
+@@ -454,15 +459,15 @@ int Run(void)
+         distance += (hero.x > was_x ? hero.x - was_x : was_x - hero.x) +
+                     (hero.y > was_y ? hero.y - was_y : was_y - hero.y);
+ 
+-        /* Lesson 077: the mover's state report, on transitions — the
+-           hero moving, or pushed against something that will not move. */
+-        bool blocked = (hero.move_x != 0.0 || hero.move_y != 0.0) &&
+-                       hero.x == was_x && hero.y == was_y;
+-        if (blocked != was_blocked) {
+-            std::printf("engine: hero %s at %d,%d (t=%.3f)\n",
+-                        blocked ? "blocked" : "unblocked", (int)hero.x,
+-                        (int)hero.y, platform::Now() - started);
+-            was_blocked = blocked;
++        /* Exercise 2: the mover's answer, on transitions — which axis
++           the world refused, not just that the hero did not move. */
++        int refused = (hero_step.landed_x ? 0 : 1) | (hero_step.landed_y ? 0 : 2);
++        if ((hero.move_x != 0.0 || hero.move_y != 0.0) && refused != was_refused) {
++            std::printf("engine: hero: x %s, y %s (t=%.3f)\n",
++                        hero_step.landed_x ? "landed" : "refused",
++                        hero_step.landed_y ? "landed" : "refused",
++                        platform::Now() - started);
++            was_refused = refused;
+         }
+         if ((int)hero.x != (int)was_x || (int)hero.y != (int)was_y)
+             std::printf("engine: hero at %d,%d (t=%.3f)\n", (int)hero.x,

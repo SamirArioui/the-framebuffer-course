@@ -1,0 +1,29 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index dbc83e7..a369f20 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -264,6 +264,24 @@ int Run(void)
+     std::printf("engine: table: \"dragon\" -> %s\n",
+                 unknown.error == DEF_OK ? "found" : "unknown");
+ 
++    /* Exercise 1: the corner — forced diagonal steps against the map's
++       bottom-right corner (cell 47 and row 31 are solid; up and left
++       are open). The mover is called directly, three times, from the
++       same spot. */
++    Entity corner = hero;
++    corner.x = 736;
++    corner.y = 464;
++    MoveEntity(map, corner, 20.0, 20.0);
++    std::printf("engine: corner: Down-Right -> %.0f,%.0f\n", corner.x, corner.y);
++    corner.x = 736;
++    corner.y = 464;
++    MoveEntity(map, corner, -20.0, 20.0);
++    std::printf("engine: corner: Down-Left  -> %.0f,%.0f\n", corner.x, corner.y);
++    corner.x = 736;
++    corner.y = 464;
++    MoveEntity(map, corner, 20.0, -20.0);
++    std::printf("engine: corner: Up-Right   -> %.0f,%.0f\n", corner.x, corner.y);
++
+     /* Lesson 066: the run's two sounds as files' bytes — the music that
+        loops and the effect that plays once. Lesson 061's tone leaves the
+        run here (it stays on disk: the file lessons 059-065 were built

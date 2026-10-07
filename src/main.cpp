@@ -305,6 +305,7 @@ int Run(void)
     double last = started;
     double distance = 0.0; /* the score: the world the hero has walked */
     int shake_frames = 0; /* lesson 054: the additive hook's demo */
+    bool was_blocked = false; /* lesson 077: the mover's state report */
 
     /* The demo's identity: what the run is, named at once — the hero,
        an entity the game moves, over the world the map draws. */
@@ -415,8 +416,10 @@ int Run(void)
                 continue;
             }
             Entity &e = store.slots[i];
-            e.x += e.move_x * e.speed * dt;
-            e.y += e.move_y * e.speed * dt;
+
+            /* Lesson 077: the mover, on the entity — the request
+               becomes motion only where the map allows it. */
+            MoveEntity(map, e, e.move_x * e.speed * dt, e.move_y * e.speed * dt);
             if (e.move_x > 0.0)
                 e.facing = 0;
             else if (e.move_y > 0.0)
@@ -450,6 +453,17 @@ int Run(void)
            game moves has got to. */
         distance += (hero.x > was_x ? hero.x - was_x : was_x - hero.x) +
                     (hero.y > was_y ? hero.y - was_y : was_y - hero.y);
+
+        /* Lesson 077: the mover's state report, on transitions — the
+           hero moving, or pushed against something that will not move. */
+        bool blocked = (hero.move_x != 0.0 || hero.move_y != 0.0) &&
+                       hero.x == was_x && hero.y == was_y;
+        if (blocked != was_blocked) {
+            std::printf("engine: hero %s at %d,%d (t=%.3f)\n",
+                        blocked ? "blocked" : "unblocked", (int)hero.x,
+                        (int)hero.y, platform::Now() - started);
+            was_blocked = blocked;
+        }
         if ((int)hero.x != (int)was_x || (int)hero.y != (int)was_y)
             std::printf("engine: hero at %d,%d (t=%.3f)\n", (int)hero.x,
                         (int)hero.y, platform::Now() - started);

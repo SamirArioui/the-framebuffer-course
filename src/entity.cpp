@@ -56,4 +56,20 @@ void EntityRetire(EntityStore &store, Entity &entity)
     store.live -= 1;
 }
 
+void MoveEntity(const TileMap &map, Entity &entity, double dx, double dy)
+{
+    /* One axis at a time: a wall blocks the movement into it and the
+       movement along it still works — the slide is this shape, not a
+       special case. The rectangle the map is asked about is the
+       entity's art: what it draws is what it collides as. */
+    double next_x = entity.x + dx;
+    if (!TileRectSolid(map, (int)next_x, (int)entity.y,
+                       entity.sprite->width, entity.sprite->height))
+        entity.x = next_x;
+    double next_y = entity.y + dy;
+    if (!TileRectSolid(map, (int)entity.x, (int)next_y,
+                       entity.sprite->width, entity.sprite->height))
+        entity.y = next_y;
+}
+
 } /* namespace engine */

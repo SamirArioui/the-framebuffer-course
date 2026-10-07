@@ -11,6 +11,7 @@
 
 #include "sprite.h"
 #include "table.h"
+#include "tilemap.h"
 
 namespace engine {
 
@@ -77,6 +78,15 @@ EntityResult EntityCreate(EntityStore &store, const EntityDef &def);
    first-free-slot rule hands it back before any slot that has never
    been used. Retiring an entity that is already gone is nothing. */
 void EntityRetire(EntityStore &store, Entity &entity);
+
+/* Lesson 077: the mover, applied to entities — the habit lesson 056
+   started, as one function every entity's motion goes through. Intent
+   becomes motion only where the map allows it: the move that would put
+   the entity in a solid tile does not happen, and the movement along the
+   wall still does (one axis at a time, which is what makes the slide
+   work). Empty space is free: the entity arrives at the requested
+   position. */
+void MoveEntity(const TileMap &map, Entity &entity, double dx, double dy);
 
 /* Lesson 075: the walk — the shape the game's per-entity work takes:
 

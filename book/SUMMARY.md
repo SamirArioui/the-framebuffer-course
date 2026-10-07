@@ -366,6 +366,10 @@
   - [Solution: ex1 — the step, predicted](solutions/lesson-076/ex1.md)
   - [Solution: ex2 — the hero on your desktop](solutions/lesson-076/ex2.md)
 
+- [Lesson 077 — the mover on an entity](lessons/part-4/lesson-077-mover.md)
+  - [Solution: ex1 — the corner, predicted](solutions/lesson-077/ex1.md)
+  - [Solution: ex2 — which wall said no](solutions/lesson-077/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)
