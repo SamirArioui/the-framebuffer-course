@@ -11,7 +11,7 @@
 - [x] 2.2 Author lesson-083 (L2, the tilemap and camera: the single scrolling map loaded and drawn, the camera's offsets following the hero) with its exercises and diff solutions; verify the map draws and the camera follows and clamps to the map's bounds under scripted input as documented, the page renders, and the commit is tagged `lesson-083`.
 - [x] 2.3 Author lesson-084 (L3, tile collision: hero and entity movement resolved against the tilemap) with its exercises and diff solutions; verify the hero and an entity stop at solid tiles and slide along walls under scripted input as documented, the page renders, and the commit is tagged `lesson-084`.
 - [x] 2.4 Author lesson-085 (L4, hero movement: eight directions with accel/decel feel) with its exercises and diff solutions; verify the hero accelerates from rest and decelerates to rest under scripted input as documented and that the diagonal covers ground at the straight-line speed, the page renders, and the commit is tagged `lesson-085`.
-- [ ] 2.5 Author lesson-086 (L5, feedback and animation: sprite animation and the feedback hooks the toolkit will drive) with its exercises and diff solutions; verify the animation advances and the hooks fire and rest as documented, the page renders, and the commit is tagged `lesson-086`.
+- [x] 2.5 Author lesson-086 (L5, feedback and animation: sprite animation and the feedback hooks the toolkit will drive) with its exercises and diff solutions; verify the animation advances and the hooks fire and rest as documented, the page renders, and the commit is tagged `lesson-086`.
 
 ## 3. Combat and enemies (lesson-087…091)
 

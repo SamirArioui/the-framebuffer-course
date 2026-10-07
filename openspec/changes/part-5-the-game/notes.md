@@ -485,3 +485,53 @@ measurable.
   `HERO_ACCEL`/`HERO_DECEL`, chosen by whether the intent is faster or
   slower than the current velocity (magnitude test). Diagonal
   normalization and frame-rate independence kept.
+
+## Lesson-086 — feedback and animation (L5): authoring record
+
+New behavior (the `game-feel` toolkit's hooks + sprite animation).
+
+- **Sprite animation:** the hero's art is now a sprite sheet
+  (`assets/hero.ppm`, two 16×16 walk frames). The frame advances while
+  the hero moves (`frame += 1` per `ANIM_STEP`, wrapping) and rests at 0.
+  An entity collides as **one frame** (`ANIM_FRAME_W`), not the sheet —
+  `MoveEntity`'s box is now `ANIM_FRAME_W × height`. `BlitSpriteFrame`
+  draws one frame of a sheet.
+- **The feedback hooks** (`feel.h`/`feel.cpp`): `FeelShake` (the camera's
+  additive offset moves and rests at exactly zero) and `FeelHitstop` (the
+  game-time scale drops to a fraction and returns to full on its own
+  **wall-time** deadline — lesson 078's clock). The scale is the state's
+  × the hitstop's factor. **Decision (the 086/092 split):** 086 ships the
+  hooks' fire-and-rest *mechanisms*; lesson 092 is the toolkit firing
+  them from the game's events ("feedback starts with the event") and 093
+  adds the burst + easing. A wall-time demonstration fires both once here
+  so the fire-and-rest is visible; 092 replaces the script with events.
+- **083's placeholder removed:** `GameFollow` no longer pins the camera's
+  additive offset to zero — the feedback (FeelUpdate) drives and rests it
+  now. (A tiny change to 083's code in this step; noted as the hooks
+  taking over the juice offset.)
+
+### What the runs verified (headless, Xvfb `:99`, scripted input)
+
+```
+engine: feel: shake fired (6 px, 0.5s), hitstop fired (0.25x, 0.4s)
+engine: feel: hitstop rested — full speed again
+engine: feel: shake rested at 0,0
+engine: hero frame 1 (t=3.348)
+engine: hero frame 0 (t=7.863)
+```
+
+- **The hooks fire and rest** — the shake rests at exactly `0,0`; the
+  hitstop returns to full speed on its own deadline.
+- **The animation advances** — the walk-cycle frame leaves 0 and steps
+  while the hero moves, resting at 0 at rest.
+
+### Lesson-086 exercises
+
+- **ex1 (extend-the-code) — feedback starts with the event.** The hit
+  handler fires a short hitstop + shake in the hit's own frame
+  (`GameInput` gains `Feedback &feel`); the hooks' fire-and-rest is
+  unchanged.
+- **ex2 (explain-in-prose) — why wall-time.** The hooks' countdowns run
+  on the wall clock: on game time a hitstop would be slowed by its own
+  factor (and frozen forever under a pause, scale 0). The probe prints
+  the wall seconds left beside the scale factor.
