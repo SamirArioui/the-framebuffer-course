@@ -23,10 +23,14 @@ struct FrameRecord {
     /* Lesson 046: the render phase starts naming what is inside it — one
        field per subsystem, the attribution the frame-budget table
        (lesson 058) grows from. The named times are inside render, never
-       instead of it: render stays the phase, these say where it went. */
+       instead of it: render stays the phase, these say where it went.
+       Lesson 081: update grows the same kind of name — the entity work
+       the walk does, attributed inside the phase it lives in. */
     double sprites; /* sprite draws through the blit */
     double text;    /* lesson 051: text drawing — glyphs through the blit */
     double tilemap; /* lesson 053: the map's walk — tiles through the blit */
+    double entities; /* lesson 081: the walk's per-entity step — the
+                        store's entities, moved through the mover */
 
     /* Lesson 079: the game-time step this frame advanced the simulation
        by — not a duration. Every field above is wall-clock, at any
@@ -47,6 +51,7 @@ struct FrameStats {
     double sprites_sum; /* lesson 046's named sub-phase, summed like the rest */
     double text_sum;
     double tilemap_sum;
+    double entities_sum; /* lesson 081: the update's entity work, summed */
     double worst;      /* the longest frame so far */
     long worst_number; /* and which one it was */
 };

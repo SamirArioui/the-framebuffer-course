@@ -1,0 +1,18 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 9bc7e46..56a701a 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -680,6 +680,13 @@ int Run(void)
+        count, the average, the worst frame — and the render attributed to
+        its subsystems, the report Part 5's finale grows. */
+     PrintFrameBudget(stats);
++
++    /* Exercise 2: what the row does not say — the update's own number
++       beside the entity work inside it. */
++    std::printf("engine: update: %.3f ms a frame of wall clock, %.3f ms of it entity work — the rest is input, the camera, and the reports\n",
++                stats.frames ? stats.update_sum / (double)stats.frames * 1e3 : 0.0,
++                stats.frames ? stats.entities_sum / (double)stats.frames * 1e3
++                             : 0.0);
+     std::printf("engine: arena: %zu of %zu bytes used\n", arena.used,
+                 arena.memory.size);
+ 

@@ -1,0 +1,12 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 9bc7e46..b002737 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -679,6 +679,7 @@ int Run(void)
+     /* The account as the frame-budget table (lesson 058): the frame
+        count, the average, the worst frame — and the render attributed to
+        its subsystems, the report Part 5's finale grows. */
++    std::printf("engine: budget: %d entities walked per frame\n", store.live);
+     PrintFrameBudget(stats);
+     std::printf("engine: arena: %zu of %zu bytes used\n", arena.used,
+                 arena.memory.size);

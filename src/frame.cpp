@@ -19,6 +19,7 @@ void AccountFrame(FrameStats &stats, const FrameRecord &frame)
     stats.sprites_sum += frame.sprites;
     stats.text_sum += frame.text;
     stats.tilemap_sum += frame.tilemap;
+    stats.entities_sum += frame.entities;
     if (frame.total > stats.worst) {
         stats.worst = frame.total;
         stats.worst_number = frame.number;
@@ -49,10 +50,15 @@ void PrintFrameBudget(const FrameStats &stats)
     double sprites = stats.sprites_sum / n * 1e3;
     double text = stats.text_sum / n * 1e3;
     double tilemap = stats.tilemap_sum / n * 1e3;
+    double entities = stats.entities_sum / n * 1e3;
     double present = stats.present_sum / n * 1e3;
     std::printf("engine:   subsystem   avg ms    share\n");
     std::printf("engine:   update      %6.3f      %2.0f%%\n", update,
                 100.0 * update / (avg * 1e3));
+    /* Lesson 081: the update's entity work, named inside the phase it
+       lives in — measured from the frames that ran, like every row. */
+    std::printf("engine:     entities  %6.3f      %2.0f%%\n", entities,
+                100.0 * entities / (avg * 1e3));
     std::printf("engine:   audio       %6.3f      %2.0f%%\n", audio,
                 100.0 * audio / (avg * 1e3));
     std::printf("engine:   render      %6.3f      %2.0f%%\n", render,

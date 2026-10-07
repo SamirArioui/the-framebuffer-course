@@ -446,6 +446,7 @@ int Run(void)
            going. Lesson 080: the walk is the game's now, and its work is
            the world's — no demo scaffolding, no per-kind branches. */
         int visited = 0;
+        double t_entities = platform::Now();
         for (int i = 0; i < ENTITY_CAP; ++i) {
             if (!store.slots[i].live)
                 continue;
@@ -461,6 +462,7 @@ int Run(void)
             else if (e.move_y < 0.0)
                 e.facing = 3;
         }
+        frame.entities = platform::Now() - t_entities;
         walk_visits += visited;
 
         /* The score, and the hero's own report: where the entity the
@@ -654,8 +656,9 @@ int Run(void)
            phase (lesson 060) joins in the record's own order, and
            lesson 079's step leads it: the game's advance beside the
            machine's durations. */
-        std::printf("frame %ld: step %.3f ms, update %.3f ms, audio %.3f ms, render %.3f ms (sprites %.3f, text %.3f, tilemap %.3f), present %.3f ms, total %.3f ms\n",
+        std::printf("frame %ld: step %.3f ms, update %.3f ms (entities %.3f), audio %.3f ms, render %.3f ms (sprites %.3f, text %.3f, tilemap %.3f), present %.3f ms, total %.3f ms\n",
                     frame.number, frame.step * 1e3, frame.update * 1e3,
+                    frame.entities * 1e3,
                     frame.audio * 1e3,
                     frame.render * 1e3,
                     frame.sprites * 1e3, frame.text * 1e3,

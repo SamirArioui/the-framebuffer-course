@@ -382,6 +382,10 @@
   - [Solution: ex1 — the camera at the map's edges](solutions/lesson-080/ex1.md)
   - [Solution: ex2 — the gate, answered](solutions/lesson-080/ex2.md)
 
+- [Lesson 081 — the slice's cost in the frame budget](lessons/part-4/lesson-081-entities-row.md)
+  - [Solution: ex1 — the row, at two sizes](solutions/lesson-081/ex1.md)
+  - [Solution: ex2 — what the row does not say](solutions/lesson-081/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)
