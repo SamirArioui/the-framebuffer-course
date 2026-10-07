@@ -229,7 +229,8 @@ int Run(void)
 
     /* Lesson 073: the game's first entity — created from the hero's
        definition, carrying the values its row states in named fields the
-       game reads directly. */
+       game reads directly. Lesson 074: it lives in the store now, in a
+       slot of the capacity decided up front. */
     DefResult hero_def = TableFind(table, "hero");
     if (hero_def.error != DEF_OK) {
         std::fprintf(stderr,
@@ -238,10 +239,35 @@ int Run(void)
         ArenaRelease(arena);
         return 1;
     }
-    Entity hero = EntityFromDef(*hero_def.def);
+    EntityStore store = {};
+    EntityResult hero_made = EntityCreate(store, *hero_def.def);
+    if (hero_made.error != ENTITY_OK) {
+        std::fprintf(stderr, "engine: the store refused the hero\n");
+        platform::CloseWindow(opened.window);
+        ArenaRelease(arena);
+        return 1;
+    }
+    Entity &hero = *hero_made.entity;
     std::printf("engine: entity %s: x %d y %d facing %d speed %d health %d sprite %dx%d\n",
                 hero.name, hero.x, hero.y, hero.facing, hero.speed, hero.health,
                 hero.sprite->width, hero.sprite->height);
+
+    /* Lesson 074: the creation script — request after request, each an
+       entity from the table's rows in turn, until the store answers with
+       its typed failure. This is the policy under load: the first free
+       slot, and never a live entity's. */
+    size_t before_script = arena.used;
+    int created = 0;
+    for (;;) {
+        EntityResult made = EntityCreate(store, table.rows[created % table.count]);
+        if (made.error != ENTITY_OK)
+            break;
+        created += 1;
+    }
+    std::printf("engine: store: live %d of %d — the hero and %d from the script\n",
+                store.live, ENTITY_CAP, created);
+    std::printf("engine: store: creation refused (full), arena %zu -> %zu — creation allocates nothing\n",
+                before_script, arena.used);
 
     /* The lookup's typed failure, checked on purpose: a definition the
        table does not hold is a value — never an entity with assumed

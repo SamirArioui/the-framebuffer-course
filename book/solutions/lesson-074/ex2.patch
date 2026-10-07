@@ -1,0 +1,16 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index d84675f..9b09acc 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -269,6 +269,11 @@ int Run(void)
+     std::printf("engine: store: creation refused (full), arena %zu -> %zu — creation allocates nothing\n",
+                 before_script, arena.used);
+ 
++    /* Exercise 2: the store's cost, named — the slot's bytes and the
++       store's, taken when the run started and not one byte more. */
++    std::printf("engine: store: %d slots of %zu bytes — %zu bytes decided up front\n",
++                ENTITY_CAP, sizeof(Entity), sizeof(EntityStore));
++
+     /* The lookup's typed failure, checked on purpose: a definition the
+        table does not hold is a value — never an entity with assumed
+        attributes. */

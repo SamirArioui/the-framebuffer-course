@@ -354,6 +354,10 @@
   - [Solution: ex1 — two heroes, one row](solutions/lesson-073/ex1.md)
   - [Solution: ex2 — every definition, an entity](solutions/lesson-073/ex2.md)
 
+- [Lesson 074 — one fixed store](lessons/part-4/lesson-074-store.md)
+  - [Solution: ex1 — the refusal that gets ignored](solutions/lesson-074/ex1.md)
+  - [Solution: ex2 — the capacity you would pick](solutions/lesson-074/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

@@ -12,7 +12,7 @@
 
 ## 3. Entity storage (lesson-073…075)
 
-- [ ] 3.1 Author lesson-073 (entities as rows: an entity created from a definition carries that definition's identity and attributes in named fields the game reads directly) with its exercises and diff solutions; verify an entity created from a definition carries the table's values as documented, the page renders, and the commit is tagged `lesson-073`.
+- [x] 3.1 Author lesson-073 (entities as rows: an entity created from a definition carries that definition's identity and attributes in named fields the game reads directly) with its exercises and diff solutions; verify an entity created from a definition carries the table's values as documented, the page renders, and the commit is tagged `lesson-073`.
 - [ ] 3.2 Author lesson-074 (one fixed store: capacity decided up front, creation takes the first free slot, and a full store refuses the request as a typed value — it never steals a live entity) with its exercises and diff solutions; verify the busy case refuses as documented under scripted creation and that creating entities allocates nothing, the page renders, and the commit is tagged `lesson-074`.
 - [ ] 3.3 Author lesson-075 (iteration and lifetime: every live entity walked exactly once per frame, retirement frees a slot, and the freed slot is reused before any never-used one) with its exercises and diff solutions; verify iteration and slot reuse behave as documented including an entity retired during the walk, the page renders, and the commit is tagged `lesson-075`.
 

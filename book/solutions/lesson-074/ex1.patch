@@ -1,0 +1,24 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index d84675f..e809232 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -269,6 +269,19 @@ int Run(void)
+     std::printf("engine: store: creation refused (full), arena %zu -> %zu — creation allocates nothing\n",
+                 before_script, arena.used);
+ 
++    /* Exercise 1: the request past the full one — handled as the typed
++       value it is. The entity is never used before its error is checked;
++       the refusal is a value the game acts on, and the run carries on
++       with what it has. */
++    EntityResult past = EntityCreate(store, table.rows[0]);
++    if (past.error != ENTITY_OK) {
++        std::printf("engine: store: the request past the full one refused (%s) — the run carries on with %d live\n",
++                    past.error == ENTITY_FULL ? "full" : "no room", store.live);
++    } else {
++        std::printf("engine: store: the request past the full one landed in slot %d\n",
++                    (int)(past.entity - store.slots));
++    }
++
+     /* The lookup's typed failure, checked on purpose: a definition the
+        table does not hold is a value — never an entity with assumed
+        attributes. */

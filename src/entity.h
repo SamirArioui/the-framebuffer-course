@@ -24,11 +24,46 @@ struct Entity {
     int speed;                 /* world pixels per second */
     int health;                /* points */
     const Sprite *sprite;      /* the art it draws, from its row */
+    bool live;                 /* lesson 074: this entity exists — the
+                                  slot's state, set by the store */
 };
 
 /* An entity created from a definition: every attribute its row states,
    answered from the definition alone. */
 Entity EntityFromDef(const EntityDef &def);
+
+/* Lesson 074: the store's capacity — a decision, made here and named in
+   the closing review. Sixty-four live entities: the hero, the enemy
+   types, and a screenful of projectiles. What the game does when it is
+   wrong is the store's policy below, not a surprise. */
+constexpr int ENTITY_CAP = 64;
+
+/* One fixed store of live entities: slots decided up front, each slot
+   holding one entity or nothing. Nothing is allocated while the game
+   runs — creation takes a slot and retirement gives it back. A store
+   with every slot zeroed is empty. */
+struct EntityStore {
+    Entity slots[ENTITY_CAP];
+    int live; /* how many slots hold a live entity right now */
+};
+
+/* The creation request, answered with the entity or with the typed
+   failure that says there is no room. */
+enum EntityError {
+    ENTITY_OK = 0,
+    ENTITY_FULL, /* every slot holds a live entity */
+};
+
+struct EntityResult {
+    Entity *entity;    /* the entity, or 0 */
+    EntityError error; /* ENTITY_OK exactly when entity is non-0 */
+};
+
+/* Creates an entity from `def` in the store's first free slot. When
+   every slot is busy the request is refused as a typed value — the
+   store never steals a live entity to make room. A stolen sound is
+   inaudible; a stolen enemy is a bug the player experiences. */
+EntityResult EntityCreate(EntityStore &store, const EntityDef &def);
 
 } /* namespace engine */
 
