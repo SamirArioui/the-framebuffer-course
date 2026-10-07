@@ -390,3 +390,50 @@ never triggers it — so its transcript stands.
   hero in the central 128×32 box is unclamped. Real clamp line: `camera
   base 2,0 (wanted 2,-1)` — the free base went one pixel past the top
   edge and the clamp held it at 0.
+
+## Lesson-084 — tile collision (L3): authoring record
+
+The collision query (`TileRectSolid`) and the mover (`MoveEntity`) were
+built in lessons 055 and 077. The code step makes the **movement
+resolution the game's**: `GameWalk` (game.cpp) turns every live entity's
+movement request into motion through the mover — one axis at a time, the
+slide — and `main.cpp` drops its inline walk loop for it. A non-hero
+entity is given a walk (down-right) at spawn so an entity is resolved
+against the map here too; it is a stand-in for the AI lesson 089 brings.
+
+### What the runs verified (headless, Xvfb `:99`, scripted input)
+
+Real output — the hero driven up-and-left:
+
+```
+engine: hero at 312,232
+engine: hero at 210,232 (t=3.447)      <- x moved 312->210, y frozen at 232: slid along a wall
+engine: hero blocked at 206,228 (t=6.477)   <- both axes refused: stopped at solid tiles
+```
+
+Stop (both axes refused → the entity does not enter the wall) and slide
+(one axis refused, the other free → motion along the wall) — both the
+one-axis rule in `MoveEntity`. Build warning-free (18 sources), boundary
+clean, the page renders.
+
+### Note: the frame-rate overshoot
+
+The authoring machine's loop runs at roughly a frame a second under the
+headless check (event-driven pacing), so `dt` is large and `speed × dt`
+is a big step — the hero can overshoot a wall in one step and get wedged.
+`MoveEntity` correctly refuses the step into solid (so it never tunnels
+in these runs), but the jerkiness is the big step, not the collision. It
+is exactly the failure mode exercise 2 targets (sub-stepping so a fast
+hero cannot cross a thin wall in one step) and is worth watching as
+later lessons drive more entities. The engine's frame pacing itself is a
+separate concern (the MVD's 60 fps line, checked at the finale).
+
+### Lesson-084 exercises
+
+- **ex1 (predict-the-output) — the corner and the wall.** A probe prints
+  which axis moved (`x moved/stopped, y moved/stopped`): a wall is one
+  axis refused (slide), a corner is both (stop). x resolves first
+  (against the original y), so x wins in a squeeze.
+- **ex2 (extend-the-code) — no tunneling.** Sub-step the mover (≤4 px
+  each, one-axis rule kept per sub-step) so a long frame cannot carry a
+  fast entity across a thin wall. `MAX_STEP` must be under a tile.
