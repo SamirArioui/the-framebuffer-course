@@ -358,6 +358,10 @@
   - [Solution: ex1 — the refusal that gets ignored](solutions/lesson-074/ex1.md)
   - [Solution: ex2 — the capacity you would pick](solutions/lesson-074/ex2.md)
 
+- [Lesson 075 — the walk and the free slot](lessons/part-4/lesson-075-lifetime.md)
+  - [Solution: ex1 — the walk that retires ahead](solutions/lesson-075/ex1.md)
+  - [Solution: ex2 — the store's map](solutions/lesson-075/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

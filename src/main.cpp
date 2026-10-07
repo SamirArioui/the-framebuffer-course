@@ -252,22 +252,24 @@ int Run(void)
                 hero.name, hero.x, hero.y, hero.facing, hero.speed, hero.health,
                 hero.sprite->width, hero.sprite->height);
 
-    /* Lesson 074: the creation script — request after request, each an
-       entity from the table's rows in turn, until the store answers with
-       its typed failure. This is the policy under load: the first free
-       slot, and never a live entity's. */
-    size_t before_script = arena.used;
+    /* Lesson 074: the creation policy — the first free slot, and never
+       a live entity's. Lesson 075: the demo keeps a small world — eight
+       entities, three of them killed before the first walk — so the
+       store has free slots and the report can tell a freed slot from one
+       that has never been used. */
     int created = 0;
-    for (;;) {
-        EntityResult made = EntityCreate(store, table.rows[created % table.count]);
+    while (store.live < 8) {
+        EntityResult made =
+            EntityCreate(store, table.rows[store.live % table.count]);
         if (made.error != ENTITY_OK)
             break;
         created += 1;
     }
-    std::printf("engine: store: live %d of %d — the hero and %d from the script\n",
+    store.slots[2].health = 0;
+    store.slots[4].health = 0;
+    store.slots[6].health = 0;
+    std::printf("engine: store: live %d of %d — the hero and %d from the script; slots 2, 4, 6 killed\n",
                 store.live, ENTITY_CAP, created);
-    std::printf("engine: store: creation refused (full), arena %zu -> %zu — creation allocates nothing\n",
-                before_script, arena.used);
 
     /* The lookup's typed failure, checked on purpose: a definition the
        table does not hold is a value — never an entity with assumed
@@ -379,6 +381,7 @@ int Run(void)
        account of what it carried is the frame record's audio phase now,
        measured like every other phase of the frame. */
     int feeds = 0;         /* buffers handed to the device */
+    long walk_visits = 0;  /* lesson 075: entities visited by the walk */
     while (!platform::CloseRequested(opened.window)) {
         platform::PumpEvents(opened.window);
         if (platform::CloseRequested(opened.window))
@@ -392,6 +395,42 @@ int Run(void)
         double now = platform::Now();
         double dt = now - last;
         last = now;
+
+        /* Lesson 075: the walk — every live entity, once per frame, in
+           slot order. The per-entity work is expressed here, once, and
+           not per type; today it is the demo's kill check. An entity
+           retired in passing is not visited again and no other is
+           skipped — the slots do not move under the walk. */
+        int visited = 0;
+        for (int i = 0; i < ENTITY_CAP; ++i) {
+            if (!store.slots[i].live)
+                continue;
+            visited += 1;
+            if (store.slots[i].health <= 0) {
+                std::printf("engine: walk (frame %ld): retiring slot %d in passing\n",
+                            frame.number, i);
+                EntityRetire(store, store.slots[i]);
+            }
+        }
+        walk_visits += visited;
+        if (frame_number == 1)
+            std::printf("engine: walk (frame 1): visited %d live entities, once each, in slot order; live %d of %d\n",
+                        visited, store.live, ENTITY_CAP);
+
+        /* Lesson 075: the reuse — three requests once the walk has
+           freed three slots. Each lands in a freed slot, before any
+           slot that has never been used. */
+        if (frame_number == 2) {
+            for (int k = 0; k < 3; ++k) {
+                EntityResult made =
+                    EntityCreate(store, table.rows[k % table.count]);
+                if (made.error != ENTITY_OK)
+                    break;
+                std::printf("engine: store: created in slot %d (freed before never-used)\n",
+                            (int)(made.entity - store.slots));
+            }
+            std::printf("engine: store: live %d of %d\n", store.live, ENTITY_CAP);
+        }
 
         double was_x = sprite_x, was_y = sprite_y;
         double move_x = 0.0, move_y = 0.0;
@@ -605,6 +644,11 @@ int Run(void)
        sound's buffers, together — before the cost's table below. */
     std::printf("engine: demo: %ld frames measured, %d buffers fed, %d effects fired, %d music wraps\n",
                 frame_number, feeds, effect_count, music_wraps);
+
+    /* Lesson 075: the walk's account — one visit per live entity per
+       frame, and nothing else. */
+    std::printf("engine: walk: %ld visits over %ld frames — one per live entity per frame\n",
+                walk_visits, frame_number);
 
     /* The account as the frame-budget table (lesson 058): the frame
        count, the average, the worst frame — and the render attributed to

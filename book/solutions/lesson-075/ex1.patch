@@ -1,0 +1,48 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 698a444..35789f4 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -72,6 +72,29 @@ static void PrintSample(const char *name, const Sample &sample)
+                                    : 0);
+ }
+ 
++/* Exercise 1: one walk over a scratch store, with a body that retires
++   one entity while standing at another — the contract's hard case, in
++   both directions. */
++static void ProbeWalk(const EntityTable &table, int at, int target)
++{
++    EntityStore store = {};
++    while (store.live < 6)
++        EntityCreate(store, table.rows[store.live % table.count]);
++    int visits[ENTITY_CAP];
++    int n = 0;
++    for (int i = 0; i < ENTITY_CAP; ++i) {
++        if (!store.slots[i].live)
++            continue;
++        visits[n++] = i;
++        if (i == at)
++            EntityRetire(store, store.slots[target]);
++    }
++    std::printf("engine: walk (retire slot %d at slot %d) visited", target, at);
++    for (int i = 0; i < n; ++i)
++        std::printf(" %d", visits[i]);
++    std::printf(", live %d\n", store.live);
++}
++
+ /* Lesson 066: one asset load's whole failure path — a failed load is
+    named typed and ends the run by name, exactly like the loads above it. */
+ static bool LoadRunSample(Arena &arena, const char *path, Sample &into)
+@@ -431,6 +454,13 @@ int Run(void)
+             std::printf("engine: store: live %d of %d\n", store.live, ENTITY_CAP);
+         }
+ 
++        /* Exercise 1: the contract's hard case — a walk that retires
++           someone else. Ahead of the walk, and behind it. */
++        if (frame_number == 1) {
++            ProbeWalk(table, 1, 3);
++            ProbeWalk(table, 3, 1);
++        }
++
+         double was_x = sprite_x, was_y = sprite_y;
+         double move_x = 0.0, move_y = 0.0;
+         if (platform::KeyDown(opened.window, platform::KEY_LEFT))

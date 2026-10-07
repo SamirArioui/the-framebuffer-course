@@ -1,0 +1,52 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 698a444..6baa9cb 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -72,6 +72,18 @@ static void PrintSample(const char *name, const Sample &sample)
+                                    : 0);
+ }
+ 
++/* Exercise 2: the store's map — one character per slot: a live entity
++   is '#', a free slot is '.'. The map is where the store is, not how
++   many it holds. */
++static void PrintStoreMap(const EntityStore &store, const char *when)
++{
++    char map[ENTITY_CAP + 1];
++    for (int i = 0; i < ENTITY_CAP; ++i)
++        map[i] = store.slots[i].live ? '#' : '.';
++    map[ENTITY_CAP] = 0;
++    std::printf("engine: store map (%s): %s\n", when, map);
++}
++
+ /* Lesson 066: one asset load's whole failure path — a failed load is
+    named typed and ends the run by name, exactly like the loads above it. */
+ static bool LoadRunSample(Arena &arena, const char *path, Sample &into)
+@@ -270,6 +282,7 @@ int Run(void)
+     store.slots[6].health = 0;
+     std::printf("engine: store: live %d of %d — the hero and %d from the script; slots 2, 4, 6 killed\n",
+                 store.live, ENTITY_CAP, created);
++    PrintStoreMap(store, "world created");
+ 
+     /* The lookup's typed failure, checked on purpose: a definition the
+        table does not hold is a value — never an entity with assumed
+@@ -413,9 +426,11 @@ int Run(void)
+             }
+         }
+         walk_visits += visited;
+-        if (frame_number == 1)
++        if (frame_number == 1) {
+             std::printf("engine: walk (frame 1): visited %d live entities, once each, in slot order; live %d of %d\n",
+                         visited, store.live, ENTITY_CAP);
++            PrintStoreMap(store, "after the walk");
++        }
+ 
+         /* Lesson 075: the reuse — three requests once the walk has
+            freed three slots. Each lands in a freed slot, before any
+@@ -429,6 +444,7 @@ int Run(void)
+                             (int)(made.entity - store.slots));
+             }
+             std::printf("engine: store: live %d of %d\n", store.live, ENTITY_CAP);
++            PrintStoreMap(store, "after the reuse");
+         }
+ 
+         double was_x = sprite_x, was_y = sprite_y;

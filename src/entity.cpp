@@ -48,4 +48,12 @@ EntityResult EntityCreate(EntityStore &store, const EntityDef &def)
     return result;
 }
 
+void EntityRetire(EntityStore &store, Entity &entity)
+{
+    if (!entity.live)
+        return; /* retiring nothing is nothing */
+    entity.live = false;
+    store.live -= 1;
+}
+
 } /* namespace engine */

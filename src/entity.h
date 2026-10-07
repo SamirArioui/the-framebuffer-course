@@ -65,6 +65,26 @@ struct EntityResult {
    inaudible; a stolen enemy is a bug the player experiences. */
 EntityResult EntityCreate(EntityStore &store, const EntityDef &def);
 
+/* Lesson 075: retirement — the entity is gone and its slot is free
+   again. The live count falls; the slot is reusable, and creation's
+   first-free-slot rule hands it back before any slot that has never
+   been used. Retiring an entity that is already gone is nothing. */
+void EntityRetire(EntityStore &store, Entity &entity);
+
+/* Lesson 075: the walk — the shape the game's per-entity work takes:
+
+     for (int i = 0; i < ENTITY_CAP; ++i) {
+         if (!store.slots[i].live)
+             continue;
+         ... one entity's work ...
+     }
+
+   Every live entity exactly once, in slot order; no retired or empty
+   slot visited. The slots never move, so the work may retire the entity
+   it is looking at — or one further along — without the walk repeating
+   or skipping anyone: whoever is not live when the walk arrives is not
+   visited, and everyone who is, is. */
+
 } /* namespace engine */
 
 #endif
