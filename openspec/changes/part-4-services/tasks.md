@@ -29,7 +29,7 @@
 ## 6. Close (lesson-080…081)
 
 - [x] 6.1 Author lesson-080 (L0\*, the vertical slice: a hero walks the tilemap with the camera following, using only finished services — every Part 4 capability at once, and nothing new invented) with its exercises and diff solutions; verify the slice runs as documented under the headless check with the hero's position and the camera's base reconciled against the map's bounds, the page renders, and the commit is tagged `lesson-080`.
-- [ ] 6.2 Author lesson-081 (the slice's cost in the frame record: the update phase's attribution to entity work, measured from real frames rather than guessed) with its exercises and diff solutions; verify the reported numbers are real measurements of the slice's frames, the page renders, and the commit is tagged `lesson-081`.
+- [x] 6.2 Author lesson-081 (the slice's cost in the frame record: the update phase's attribution to entity work, measured from real frames rather than guessed) with its exercises and diff solutions; verify the reported numbers are real measurements of the slice's frames, the page renders, and the commit is tagged `lesson-081`.
 
 ## 7. Part 4 boundary review and integration checks
 
