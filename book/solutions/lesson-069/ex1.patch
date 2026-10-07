@@ -1,0 +1,19 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 455b331..415dab0 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -491,6 +491,14 @@ int Run(void)
+        sound's buffers, together — before the cost's table below. */
+     std::printf("engine: demo: %ld frames measured, %d buffers fed, %d effects fired, %d music wraps\n",
+                 frame_number, feeds, effect_count, music_wraps);
++    /* Exercise 1: the account gains a rate — how long the run measured,
++       what the frames average to, and at what pace the sound was fed.
++       One line that turns the counts into numbers a machine can be
++       compared by. */
++    double elapsed = platform::Now() - started;
++    std::printf("engine: demo: %.2f s run, %.1f frames/s while awake, sound fed at %.1f buffers/s\n",
++                elapsed, (double)frame_number / elapsed,
++                (double)feeds / elapsed);
+ 
+     /* The account as the frame-budget table (lesson 058): the frame
+        count, the average, the worst frame — and the render attributed to

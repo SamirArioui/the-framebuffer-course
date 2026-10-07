@@ -332,6 +332,10 @@
   - [Solution: ex1 — the audio phase, measured](solutions/lesson-068/ex1.md)
   - [Solution: ex2 — the music that ducks](solutions/lesson-068/ex2.md)
 
+- [Lesson 069 — the closing demo](lessons/part-3/lesson-069-demo.md)
+  - [Solution: ex1 — the Part 3 demo on your machine](solutions/lesson-069/ex1.md)
+  - [Solution: ex2 — the part's acceptance table](solutions/lesson-069/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

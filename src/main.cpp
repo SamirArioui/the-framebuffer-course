@@ -1,11 +1,13 @@
-// main.cpp — the engine: one measured frame loop, drawing the world.
+// main.cpp — the engine: one measured frame loop, the world and its sound.
 //
-// Lesson 057: the Part 2 closing demo. Every capability of the software
-// renderer at once — the map drawn through the camera, the sprite moved
-// by polled input and stopped by the map, text laid out over it all —
-// and every phase measured, one record per frame. Nothing is invented
-// here; today the parts fit, and the fit is what the demo shows. The
-// language law of lesson 026 still holds over all of it.
+// Lesson 069: the Part 3 closing demo. Every capability of the engine at
+// once — the Part 2 world drawn through the renderer (the map through the
+// camera, the sprite moved by polled input and stopped by the map, text
+// laid out over it all) beside the Part 3 sound through the mixer (music
+// looping on its channel, effects over it on the pool's, one MixBuffer
+// into one stream) — every phase measured, one record per frame. Nothing
+// is invented here; today the parts fit, and the fit is what the demo
+// shows. The language law of lesson 026 still holds over all of it.
 
 #include <cstdio>
 
@@ -43,19 +45,6 @@ constexpr int CHUNK_FRAMES = AUDIO_RATE / 60;   /* 735 */
    platform layer's own staging buffers — the language law of lesson 026
    keeps allocation out of the run. */
 static short stream[CHUNK_FRAMES];
-
-/* Lesson 054: the scene, drawn through the camera. The camera's summed
-   offset is applied once, at each draw's origin — the map's and the
-   sprite's. The HUD is not scene and does not pass through here. */
-static void DrawScene(Framebuffer &fb, const TileMap &map,
-                      const TileSheet &sheet, const Sprite &sprite,
-                      int sprite_x, int sprite_y, const Camera &camera)
-{
-    int x = CameraX(camera);
-    int y = CameraY(camera);
-    DrawTileMap(fb, map, sheet, -x, -y);
-    BlitSprite(fb, sprite, sprite_x - x, sprite_y - y);
-}
 
 /* Lesson 066: a loaded sample's facts, printed — the run's byte-level
    check on its two sounds. The peak is the largest frame the sample
@@ -217,11 +206,16 @@ int Run(void)
     int shake_frames = 0; /* lesson 054: the additive hook's demo */
     bool was_blocked = false; /* lesson 056: the mover's state report */
 
-    std::printf("engine: part 2 done — the software renderer draws the world\n");
+    /* The demo's identity: what the run is, named at once — the world
+       and its sound, one measured frame loop. */
+    std::printf("engine: part 3 done — the world draws and the sound plays\n");
     std::printf("engine: world %dx%d cells (%dx%d px), %d kinds; %d glyphs; sprite %dx%d\n",
                 map.width, map.height, map.width * TILE_SIZE,
                 map.height * TILE_SIZE, map.kind_count, FONT_COUNT,
                 sprite.width, sprite.height);
+    std::printf("engine: sound %d-frame music looping on channel %d, %d-frame effect on the pool; one mixer of %d channels\n",
+                music.frame_count, AUDIO_MUSIC_CHANNEL, effect.frame_count,
+                AUDIO_MIXER_CHANNELS);
     std::printf("engine: arrow keys move the sprite, space shakes the camera; close the window to stop\n");
     std::printf("engine: sprite at %d,%d\n", (int)sprite_x, (int)sprite_y);
 
@@ -492,6 +486,11 @@ int Run(void)
                     frame.tilemap * 1e3, frame.present * 1e3,
                     frame.total * 1e3);
     }
+
+    /* The demo's account: what the run did — the world's frames and the
+       sound's buffers, together — before the cost's table below. */
+    std::printf("engine: demo: %ld frames measured, %d buffers fed, %d effects fired, %d music wraps\n",
+                frame_number, feeds, effect_count, music_wraps);
 
     /* The account as the frame-budget table (lesson 058): the frame
        count, the average, the worst frame — and the render attributed to
