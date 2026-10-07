@@ -19,7 +19,7 @@
 ## 4. The hero (lesson-076…077)
 
 - [x] 4.1 Author lesson-076 (the hero as the first entity: a row carrying position, sprite, and a speed, moved by polled input state and drawn through the camera) with its exercises and diff solutions; verify the hero moves under scripted input as documented, the page renders, and the commit is tagged `lesson-076`.
-- [ ] 4.2 Author lesson-077 (movement resolved against the tilemap's collision queries — the mover habit applied to an entity, so the hero stops at walls) with its exercises and diff solutions; verify the hero stops at solid tiles and slides along walls as documented under scripted input, the page renders, and the commit is tagged `lesson-077`.
+- [x] 4.2 Author lesson-077 (movement resolved against the tilemap's collision queries — the mover habit applied to an entity, so the hero stops at walls) with its exercises and diff solutions; verify the hero stops at solid tiles and slides along walls as documented under scripted input, the page renders, and the commit is tagged `lesson-077`.
 
 ## 5. Game-time (lesson-078…079)
 
