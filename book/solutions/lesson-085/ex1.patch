@@ -1,0 +1,24 @@
+diff --git a/src/hero.cpp b/src/hero.cpp
+index 7c119ae..a5e4605 100644
+--- a/src/hero.cpp
++++ b/src/hero.cpp
+@@ -6,6 +6,8 @@
+ 
+ #include "hero.h"
+ 
++#include <cstdio>
++
+ namespace engine {
+ 
+ void HeroMove(Entity &hero, platform::Window *window, double dt)
+@@ -42,6 +44,10 @@ void HeroMove(Entity &hero, platform::Window *window, double dt)
+         k = 1.0;
+     hero.move_x += (intent_x - hero.move_x) * k;
+     hero.move_y += (intent_y - hero.move_y) * k;
++
++    /* Exercise 1: the curve — the eased fraction of full speed, once a
++       frame, so the trajectory is readable. */
++    std::printf("hero move %.3f\n", hero.move_x);
+ }
+ 
+ } /* namespace engine */

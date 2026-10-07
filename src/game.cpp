@@ -69,36 +69,26 @@ void GameInit(Game &game, int hero_health_full)
 void GameInput(Game &game, platform::Window *window, Entity &hero,
                double wall_dt)
 {
-    /* Play's movement is the hero's own request; every other state leaves
-       the hero at rest, so the walk moves nothing and the simulation
-       stands still. */
-    hero.move_x = 0.0;
-    hero.move_y = 0.0;
-
     switch (game.state) {
     case GAME_TITLE:
         /* The title screen accepts one thing: the start key. */
         if (platform::KeyPressed(window, platform::KEY_ENTER)) {
-            /* A fresh game restores the hero's health and the game's
-               waves — the row's facts, not remembered state. */
+            /* A fresh game restores the hero's health, the game's waves,
+               and the hero's rest — the row's facts, not remembered
+               state. */
             hero.health = game.hero_health_full;
             game.waves_remaining = GAME_WAVES;
             game.play_clock = 0.0;
+            hero.move_x = 0.0;
+            hero.move_y = 0.0;
             Transition(game, GAME_PLAY, "the player started");
         }
         break;
 
     case GAME_PLAY: {
-        /* Play's input: polled movement state, written to the hero's
-           request. The walk turns it into motion (lesson 076). */
-        if (platform::KeyDown(window, platform::KEY_LEFT))
-            hero.move_x -= 1.0;
-        if (platform::KeyDown(window, platform::KEY_RIGHT))
-            hero.move_x += 1.0;
-        if (platform::KeyDown(window, platform::KEY_UP))
-            hero.move_y -= 1.0;
-        if (platform::KeyDown(window, platform::KEY_DOWN))
-            hero.move_y += 1.0;
+        /* Play's movement is the hero's own (HeroMove, lesson 085) — the
+           held direction read and eased into motion there. What is left
+           here is the play state's other input and the named conditions. */
 
         /* The stand-in for combat: SPACE is a hit on the hero (lesson 087
            makes real hits land). The named condition below reads the

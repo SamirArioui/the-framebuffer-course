@@ -20,6 +20,7 @@
 #include "frame.h"
 #include "game.h"
 #include "gametime.h"
+#include "hero.h"
 #include "platform.h"
 #include "sprite.h"
 #include "table.h"
@@ -324,6 +325,7 @@ int Run(void)
     double distance = 0.0; /* the score: the world the hero has walked */
     GameTime game_time = { GAMETIME_FULL }; /* lesson 078: the scale — set by the state now */
     bool was_blocked = false; /* lesson 077: the mover's state report */
+    int was_vx = 0, was_vy = 0; /* lesson 085: the hero's velocity, as it eases */
 
     /* The slice's identity: what the run is, named at once — L0*, the
        gate this part closes on. Every service it uses was finished
@@ -419,6 +421,12 @@ int Run(void)
 
         double was_x = hero.x, was_y = hero.y;
 
+        /* Lesson 085: the hero's movement — the held direction eased into
+           motion (accel/decel, the diagonal at the straight-line speed).
+           Only in play; the walk turns the eased velocity into steps. */
+        if (game.state == GAME_PLAY)
+            HeroMove(hero, opened.window, dt);
+
         /* Lesson 084: the game resolves its movement against its map —
            the walk is the game's now (GameWalk, in game.cpp), turning
            every live entity's request into motion through the mover.
@@ -446,6 +454,20 @@ int Run(void)
         if ((int)hero.x != (int)was_x || (int)hero.y != (int)was_y)
             std::printf("engine: hero at %d,%d (t=%.3f)\n", (int)hero.x,
                         (int)hero.y, platform::Now() - started);
+
+        /* Lesson 085: the hero's velocity, as it eases — the accel (the
+           speed rising over frames) and the decel (falling to rest) are
+           what the player feels, and this is the measurement of it. */
+        {
+            int vx = (int)(hero.move_x * hero.speed);
+            int vy = (int)(hero.move_y * hero.speed);
+            if (vx != was_vx || vy != was_vy) {
+                std::printf("engine: hero velocity %d,%d (t=%.3f)\n", vx, vy,
+                            platform::Now() - started);
+                was_vx = vx;
+                was_vy = vy;
+            }
+        }
 
         /* Lesson 083: the game's world-view — the camera's base follows
            the hero, clamped to the map's bounds, and its additive offset

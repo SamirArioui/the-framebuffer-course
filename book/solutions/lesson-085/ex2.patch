@@ -1,0 +1,47 @@
+diff --git a/src/hero.cpp b/src/hero.cpp
+index 7c119ae..df06725 100644
+--- a/src/hero.cpp
++++ b/src/hero.cpp
+@@ -31,13 +31,14 @@ void HeroMove(Entity &hero, platform::Window *window, double dt)
+         intent_y *= HERO_DIAG;
+     }
+ 
+-    /* The ease: the velocity closes on the intent by dt/HERO_TIME each
+-       frame — toward the intent when the player steers (acceleration),
+-       toward rest when they let go (deceleration). A turn passes through
+-       the ease instead of snapping to full speed the other way. The
+-       hero's movement request carries the eased velocity; the walk turns
+-       it into motion (move x speed = the velocity). */
+-    double k = dt / HERO_TIME;
++    /* The ease: the velocity closes on the intent — toward the intent
++       when the player steers (acceleration), toward rest when they let go
++       (deceleration). Exercise 2: a heavier stop than start — pick the
++       time constant by whether the hero is speeding up or slowing down. */
++    double intent2 = intent_x * intent_x + intent_y * intent_y;
++    double move2 = hero.move_x * hero.move_x + hero.move_y * hero.move_y;
++    double tau = (intent2 > move2) ? HERO_ACCEL : HERO_DECEL;
++    double k = dt / tau;
+     if (k > 1.0)
+         k = 1.0;
+     hero.move_x += (intent_x - hero.move_x) * k;
+diff --git a/src/hero.h b/src/hero.h
+index cd658ff..057680f 100644
+--- a/src/hero.h
++++ b/src/hero.h
+@@ -17,12 +17,10 @@
+ 
+ namespace engine {
+ 
+-/* The hero's accel/decel time constant — the feel: roughly how long it
+-   takes to ease from rest to full speed (or back). Lesson 085 keeps it
+-   here as the hero's own fact; when the table format grows named
+-   columns (lesson 087) the feel becomes data, like the hero's speed
+-   already is. */
+-constexpr double HERO_TIME = 0.12; /* seconds to close on the intent */
++/* The hero's accel/decel time constants — the feel. Exercise 2 splits
++   them: a crisp reach up to speed, a heavier coast to a stop. */
++constexpr double HERO_ACCEL = 0.09; /* eases up to speed quickly */
++constexpr double HERO_DECEL = 0.22; /* coasts to a stop */
+ 
+ /* 1 / sqrt(2): a diagonal intent is scaled by this so the hero covers
+    ground at the straight-line speed, not sqrt(2) times it. */
