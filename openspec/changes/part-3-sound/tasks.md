@@ -29,10 +29,10 @@
 
 ## 6. Close (lesson-069…070)
 
-- [ ] 6.1 Author lesson-069 (the closing demo: one measured frame loop with the world and its sound — every Part 3 capability at once) with its exercises and diff solutions; verify the demo runs as documented under the headless check, the page renders, and the commit is tagged `lesson-069`.
-- [ ] 6.2 Author lesson-070 (the mix's cost in the frame budget: the audio row's first appearance — measured, not guessed) with its exercises and diff solutions; verify the reported numbers are real measurements of the demo's frames, the page renders, and the commit is tagged `lesson-070`.
+- [x] 6.1 Author lesson-069 (the closing demo: one measured frame loop with the world and its sound — every Part 3 capability at once) with its exercises and diff solutions; verify the demo runs as documented under the headless check, the page renders, and the commit is tagged `lesson-069`.
+- [x] 6.2 Author lesson-070 (the mix's cost in the frame budget: the audio row's first appearance — measured, not guessed) with its exercises and diff solutions; verify the reported numbers are real measurements of the demo's frames, the page renders, and the commit is tagged `lesson-070`.
 
 ## 7. Part 3 boundary review and integration checks
 
-- [ ] 7.1 Write `plan/part3-review.md` recording authoring velocity against the 10-20 h/week review budget from `plan/part0-review.md`, exercise counts per lesson against the conventions density table (Parts 3-4: 1-2 mixed exercises), the toolchain versions used, the measured claims re-verified, and the frozen-prefix recommendation updated per `plan/part2-review.md`; verify every Part 3 lesson is counted and every Part 3 density expectation is checked.
-- [ ] 7.2 From a clean checkout following only `README.md`: run `./build.sh`, run `mdbook build`, run `openspec validate`, and run the closing demo headlessly; verify all succeed and `git tag` shows consecutive `lesson-059`…`lesson-070` where each consecutive tag diff equals that lesson's code step.
+- [x] 7.1 Write `plan/part3-review.md` recording authoring velocity against the 10-20 h/week review budget from `plan/part0-review.md`, exercise counts per lesson against the conventions density table (Parts 3-4: 1-2 mixed exercises), the toolchain versions used, the measured claims re-verified, and the frozen-prefix recommendation updated per `plan/part2-review.md`; verify every Part 3 lesson is counted and every Part 3 density expectation is checked.
+- [x] 7.2 From a clean checkout following only `README.md`: run `./build.sh`, run `mdbook build`, run `openspec validate`, and run the closing demo headlessly; verify all succeed and `git tag` shows consecutive `lesson-059`…`lesson-070` where each consecutive tag diff equals that lesson's code step.
