@@ -323,3 +323,68 @@ the score on the end screens + Escape from the end states; explain-in-
 prose: why the scale) each ship a real patch generated against the
 lesson's end state and verified to compile, plus a walkthrough quoting
 real runs.
+
+## Lesson-083 — the tilemap and camera (L2): authoring record
+
+Authored and verified. The code step reassembles the map and camera
+**as the game's** (design D2): `Game` grows a `Camera` (its world-view),
+the camera's follow moves into `GameFollow` (base follows the hero,
+clamped to the map's bounds), and the world's draw moves into
+`GameDrawMap` / `GameDrawSprites` (through the game's camera, split so
+the frame record keeps timing the two sub-phases). `main.cpp` drops its
+own `Camera`, the inline follow, and the inline world draw.
+
+### What the runs verified (headless, Xvfb `:99`, scripted input)
+
+The map draws (the `tilemap` sub-phase costs real time in play) and the
+camera follows and clamps to the map's bounds. The map is `768×512` px,
+the frame `640×480`, so the view's origin sits in `x ∈ [0,128]`,
+`y ∈ [0,32]`. Real output — the hero walked right, then back left:
+
+```
+engine: hero at 389,232 (t=3.792)
+engine: camera base 77,0              <- following: 389+8-320 = 77
+engine: hero at 290,232 (t=9.224)
+engine: camera base 0,0               <- clamped left: 290+8-320 = -22 -> 0
+```
+
+and a run that reached the far right:
+
+```
+engine: hero at 441,235 (t=3.562)
+engine: camera base 128,3             <- clamped right: 441+8-320 = 129 -> 128
+```
+
+Follow (the base tracks `hero + half sprite − half frame`) and clamp
+(base held at `0` and `128`, the map's bounds). Build warning-free,
+boundary clean (the game's world code names no OS), the page renders.
+
+### Note for downstream lessons: the completion stand-in fires on play
+
+Lesson-082's completion stand-in ("surviving unharmed ~3 s is the game
+being complete") **auto-fires during any play longer than ~3 s with the
+hero untouched** — it pulled lesson-083's camera runs into the victory
+state mid-test. Workaround used here: the check takes one hit first
+(`SPACE`, the defeat stand-in drops health below full), which keeps the
+completion stand-in from firing, then drives freely. **A cleaner
+stand-in** — and the one to reach for if the workaround gets in the way
+before lessons 087/091 replace the stand-ins — is to make completion a
+*manual* trigger: `ENTER` in the play state sets the game complete, the
+same way `SPACE` in play is a hit. Both are then deterministic, keyed
+demonstrations that never fire on their own during a gameplay test. Not
+changed here (lesson-082 is already tagged); recorded so the choice is
+deliberate and the workaround is understood.
+
+## Lesson-083 exercises
+
+- **ex1 (extend-the-code) — the camera that leads.** `GAME_LOOKAHEAD`
+  (48 px) shifts the base in the hero's movement direction: the camera
+  leads on the move and re-centers at rest. Real run: moving right at
+  hero `389`, base reads `125` (`77 + 48`) instead of `77`; at rest it
+  falls back to `77`.
+- **ex2 (predict-the-output) — the base at the corners.** A probe prints
+  the wanted vs clamped base. All four map corners clamp on *both* axes
+  (the map barely scrolls — only 128×32 px of camera travel), and only a
+  hero in the central 128×32 box is unclamped. Real clamp line: `camera
+  base 2,0 (wanted 2,-1)` — the free base went one pixel past the top
+  edge and the clamp held it at 0.
