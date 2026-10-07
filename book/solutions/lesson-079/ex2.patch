@@ -1,0 +1,80 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 1904f32..1b8b837 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -68,6 +68,24 @@ static void PrintSample(const char *name, const Sample &sample)
+                                    : 0);
+ }
+ 
++/* Exercise 2: the window's account — what a frame cost at the scale the
++   window ran at. The window closes when the knob turns. */
++struct ScaleWindow {
++    int frames;
++    double total;
++    double scale;
++};
++
++static void PrintWindow(ScaleWindow &window, const char *label)
++{
++    if (window.frames > 0)
++        std::printf("engine: window (%s): %d frames at scale %.2f averaged %.3f ms of wall clock\n",
++                    label, window.frames, window.scale,
++                    window.total / window.frames * 1e3);
++    window.frames = 0;
++    window.total = 0.0;
++}
++
+ /* Lesson 066: one asset load's whole failure path — a failed load is
+    named typed and ends the run by name, exactly like the loads above it. */
+ static bool LoadRunSample(Arena &arena, const char *path, Sample &into)
+@@ -308,6 +326,7 @@ int Run(void)
+     int shake_frames = 0; /* lesson 054: the additive hook's demo */
+     GameTime game_time = { GAMETIME_FULL }; /* lesson 078: the scale, at play */
+     int scale_phase = 0;  /* lesson 078: the demo's script, by wall seconds */
++    ScaleWindow window = { 0, 0.0, GAMETIME_FULL }; /* exercise 2 */
+     bool was_blocked = false; /* lesson 077: the mover's state report */
+ 
+     /* The demo's identity: what the run is, named at once — the hero,
+@@ -392,19 +411,25 @@ int Run(void)
+            out: the wall clock's step, scaled. */
+         double running = now - started;
+         if (scale_phase == 0 && running >= 3.0) {
++            PrintWindow(window, "play");
+             GameTimeSetScale(game_time, 0.25);
++            window.scale = game_time.scale;
+             scale_phase = 1;
+             std::printf("engine: game-time: scale %.2f (hitstop) — step %.3f ms of a %.3f ms wall step\n",
+                         game_time.scale, GameTimeStep(game_time, wall_dt) * 1e3,
+                         wall_dt * 1e3);
+         } else if (scale_phase == 1 && running >= 5.0) {
++            PrintWindow(window, "hitstop");
+             GameTimeSetScale(game_time, 0.0);
++            window.scale = game_time.scale;
+             scale_phase = 2;
+             std::printf("engine: game-time: scale %.2f (pause) — step %.3f ms of a %.3f ms wall step\n",
+                         game_time.scale, GameTimeStep(game_time, wall_dt) * 1e3,
+                         wall_dt * 1e3);
+         } else if (scale_phase == 2 && running >= 7.0) {
++            PrintWindow(window, "pause");
+             GameTimeSetScale(game_time, GAMETIME_FULL);
++            window.scale = game_time.scale;
+             scale_phase = 3;
+             std::printf("engine: game-time: scale %.2f (play) — step %.3f ms of a %.3f ms wall step\n",
+                         game_time.scale, GameTimeStep(game_time, wall_dt) * 1e3,
+@@ -672,6 +697,8 @@ int Run(void)
+         frame.present = platform::Now() - t2;
+         frame.total = platform::Now() - t0;
+         AccountFrame(stats, frame);
++        window.frames += 1; /* exercise 2 */
++        window.total += frame.total;
+ 
+         /* The frame log: one line per record — the format grows its named
+            fields, one per subsystem, as the parts name them. The audio
+@@ -696,6 +723,7 @@ int Run(void)
+        frame, and nothing else. */
+     std::printf("engine: walk: %ld visits over %ld frames — one per live entity per frame\n",
+                 walk_visits, frame_number);
++    PrintWindow(window, "the run's last");
+ 
+     /* The account as the frame-budget table (lesson 058): the frame
+        count, the average, the worst frame — and the render attributed to

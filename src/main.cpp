@@ -413,8 +413,11 @@ int Run(void)
 
         /* Lesson 078: the update advances by game time — the wall
            clock's step, scaled. Everything the simulation does with dt
-           is scaled; nothing else is. */
+           is scaled; nothing else is. Lesson 079: the step is recorded
+           beside the phases — the one field in the record that is game
+           time, and the rest are wall clock at any scale. */
         double dt = GameTimeStep(game_time, wall_dt);
+        frame.step = dt;
 
         /* Lesson 076: the hero's intent — polled input state, read once
            per frame and written to the hero's own movement request. The
@@ -672,9 +675,12 @@ int Run(void)
 
         /* The frame log: one line per record — the format grows its named
            fields, one per subsystem, as the parts name them. The audio
-           phase (lesson 060) joins in the record's own order. */
-        std::printf("frame %ld: update %.3f ms, audio %.3f ms, render %.3f ms (sprites %.3f, text %.3f, tilemap %.3f), present %.3f ms, total %.3f ms\n",
-                    frame.number, frame.update * 1e3, frame.audio * 1e3,
+           phase (lesson 060) joins in the record's own order, and
+           lesson 079's step leads it: the game's advance beside the
+           machine's durations. */
+        std::printf("frame %ld: step %.3f ms, update %.3f ms, audio %.3f ms, render %.3f ms (sprites %.3f, text %.3f, tilemap %.3f), present %.3f ms, total %.3f ms\n",
+                    frame.number, frame.step * 1e3, frame.update * 1e3,
+                    frame.audio * 1e3,
                     frame.render * 1e3,
                     frame.sprites * 1e3, frame.text * 1e3,
                     frame.tilemap * 1e3, frame.present * 1e3,

@@ -1,0 +1,23 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 1904f32..b3fde74 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -403,6 +403,10 @@ int Run(void)
+             std::printf("engine: game-time: scale %.2f (pause) — step %.3f ms of a %.3f ms wall step\n",
+                         game_time.scale, GameTimeStep(game_time, wall_dt) * 1e3,
+                         wall_dt * 1e3);
++            /* Exercise 1: the budget as it stands before the pause —
++               every frame it holds was a playing or hitstop frame. */
++            std::printf("engine: budget before the pause:\n");
++            PrintFrameBudget(stats);
+         } else if (scale_phase == 2 && running >= 7.0) {
+             GameTimeSetScale(game_time, GAMETIME_FULL);
+             scale_phase = 3;
+@@ -700,6 +704,7 @@ int Run(void)
+     /* The account as the frame-budget table (lesson 058): the frame
+        count, the average, the worst frame — and the render attributed to
+        its subsystems, the report Part 5's finale grows. */
++    std::printf("engine: budget at the end of the run:\n");
+     PrintFrameBudget(stats);
+     std::printf("engine: arena: %zu of %zu bytes used\n", arena.used,
+                 arena.memory.size);

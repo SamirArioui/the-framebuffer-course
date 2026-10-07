@@ -27,6 +27,13 @@ struct FrameRecord {
     double sprites; /* sprite draws through the blit */
     double text;    /* lesson 051: text drawing — glyphs through the blit */
     double tilemap; /* lesson 053: the map's walk — tiles through the blit */
+
+    /* Lesson 079: the game-time step this frame advanced the simulation
+       by — not a duration. Every field above is wall-clock, at any
+       scale: the measurement is the machine's, not the game's. This one
+       is where game time is visible, so a paused frame reads `step
+       0.000 ms` beside wall-clock phases that took what they took. */
+    double step;
 };
 
 /* The running account: every frame measured so far. */

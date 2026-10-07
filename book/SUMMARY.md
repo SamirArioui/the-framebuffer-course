@@ -374,6 +374,10 @@
   - [Solution: ex1 — hitstop that ends](solutions/lesson-078/ex1.md)
   - [Solution: ex2 — one knob, not three](solutions/lesson-078/ex2.md)
 
+- [Lesson 079 — measurement is not scaled](lessons/part-4/lesson-079-wall-clock.md)
+  - [Solution: ex1 — the paused frame, predicted](solutions/lesson-079/ex1.md)
+  - [Solution: ex2 — what a paused game costs](solutions/lesson-079/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)
