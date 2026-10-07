@@ -264,6 +264,12 @@ int Run(void)
             ArenaRelease(arena);
             return 1;
         }
+        /* Lesson 084: a non-hero entity walks (down-right) so its
+           movement is resolved against the map like the hero's — a stand
+           in for the AI lesson 089 brings. The walk slides it along
+           walls and stops it at solid tiles. */
+        made.entity->move_x = 1.0;
+        made.entity->move_y = 1.0;
         created += 1;
     }
     std::printf("engine: world: %d entities from the table's rows, live %d of %d\n",
@@ -413,29 +419,12 @@ int Run(void)
 
         double was_x = hero.x, was_y = hero.y;
 
-        /* Lesson 075: the walk — every live entity, once per frame, in
-           slot order. The per-entity work is expressed here, once, and
-           not per type: the entity's step — its movement request becomes
-           motion through the mover, and its facing follows where it is
-           going. Lesson 080: the walk is the game's now, and its work is
-           the world's — no demo scaffolding, no per-kind branches. */
-        int visited = 0;
+        /* Lesson 084: the game resolves its movement against its map —
+           the walk is the game's now (GameWalk, in game.cpp), turning
+           every live entity's request into motion through the mover.
+           The loop times it as the frame record's entity sub-phase. */
         double t_entities = platform::Now();
-        for (int i = 0; i < ENTITY_CAP; ++i) {
-            if (!store.slots[i].live)
-                continue;
-            visited += 1;
-            Entity &e = store.slots[i];
-            MoveEntity(map, e, e.move_x * e.speed * dt, e.move_y * e.speed * dt);
-            if (e.move_x > 0.0)
-                e.facing = 0;
-            else if (e.move_y > 0.0)
-                e.facing = 1;
-            else if (e.move_x < 0.0)
-                e.facing = 2;
-            else if (e.move_y < 0.0)
-                e.facing = 3;
-        }
+        int visited = GameWalk(store, map, dt);
         frame.entities = platform::Now() - t_entities;
         walk_visits += visited;
 

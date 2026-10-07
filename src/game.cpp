@@ -243,4 +243,32 @@ void GameDrawSprites(const Game &game, Framebuffer &fb,
     }
 }
 
+int GameWalk(EntityStore &store, const TileMap &map, double dt)
+{
+    /* Lesson 084: the walk — every live entity, once per frame, in slot
+       order, its movement resolved against the tilemap. The per-entity
+       work is expressed once here, not per type: the mover (MoveEntity)
+       turns the request into motion one axis at a time, so an entity
+       that meets a solid tile stops on that axis and slides along the
+       wall on the other — and the facing follows where it is going.
+       The hero and every other entity resolve the same way. */
+    int visited = 0;
+    for (int i = 0; i < ENTITY_CAP; ++i) {
+        if (!store.slots[i].live)
+            continue;
+        visited += 1;
+        Entity &e = store.slots[i];
+        MoveEntity(map, e, e.move_x * e.speed * dt, e.move_y * e.speed * dt);
+        if (e.move_x > 0.0)
+            e.facing = 0;
+        else if (e.move_y > 0.0)
+            e.facing = 1;
+        else if (e.move_x < 0.0)
+            e.facing = 2;
+        else if (e.move_y < 0.0)
+            e.facing = 3;
+    }
+    return visited;
+}
+
 } /* namespace engine */

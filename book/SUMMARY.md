@@ -396,6 +396,10 @@
   - [Solution: ex1 — the camera that leads](solutions/lesson-083/ex1.md)
   - [Solution: ex2 — the base, at the corners](solutions/lesson-083/ex2.md)
 
+- [Lesson 084 — tile collision](lessons/part-5/lesson-084-collision.md)
+  - [Solution: ex1 — the corner and the wall](solutions/lesson-084/ex1.md)
+  - [Solution: ex2 — no tunneling](solutions/lesson-084/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

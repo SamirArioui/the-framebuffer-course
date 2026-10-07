@@ -1,0 +1,40 @@
+diff --git a/src/entity.cpp b/src/entity.cpp
+index 9a8b7c6..1e2f3a4 100644
+--- a/src/entity.cpp
++++ b/src/entity.cpp
+@@ -60,14 +60,25 @@ void MoveEntity(const TileMap &map, Entity &entity, double dx, double dy)
+ {
+     /* One axis at a time: a wall blocks the movement into it and the
+        movement along it still works — the slide is this shape, not a
+-       special case. The rectangle the map is asked about is the
+-       entity's art: what it draws is what it collides as. */
+-    double next_x = entity.x + dx;
+-    if (!TileRectSolid(map, (int)next_x, (int)entity.y,
+-                       entity.sprite->width, entity.sprite->height))
+-        entity.x = next_x;
+-    double next_y = entity.y + dy;
+-    if (!TileRectSolid(map, (int)entity.x, (int)next_y,
+-                       entity.sprite->width, entity.sprite->height))
+-        entity.y = next_y;
++       special case. The rectangle the map is asked about is the
++       entity's art: what it draws is what it collides as.
++       Exercise 2: a big frame step is resolved in small sub-steps, so a
++       fast entity stops at the first solid tile it would cross instead
++       of tunneling through a thin wall. */
++    const double MAX_STEP = 4.0;
++    double big = dx > dy ? dx : dy;
++    if (big < 0.0)
++        big = -big;
++    int steps = (int)(big / MAX_STEP) + 1;
++    double sx = dx / steps, sy = dy / steps;
++    for (int i = 0; i < steps; ++i) {
++        double next_x = entity.x + sx;
++        if (!TileRectSolid(map, (int)next_x, (int)entity.y,
++                           entity.sprite->width, entity.sprite->height))
++            entity.x = next_x;
++        double next_y = entity.y + sy;
++        if (!TileRectSolid(map, (int)entity.x, (int)next_y,
++                           entity.sprite->width, entity.sprite->height))
++            entity.y = next_y;
++    }
+ }

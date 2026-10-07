@@ -100,6 +100,12 @@ void GameDrawMap(const Game &game, Framebuffer &fb, const TileMap &map,
 void GameDrawSprites(const Game &game, Framebuffer &fb,
                      const EntityStore &store);
 
+/* Lesson 084: the walk — the game resolves every live entity's movement
+   against the tilemap. Each entity's movement request becomes motion
+   through the mover (MoveEntity), one axis at a time, so it stops at a
+   solid tile and slides along a wall. Returns the visit count. */
+int GameWalk(EntityStore &store, const TileMap &map, double dt);
+
 } /* namespace engine */
 
 #endif

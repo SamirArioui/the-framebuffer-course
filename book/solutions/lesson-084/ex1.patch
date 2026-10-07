@@ -1,0 +1,21 @@
+diff --git a/src/game.cpp b/src/game.cpp
+index 1a2b3c4..5d6e7f8 100644
+--- a/src/game.cpp
++++ b/src/game.cpp
+@@ -221,7 +221,15 @@ int GameWalk(EntityStore &store, const TileMap &map, double dt)
+             continue;
+         visited += 1;
+         Entity &e = store.slots[i];
+-        MoveEntity(map, e, e.move_x * e.speed * dt, e.move_y * e.speed * dt);
++        double dx = e.move_x * e.speed * dt, dy = e.move_y * e.speed * dt;
++        double was_x = e.x, was_y = e.y;
++        MoveEntity(map, e, dx, dy);
++        if (dx != 0.0 || dy != 0.0)
++            std::printf("engine: walk %s: x %s, y %s (at %.0f,%.0f)\n",
++                        e.name,
++                        e.x != was_x ? "moved" : "stopped",
++                        e.y != was_y ? "moved" : "stopped",
++                        e.x, e.y);
+         if (e.move_x > 0.0)
+             e.facing = 0;
+         else if (e.move_y > 0.0)
