@@ -1,0 +1,57 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 455b331..f78b8f3 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -265,6 +265,10 @@ int Run(void)
+        account of what it carried is the frame record's audio phase now,
+        measured like every other phase of the frame. */
+     int feeds = 0;         /* buffers handed to the device */
++    /* Exercise 2: the audio row's two populations — frames that fed a
++       buffer and frames that fed none — kept apart. */
++    long fed_frames = 0, quiet_frames = 0;
++    double fed_audio_sum = 0.0, quiet_audio_sum = 0.0;
+     while (!platform::CloseRequested(opened.window)) {
+         platform::PumpEvents(opened.window);
+         if (platform::CloseRequested(opened.window))
+@@ -373,7 +377,8 @@ int Run(void)
+            wraps there instead of ending, and the mix does not know the
+            difference. */
+         double t_audio = platform::Now();
+-        if (audio.output && t_audio >= next_feed) {
++        bool frame_fed = audio.output && t_audio >= next_feed;
++        if (frame_fed) {
+             /* The run's rhythm, in the game's own terms: an effect every
+                fifth buffer through the opening burst, then one every
+                second — each one a MixerPlayEffect on the pool's channels,
+@@ -432,6 +437,15 @@ int Run(void)
+                         (double)CHUNK_FRAMES / (double)music.rate;
+         }
+         frame.audio = platform::Now() - t_audio;
++        /* Exercise 2: which population did this frame belong to? A
++           feeding frame mixed a whole buffer; a quiet one mixed none. */
++        if (frame_fed) {
++            fed_frames += 1;
++            fed_audio_sum += frame.audio;
++        } else {
++            quiet_frames += 1;
++            quiet_audio_sum += frame.audio;
++        }
+ 
+         double t1 = platform::Now();
+ 
+@@ -492,6 +506,15 @@ int Run(void)
+     std::printf("engine: demo: %ld frames measured, %d buffers fed, %d effects fired, %d music wraps\n",
+                 frame_number, feeds, effect_count, music_wraps);
+ 
++    /* Exercise 2: the row's two populations, each its own average — the
++       table's audio row is these two, weighted by their sizes. */
++    std::printf("engine: audio: %ld feeding frames avg %.3f ms, %ld quiet frames avg %.3f ms\n",
++                fed_frames,
++                fed_frames ? fed_audio_sum / (double)fed_frames * 1e3 : 0.0,
++                quiet_frames,
++                quiet_frames ? quiet_audio_sum / (double)quiet_frames * 1e3
++                             : 0.0);
++
+     /* The account as the frame-budget table (lesson 058): the frame
+        count, the average, the worst frame — and the render attributed to
+        its subsystems, the report Part 5's finale grows. */

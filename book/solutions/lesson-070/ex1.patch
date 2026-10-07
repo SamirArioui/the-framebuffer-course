@@ -1,0 +1,107 @@
+diff --git a/src/frame.cpp b/src/frame.cpp
+index 6868e33..a92bd18 100644
+--- a/src/frame.cpp
++++ b/src/frame.cpp
+@@ -13,6 +13,8 @@ void AccountFrame(FrameStats &stats, const FrameRecord &frame)
+     stats.frames += 1;
+     stats.update_sum += frame.update;
+     stats.audio_sum += frame.audio;
++    stats.mix_sum += frame.mix;
++    stats.submit_sum += frame.submit;
+     stats.render_sum += frame.render;
+     stats.present_sum += frame.present;
+     stats.total_sum += frame.total;
+@@ -45,6 +47,8 @@ void PrintFrameBudget(const FrameStats &stats)
+        audio phase, measured since lesson 060, gets its row at last. */
+     double update = stats.update_sum / n * 1e3;
+     double audio = stats.audio_sum / n * 1e3;
++    double mix = stats.mix_sum / n * 1e3;
++    double submit = stats.submit_sum / n * 1e3;
+     double render = stats.render_sum / n * 1e3;
+     double sprites = stats.sprites_sum / n * 1e3;
+     double text = stats.text_sum / n * 1e3;
+@@ -55,6 +59,10 @@ void PrintFrameBudget(const FrameStats &stats)
+                 100.0 * update / (avg * 1e3));
+     std::printf("engine:   audio       %6.3f      %2.0f%%\n", audio,
+                 100.0 * audio / (avg * 1e3));
++    std::printf("engine:     mix       %6.3f      %2.0f%%\n", mix,
++                100.0 * mix / (avg * 1e3));
++    std::printf("engine:     submit    %6.3f      %2.0f%%\n", submit,
++                100.0 * submit / (avg * 1e3));
+     std::printf("engine:   render      %6.3f      %2.0f%%\n", render,
+                 100.0 * render / (avg * 1e3));
+     std::printf("engine:     sprites   %6.3f      %2.0f%%\n", sprites,
+diff --git a/src/frame.h b/src/frame.h
+index f4b45e3..83782f1 100644
+--- a/src/frame.h
++++ b/src/frame.h
+@@ -16,6 +16,9 @@ struct FrameRecord {
+     double update; /* reading state, moving the world */
+     double audio;  /* lesson 060: the run's audio step — mixing and
+                       submitting the stream */
++    double mix;    /* exercise 1: the mix itself, inside audio */
++    double submit; /* exercise 1: the hand-off to the device, inside
++                      audio */
+     double render; /* drawing the scene into the framebuffer */
+     double present;/* the copy to the window, sync included */
+     double total;  /* the whole frame step */
+@@ -34,6 +37,9 @@ struct FrameStats {
+     long frames;
+     double update_sum;
+     double audio_sum; /* lesson 060's phase, summed like the rest */
++    double mix_sum;   /* exercise 1: the phase's insides, summed like
++                       the rest */
++    double submit_sum;
+     double render_sum;
+     double present_sum;
+     double total_sum;
+diff --git a/src/main.cpp b/src/main.cpp
+index 455b331..7ab8fb9 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -373,6 +373,8 @@ int Run(void)
+            wraps there instead of ending, and the mix does not know the
+            difference. */
+         double t_audio = platform::Now();
++        frame.mix = 0.0;
++        frame.submit = 0.0;
+         if (audio.output && t_audio >= next_feed) {
+             /* The run's rhythm, in the game's own terms: an effect every
+                fifth buffer through the opening burst, then one every
+@@ -391,7 +393,9 @@ int Run(void)
+ 
+             int music_before = mixer.channels[AUDIO_MUSIC_CHANNEL].cursor;
+ 
++            double t_mix = platform::Now();
+             MixBuffer(mixer, stream, CHUNK_FRAMES);
++            frame.mix = platform::Now() - t_mix;
+ 
+             if (feeds == 0) {
+                 /* The mix's own bytes with both kinds of sound in it:
+@@ -415,6 +419,7 @@ int Run(void)
+                             cursor, music.frame_count);
+             }
+ 
++            double t_submit = platform::Now();
+             if (!platform::SubmitSamples(audio.output, stream,
+                                          CHUNK_FRAMES)) {
+                 /* A device that will not take the samples is named once,
+@@ -425,6 +430,7 @@ int Run(void)
+                 platform::CloseAudioOutput(audio.output);
+                 audio.output = 0;
+             }
++            frame.submit = platform::Now() - t_submit;
+             feeds += 1;
+             /* The schedule restarts from now, not from the missed slot: a
+                long frame is caught up by one buffer, never by a backlog. */
+@@ -479,8 +485,9 @@ int Run(void)
+         /* The frame log: one line per record — the format grows its named
+            fields, one per subsystem, as the parts name them. The audio
+            phase (lesson 060) joins in the record's own order. */
+-        std::printf("frame %ld: update %.3f ms, audio %.3f ms, render %.3f ms (sprites %.3f, text %.3f, tilemap %.3f), present %.3f ms, total %.3f ms\n",
++        std::printf("frame %ld: update %.3f ms, audio %.3f ms (mix %.3f, submit %.3f), render %.3f ms (sprites %.3f, text %.3f, tilemap %.3f), present %.3f ms, total %.3f ms\n",
+                     frame.number, frame.update * 1e3, frame.audio * 1e3,
++                    frame.mix * 1e3, frame.submit * 1e3,
+                     frame.render * 1e3,
+                     frame.sprites * 1e3, frame.text * 1e3,
+                     frame.tilemap * 1e3, frame.present * 1e3,

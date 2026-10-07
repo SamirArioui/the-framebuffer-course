@@ -39,11 +39,12 @@ void PrintFrameBudget(const FrameStats &stats)
                 stats.worst_number);
 
     /* The attribution: every row a measured sum, every share of the
-       average frame. The named phases live inside render — they say
-       where it went, they do not replace it. The audio phase (lesson
-       060) is summed like the rest but gets no row here: the table's
-       sound rows are lesson 070's, and that is deliberate. */
+       average frame. The phases take the record's own order — update,
+       audio, render, present — and the named phases live inside render:
+       they say where it went, they do not replace it. Lesson 070: the
+       audio phase, measured since lesson 060, gets its row at last. */
     double update = stats.update_sum / n * 1e3;
+    double audio = stats.audio_sum / n * 1e3;
     double render = stats.render_sum / n * 1e3;
     double sprites = stats.sprites_sum / n * 1e3;
     double text = stats.text_sum / n * 1e3;
@@ -52,6 +53,8 @@ void PrintFrameBudget(const FrameStats &stats)
     std::printf("engine:   subsystem   avg ms    share\n");
     std::printf("engine:   update      %6.3f      %2.0f%%\n", update,
                 100.0 * update / (avg * 1e3));
+    std::printf("engine:   audio       %6.3f      %2.0f%%\n", audio,
+                100.0 * audio / (avg * 1e3));
     std::printf("engine:   render      %6.3f      %2.0f%%\n", render,
                 100.0 * render / (avg * 1e3));
     std::printf("engine:     sprites   %6.3f      %2.0f%%\n", sprites,

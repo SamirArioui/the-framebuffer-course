@@ -336,6 +336,10 @@
   - [Solution: ex1 — the Part 3 demo on your machine](solutions/lesson-069/ex1.md)
   - [Solution: ex2 — the part's acceptance table](solutions/lesson-069/ex2.md)
 
+- [Lesson 070 — the mix's cost in the frame budget](lessons/part-3/lesson-070-audio-row.md)
+  - [Solution: ex1 — the row's two insides](solutions/lesson-070/ex1.md)
+  - [Solution: ex2 — the row's two populations](solutions/lesson-070/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)
