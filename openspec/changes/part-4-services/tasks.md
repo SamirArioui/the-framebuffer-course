@@ -33,5 +33,5 @@
 
 ## 7. Part 4 boundary review and integration checks
 
-- [ ] 7.1 Write `plan/part4-review.md` recording authoring velocity against the 10-20 h/week review budget from `plan/part0-review.md`, exercise counts per lesson against the conventions density table (Parts 3-4: 1-2 mixed exercises), the toolchain versions used, the measured claims re-verified, and the frozen-prefix recommendation updated per `plan/part3-review.md`; verify every Part 4 lesson is counted and every Part 4 density expectation is checked.
-- [ ] 7.2 From a clean checkout following only `README.md`: run `./build.sh`, run `mdbook build`, run `openspec validate`, and run the vertical slice headlessly; verify all succeed and `git tag` shows consecutive `lesson-071`…`lesson-081` where each consecutive tag diff equals that lesson's code step.
+- [x] 7.1 Write `plan/part4-review.md` recording authoring velocity against the 10-20 h/week review budget from `plan/part0-review.md`, exercise counts per lesson against the conventions density table (Parts 3-4: 1-2 mixed exercises), the toolchain versions used, the measured claims re-verified, and the frozen-prefix recommendation updated per `plan/part3-review.md`; verify every Part 4 lesson is counted and every Part 4 density expectation is checked.
+- [x] 7.2 From a clean checkout following only `README.md`: run `./build.sh`, run `mdbook build`, run `openspec validate`, and run the vertical slice headlessly; verify all succeed and `git tag` shows consecutive `lesson-071`…`lesson-081` where each consecutive tag diff equals that lesson's code step.
