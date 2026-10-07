@@ -1,0 +1,15 @@
+diff --git a/src/feel.cpp b/src/feel.cpp
+index 2651e0c..1a18d24 100644
+--- a/src/feel.cpp
++++ b/src/feel.cpp
+@@ -43,6 +43,10 @@ void FeelUpdate(Feedback &feel, double wall_dt, Camera &camera)
+        when its deadline passes — the game need not remember to undo it. */
+     if (feel.hitstop > 0.0) {
+         feel.hitstop -= wall_dt;
++        /* Exercise 2: the countdown's own clock, made visible — the wall
++           seconds left beside the game-time factor it is holding. */
++        std::printf("engine: feel: hitstop %.3f s of wall time left, scale factor %.2f\n",
++                    feel.hitstop, FeelTimeScale(feel));
+         if (feel.hitstop < 0.0) {
+             feel.hitstop = 0.0;
+             std::printf("engine: feel: hitstop rested — full speed again\n");

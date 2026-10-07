@@ -20,6 +20,12 @@ namespace engine {
    lesson 015's fold at rectangle scale, never a wrap into other pixels. */
 void BlitSprite(Framebuffer &fb, const Sprite &sprite, int x, int y);
 
+/* Lesson 086: one frame of a sprite sheet — the `frame_w`-wide column of
+   the sheet starting at source x `src_x` — drawn at (x, y) exactly like
+   BlitSprite. A walk cycle is one sheet, and this draws one step. */
+void BlitSpriteFrame(Framebuffer &fb, const Sprite &sprite, int src_x,
+                     int frame_w, int x, int y);
+
 } /* namespace engine */
 
 #endif

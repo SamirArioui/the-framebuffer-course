@@ -207,8 +207,8 @@ void GameFollow(Game &game, const Entity &hero, const TileMap &map)
         game.camera.base_y = base_y;
         std::printf("engine: camera base %d,%d\n", base_x, base_y);
     }
-    game.camera.add_x = 0;
-    game.camera.add_y = 0;
+    /* The camera's additive offset is the juice hook — lesson 086's
+       feedback (FeelUpdate) drives it now, and rests it at zero. */
 }
 
 void GameDrawMap(const Game &game, Framebuffer &fb, const TileMap &map,
@@ -228,8 +228,9 @@ void GameDrawSprites(const Game &game, Framebuffer &fb,
         if (!store.slots[i].live)
             continue;
         const Entity &e = store.slots[i];
-        BlitSprite(fb, *e.sprite, (int)e.x - CameraX(game.camera),
-                   (int)e.y - CameraY(game.camera));
+        BlitSpriteFrame(fb, *e.sprite, e.frame * ANIM_FRAME_W, ANIM_FRAME_W,
+                        (int)e.x - CameraX(game.camera),
+                        (int)e.y - CameraY(game.camera));
     }
 }
 

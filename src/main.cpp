@@ -15,6 +15,7 @@
 #include "audio.h"
 #include "blit.h"
 #include "entity.h"
+#include "feel.h"
 #include "font.h"
 #include "framebuffer.h"
 #include "frame.h"
@@ -248,6 +249,14 @@ int Run(void)
     Game game;
     GameInit(game, hero.health);
 
+    /* Lesson 086: the feedback hooks — a screenshake and a hitstop, both
+       at rest. The juice toolkit (lessons 092-093) will fire these from
+       the game's events; here a demonstration fires both once so their
+       fire-and-rest life is visible. */
+    Feedback feel;
+    FeelInit(feel);
+    bool feel_demo = false;
+
     /* Lesson 080: the vertical slice — the game's shape, and nothing
        else. The hero is the row the game asks for by name (it is the
        one the player controls); the world's other kinds come from the
@@ -326,6 +335,7 @@ int Run(void)
     GameTime game_time = { GAMETIME_FULL }; /* lesson 078: the scale — set by the state now */
     bool was_blocked = false; /* lesson 077: the mover's state report */
     int was_vx = 0, was_vy = 0; /* lesson 085: the hero's velocity, as it eases */
+    int was_frame = 0;          /* lesson 086: the hero's walk-cycle frame */
 
     /* The slice's identity: what the run is, named at once — L0*, the
        gate this part closes on. Every service it uses was finished
@@ -409,7 +419,25 @@ int Run(void)
            screen. The hero's movement request is written here (play's
            arrows) and left at rest in every other state. */
         GameInput(game, opened.window, hero, wall_dt);
-        GameTimeSetScale(game_time, GameScale(game));
+
+        /* Lesson 086: the feedback hooks run on their own wall-time —
+           each fires, decays, and rests. The demonstration fires both
+           once, in play, so their fire-and-rest life is visible; the
+           juice toolkit (lessons 092-093) will fire them from the game's
+           events instead of this script. */
+        if (!feel_demo && game.state == GAME_PLAY &&
+            platform::Now() - started >= 3.0) {
+            feel_demo = true;
+            FeelShake(feel, 6.0, 0.5);
+            FeelHitstop(feel, 0.25, 0.4);
+            std::printf("engine: feel: shake fired (6 px, 0.5s), hitstop fired (0.25x, 0.4s)\n");
+        }
+        FeelUpdate(feel, wall_dt, game.camera);
+
+        /* The game-time scale is the state's (play runs, the rest hold)
+           times the hitstop's factor (a fraction during a hitstop, full
+           at rest) — one knob, two drivers, multiplied. */
+        GameTimeSetScale(game_time, GameScale(game) * FeelTimeScale(feel));
 
         /* Lesson 078: the update advances by game time — the wall
            clock's step, scaled. Everything the simulation does with dt
@@ -467,6 +495,14 @@ int Run(void)
                 was_vx = vx;
                 was_vy = vy;
             }
+        }
+
+        /* Lesson 086: the walk cycle — the frame advances while the hero
+           steps, and this is the measurement of it advancing. */
+        if (hero.frame != was_frame) {
+            std::printf("engine: hero frame %d (t=%.3f)\n", hero.frame,
+                        platform::Now() - started);
+            was_frame = hero.frame;
         }
 
         /* Lesson 083: the game's world-view — the camera's base follows

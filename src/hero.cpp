@@ -42,6 +42,23 @@ void HeroMove(Entity &hero, platform::Window *window, double dt)
         k = 1.0;
     hero.move_x += (intent_x - hero.move_x) * k;
     hero.move_y += (intent_y - hero.move_y) * k;
+
+    /* Lesson 086: the walk cycle — the frame advances while the hero
+       steps, one frame per ANIM_STEP, and holds at frame 0 at rest. The
+       sheet's frame count is its width over one frame's width. */
+    if (want_x != 0.0 || want_y != 0.0) {
+        hero.frame_t += dt;
+        if (hero.frame_t >= ANIM_STEP) {
+            hero.frame_t -= ANIM_STEP;
+            int count = hero.sprite->width / ANIM_FRAME_W;
+            if (count < 1)
+                count = 1;
+            hero.frame = (hero.frame + 1) % count;
+        }
+    } else {
+        hero.frame = 0;
+        hero.frame_t = 0.0;
+    }
 }
 
 } /* namespace engine */

@@ -1,0 +1,62 @@
+diff --git a/src/game.cpp b/src/game.cpp
+index 967f072..43c8200 100644
+--- a/src/game.cpp
++++ b/src/game.cpp
+@@ -67,7 +67,7 @@ void GameInit(Game &game, int hero_health_full)
+ }
+ 
+ void GameInput(Game &game, platform::Window *window, Entity &hero,
+-               double wall_dt)
++               Feedback &feel, double wall_dt)
+ {
+     switch (game.state) {
+     case GAME_TITLE:
+@@ -98,6 +98,10 @@ void GameInput(Game &game, platform::Window *window, Entity &hero,
+             hero.health -= 1;
+             std::printf("engine: hero takes a hit — health %d (t=%.3f)\n",
+                         hero.health, game.play_clock);
++            /* Exercise 1: feedback starts with the event — the hit lands
++               with weight, in its own frame. */
++            FeelHitstop(feel, 0.25, 0.1);
++            FeelShake(feel, 4.0, 0.2);
+         }
+ 
+         game.play_clock += wall_dt;
+diff --git a/src/game.h b/src/game.h
+index a031ef7..e6a6746 100644
+--- a/src/game.h
++++ b/src/game.h
+@@ -22,6 +22,7 @@
+ 
+ #include "camera.h"
+ #include "entity.h"
++#include "feel.h"
+ #include "font.h"
+ #include "framebuffer.h"
+ #include "gametime.h"
+@@ -70,9 +71,10 @@ const char *GameStateName(GameState state);
+    keys (the latch of lesson 033 keeps one press from acting twice). The
+    hero's movement request is written here — play's arrows — and left at
+    rest in every other state. The named conditions (defeat, completion)
+-   are read from the game's own state each frame. */
++   are read from the game's own state each frame. Exercise 1: the hit
++   fires the feedback hooks the moment it lands. */
+ void GameInput(Game &game, platform::Window *window, Entity &hero,
+-               double wall_dt);
++               Feedback &feel, double wall_dt);
+ 
+ /* The game-time scale the current state sets: play at full speed, every
+    other state at zero. This one number is what makes the simulation
+diff --git a/src/main.cpp b/src/main.cpp
+index e1993f9..82612b0 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -418,7 +418,7 @@ int Run(void)
+            outside play while the presentation keeps drawing the state's
+            screen. The hero's movement request is written here (play's
+            arrows) and left at rest in every other state. */
+-        GameInput(game, opened.window, hero, wall_dt);
++        GameInput(game, opened.window, hero, feel, wall_dt);
+ 
+         /* Lesson 086: the feedback hooks run on their own wall-time —
+            each fires, decays, and rests. The demonstration fires both

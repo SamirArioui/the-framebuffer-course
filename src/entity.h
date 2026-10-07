@@ -26,7 +26,11 @@ struct Entity {
     int facing;                /* 0 right, 1 down, 2 left, 3 up */
     int speed;                 /* world pixels per second */
     int health;                /* points */
-    const Sprite *sprite;      /* the art it draws, from its row */
+    const Sprite *sprite;      /* the art it draws, from its row — for an
+                                  animated kind, its sprite sheet */
+    int frame;                 /* lesson 086: which frame of the sheet is
+                                  showing — the walk cycle advances it */
+    double frame_t;            /* and how long this frame has shown */
     double move_x, move_y;     /* lesson 076: this frame's movement
                                   request — the game sets it (the
                                   player's input for the hero, Part 5's
@@ -39,6 +43,11 @@ struct Entity {
 /* An entity created from a definition: every attribute its row states,
    answered from the definition alone. */
 Entity EntityFromDef(const EntityDef &def);
+
+/* Lesson 086: every frame of a sprite sheet is this wide — a walk cycle
+   is a sheet of ANIM_FRAME_W-wide frames. An entity collides as one
+   frame (what it draws), not as the whole sheet. */
+constexpr int ANIM_FRAME_W = 16;
 
 /* Lesson 074: the store's capacity — a decision, made here and named in
    the closing review. Sixty-four live entities: the hero, the enemy

@@ -35,4 +35,31 @@ void BlitSprite(Framebuffer &fb, const Sprite &s, int x, int y)
     }
 }
 
+void BlitSpriteFrame(Framebuffer &fb, const Sprite &s, int src_x,
+                     int frame_w, int x, int y)
+{
+    /* BlitSprite, scoped to one frame_w-wide column of the sheet at
+       source x src_x: the source pixel's column is src_x + (i - x). */
+    int left = x < 0 ? 0 : x;
+    int top = y < 0 ? 0 : y;
+    int right = x + frame_w < fb.width ? x + frame_w : fb.width;
+    int bottom = y + s.height < fb.height ? y + s.height : fb.height;
+
+    for (int j = top; j < bottom; ++j) {
+        for (int i = left; i < right; ++i) {
+            const unsigned char *src =
+                &s.pixels[(((size_t)(j - y) * s.width) +
+                           (src_x + (i - x))) * 3];
+            if (src[0] == s.key_r && src[1] == s.key_g && src[2] == s.key_b)
+                continue; /* the transparent color writes nothing */
+            unsigned char *dst =
+                &fb.pixels[(((size_t)j * fb.width) + i) * 4];
+            dst[0] = src[2]; /* blue */
+            dst[1] = src[1]; /* green */
+            dst[2] = src[0]; /* red */
+            dst[3] = 0;
+        }
+    }
+}
+
 } /* namespace engine */

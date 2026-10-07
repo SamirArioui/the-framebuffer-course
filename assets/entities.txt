@@ -1,3 +1,3 @@
 name x y facing speed health sprite
-hero 312 232 0 240 3 assets/sprite.ppm
+hero 312 232 0 240 3 assets/hero.ppm
 slime 400 320 2 96 1 assets/sprite.ppm

@@ -28,6 +28,9 @@ constexpr double HERO_TIME = 0.12; /* seconds to close on the intent */
    ground at the straight-line speed, not sqrt(2) times it. */
 constexpr double HERO_DIAG = 0.70710678;
 
+/* Lesson 086: how long one frame of the walk cycle shows. */
+constexpr double ANIM_STEP = 0.12;
+
 /* The hero's movement, once per frame of play. The held direction is the
    intent, normalized so the diagonal is no faster than straight; the
    hero's velocity eases toward that intent (accel) and toward rest

@@ -404,6 +404,10 @@
   - [Solution: ex1 — the curve, predicted](solutions/lesson-085/ex1.md)
   - [Solution: ex2 — heavier to stop](solutions/lesson-085/ex2.md)
 
+- [Lesson 086 — feedback and animation](lessons/part-5/lesson-086-feedback-animation.md)
+  - [Solution: ex1 — feedback starts with the event](solutions/lesson-086/ex1.md)
+  - [Solution: ex2 — why wall-time](solutions/lesson-086/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)
