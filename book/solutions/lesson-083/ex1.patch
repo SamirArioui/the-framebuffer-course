@@ -1,0 +1,25 @@
+diff --git a/src/game.cpp b/src/game.cpp
+index 4a6656f..32f8fd2 100644
+--- a/src/game.cpp
++++ b/src/game.cpp
+@@ -28,6 +28,7 @@ namespace engine {
+    removed when the real triggers arrive; the transitions they fire are
+    the game's own (defeat on zero health, completion on no waves). */
+ constexpr double GAME_SURVIVE_SECONDS = 3.0; /* unharmed this long -> done */
++constexpr int GAME_LOOKAHEAD = 48; /* exercise 1: how far the camera leads */
+ 
+ /* A transition, named once here and printed the moment it happens, so a
+    run shows the machine moving between states and why. */
+@@ -201,8 +202,10 @@ void GameFollow(Game &game, const Entity &hero, const TileMap &map)
+        shows past the world's edge. The base is the view's origin over the
+        map; the additive offset rests at exactly zero, the hook the juice
+        toolkit will drive (lesson 092). */
+-    int base_x = (int)hero.x + hero.sprite->width / 2 - FRAME_WIDTH / 2;
+-    int base_y = (int)hero.y + hero.sprite->height / 2 - FRAME_HEIGHT / 2;
++    int base_x = (int)hero.x + hero.sprite->width / 2 - FRAME_WIDTH / 2 +
++                 (int)(hero.move_x * GAME_LOOKAHEAD);
++    int base_y = (int)hero.y + hero.sprite->height / 2 - FRAME_HEIGHT / 2 +
++                 (int)(hero.move_y * GAME_LOOKAHEAD);
+     if (base_x < 0)
+         base_x = 0;
+     if (base_y < 0)

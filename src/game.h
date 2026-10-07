@@ -20,11 +20,13 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include "camera.h"
 #include "entity.h"
 #include "font.h"
 #include "framebuffer.h"
 #include "gametime.h"
 #include "platform.h"
+#include "tiles.h"
 
 namespace engine {
 
@@ -50,6 +52,10 @@ struct Game {
     int waves_remaining;  /* the named condition for victory */
     int hero_health_full; /* the health a fresh game starts the hero at */
     double play_clock;    /* wall seconds spent in play this game */
+    Camera camera;        /* lesson 083: the game's world-view — one
+                            camera over the single scrolling map. Its
+                            base follows the hero; its additive offset
+                            rests at zero (the juice hook, lesson 092). */
 };
 
 /* The game begins on the title screen. The hero's starting health is the
@@ -75,9 +81,24 @@ double GameScale(const Game &game);
 
 /* The current state's screen, for the four states whose screen is a
    panel over a still world — title, pause, death, victory. Play's screen
-   is the world the frame draws; the loop draws it and calls this for the
-   rest. */
+   is the world the game draws below; the loop draws it and calls this
+   for the rest. */
 void GameDrawPanel(const Game &game, Framebuffer &fb, const Font &font);
+
+/* Lesson 083: the game's world-view. The camera's base follows the hero
+   — the world scrolls under the movement — clamped to the map's bounds,
+   and its additive offset rests at exactly zero. The game owns the
+   camera now; the loop no longer keeps one. */
+void GameFollow(Game &game, const Entity &hero, const TileMap &map);
+
+/* The game's world, drawn through the game's camera: the single
+   scrolling map, and every live entity at its position. Split so the
+   frame record can time the map and the sprites as the two named
+   sub-phases it already has. */
+void GameDrawMap(const Game &game, Framebuffer &fb, const TileMap &map,
+                 const TileSheet &sheet);
+void GameDrawSprites(const Game &game, Framebuffer &fb,
+                     const EntityStore &store);
 
 } /* namespace engine */
 

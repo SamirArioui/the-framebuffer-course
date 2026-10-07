@@ -392,6 +392,10 @@
   - [Solution: ex1 — the score on the end screens](solutions/lesson-082/ex1.md)
   - [Solution: ex2 — why the scale](solutions/lesson-082/ex2.md)
 
+- [Lesson 083 — the tilemap and camera](lessons/part-5/lesson-083-tilemap-camera.md)
+  - [Solution: ex1 — the camera that leads](solutions/lesson-083/ex1.md)
+  - [Solution: ex2 — the base, at the corners](solutions/lesson-083/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

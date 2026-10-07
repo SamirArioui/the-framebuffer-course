@@ -14,7 +14,6 @@
 #include "arena.h"
 #include "audio.h"
 #include "blit.h"
-#include "camera.h"
 #include "entity.h"
 #include "font.h"
 #include "framebuffer.h"
@@ -368,7 +367,6 @@ int Run(void)
     int exit_code = 0;
     long frame_number = 0;
     FrameStats stats = {};
-    Camera camera = { 0, 0, 0, 0 };
 
     /* Lesson 060: the run's own feeding schedule. The device consumes at
        the engine's rate, so the next buffer is due one horizon from the
@@ -460,31 +458,11 @@ int Run(void)
             std::printf("engine: hero at %d,%d (t=%.3f)\n", (int)hero.x,
                         (int)hero.y, platform::Now() - started);
 
-        /* Lesson 054: the camera's base follows the hero — the world
-           scrolls under the movement — clamped to the map's bounds. */
-        int base_x = (int)hero.x + hero.sprite->width / 2 - FRAME_WIDTH / 2;
-        int base_y = (int)hero.y + hero.sprite->height / 2 - FRAME_HEIGHT / 2;
-        if (base_x < 0)
-            base_x = 0;
-        if (base_y < 0)
-            base_y = 0;
-        if (base_x > map.width * TILE_SIZE - FRAME_WIDTH)
-            base_x = map.width * TILE_SIZE - FRAME_WIDTH;
-        if (base_y > map.height * TILE_SIZE - FRAME_HEIGHT)
-            base_y = map.height * TILE_SIZE - FRAME_HEIGHT;
-        if (base_x != camera.base_x || base_y != camera.base_y) {
-            camera.base_x = base_x;
-            camera.base_y = base_y;
-            std::printf("engine: camera base %d,%d (t=%.3f)\n", base_x,
-                        base_y, platform::Now() - started);
-        }
-
-        /* Lesson 082: the camera's additive offset is the juice hook
-           lesson 054 defined, and the game skeleton keeps it at exactly
-           zero — the screenshake that will drive it arrives in lesson
-           092. At rest the sum every scene draw uses is the base alone. */
-        camera.add_x = 0;
-        camera.add_y = 0;
+        /* Lesson 083: the game's world-view — the camera's base follows
+           the hero, clamped to the map's bounds, and its additive offset
+           rests at exactly zero. The game owns the camera now (GameFollow,
+           in game.cpp); the loop keeps no camera of its own. */
+        GameFollow(game, hero, map);
 
         frame.update = platform::Now() - t0;
 
@@ -574,21 +552,15 @@ int Run(void)
         else
             ClearBuffer(*fb, 24, 24, 40);
         if (game.state == GAME_PLAY) {
+            /* Lesson 083: the game draws its own world — the scrolling
+               map and the live entities, through the game's camera. The
+               loop times the two the way it always has, as the frame
+               record's named sub-phases. */
             double t_tilemap = platform::Now();
-            DrawTileMap(*fb, map, sheet, -CameraX(camera), -CameraY(camera));
+            GameDrawMap(game, *fb, map, sheet);
             frame.tilemap = platform::Now() - t_tilemap;
             double t_sprites = platform::Now();
-
-            /* Lesson 076: the draw walk — every live entity, its art at its
-               position, through the camera's summed offset. Per-entity work
-               expressed once, in one loop, like the update's walk. */
-            for (int i = 0; i < ENTITY_CAP; ++i) {
-                if (!store.slots[i].live)
-                    continue;
-                const Entity &e = store.slots[i];
-                BlitSprite(*fb, *e.sprite, (int)e.x - CameraX(camera),
-                           (int)e.y - CameraY(camera));
-            }
+            GameDrawSprites(game, *fb, store);
             frame.sprites = platform::Now() - t_sprites;
             double t_text = platform::Now();
             char score_line[32];
