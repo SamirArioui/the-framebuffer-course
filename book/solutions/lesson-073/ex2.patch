@@ -1,0 +1,33 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index abb8e6e..5d7e1c6 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -227,21 +227,14 @@ int Run(void)
+         def.image = &images[i];
+     }
+ 
+-    /* Lesson 073: the game's first entity — created from the hero's
+-       definition, carrying the values its row states in named fields the
+-       game reads directly. */
+-    DefResult hero_def = TableFind(table, "hero");
+-    if (hero_def.error != DEF_OK) {
+-        std::fprintf(stderr,
+-                     "engine: assets/entities.txt: no definition named \"hero\"\n");
+-        platform::CloseWindow(opened.window);
+-        ArenaRelease(arena);
+-        return 1;
++    /* Exercise 2: every definition becomes an entity — a new row is a
++       new entity with no code change. */
++    for (int i = 0; i < table.count; ++i) {
++        Entity made = EntityFromDef(table.rows[i]);
++        std::printf("engine: entity %s: x %d y %d facing %d speed %d health %d sprite %dx%d\n",
++                    made.name, made.x, made.y, made.facing, made.speed,
++                    made.health, made.sprite->width, made.sprite->height);
+     }
+-    Entity hero = EntityFromDef(*hero_def.def);
+-    std::printf("engine: entity %s: x %d y %d facing %d speed %d health %d sprite %dx%d\n",
+-                hero.name, hero.x, hero.y, hero.facing, hero.speed, hero.health,
+-                hero.sprite->width, hero.sprite->height);
+ 
+     /* The lookup's typed failure, checked on purpose: a definition the
+        table does not hold is a value — never an entity with assumed

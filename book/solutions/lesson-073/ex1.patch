@@ -1,0 +1,20 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index abb8e6e..355f860 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -243,6 +243,15 @@ int Run(void)
+                 hero.name, hero.x, hero.y, hero.facing, hero.speed, hero.health,
+                 hero.sprite->width, hero.sprite->height);
+ 
++    /* Exercise 1: two entities from one row — and one of them changed
++       before the report. */
++    Entity twin = EntityFromDef(*hero_def.def);
++    hero.health = 0;
++    hero.x = 0;
++    std::printf("engine: twin %s: x %d y %d health %d (hero at x %d health %d; the row says x %d health %d)\n",
++                twin.name, twin.x, twin.y, twin.health, hero.x, hero.health,
++                hero_def.def->x, hero_def.def->health);
++
+     /* The lookup's typed failure, checked on purpose: a definition the
+        table does not hold is a value — never an entity with assumed
+        attributes. */

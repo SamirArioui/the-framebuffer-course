@@ -350,6 +350,10 @@
   - [Solution: ex1 — the table with a hole in it](solutions/lesson-072/ex1.md)
   - [Solution: ex2 — the load's cost, measured](solutions/lesson-072/ex2.md)
 
+- [Lesson 073 — entities as rows](lessons/part-4/lesson-073-rows.md)
+  - [Solution: ex1 — two heroes, one row](solutions/lesson-073/ex1.md)
+  - [Solution: ex2 — every definition, an entity](solutions/lesson-073/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

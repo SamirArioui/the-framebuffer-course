@@ -15,6 +15,7 @@
 #include "audio.h"
 #include "blit.h"
 #include "camera.h"
+#include "entity.h"
 #include "font.h"
 #include "framebuffer.h"
 #include "frame.h"
@@ -200,6 +201,54 @@ int Run(void)
                     def.name, def.x, def.y, def.facing, def.speed, def.health,
                     def.sprite);
     }
+
+    /* Lesson 073: the definitions' art, loaded at startup. The table's
+       sprite column names the file; the run loads each one and hands the
+       definition its image, so an entity created from a definition is
+       answered from the definition alone. */
+    Sprite *images = (Sprite *)ArenaAlloc(
+        arena, (size_t)table.count * sizeof(Sprite), 4);
+    if (!images) {
+        std::fprintf(stderr, "engine: no room for the definitions' art\n");
+        platform::CloseWindow(opened.window);
+        ArenaRelease(arena);
+        return 1;
+    }
+    for (int i = 0; i < table.count; ++i) {
+        EntityDef &def = table.rows[i];
+        SpriteResult art = LoadSprite(arena, def.sprite);
+        if (art.error != SPRITE_OK) {
+            std::fprintf(stderr, "engine: %s: could not load\n", def.sprite);
+            platform::CloseWindow(opened.window);
+            ArenaRelease(arena);
+            return 1;
+        }
+        images[i] = art.sprite;
+        def.image = &images[i];
+    }
+
+    /* Lesson 073: the game's first entity — created from the hero's
+       definition, carrying the values its row states in named fields the
+       game reads directly. */
+    DefResult hero_def = TableFind(table, "hero");
+    if (hero_def.error != DEF_OK) {
+        std::fprintf(stderr,
+                     "engine: assets/entities.txt: no definition named \"hero\"\n");
+        platform::CloseWindow(opened.window);
+        ArenaRelease(arena);
+        return 1;
+    }
+    Entity hero = EntityFromDef(*hero_def.def);
+    std::printf("engine: entity %s: x %d y %d facing %d speed %d health %d sprite %dx%d\n",
+                hero.name, hero.x, hero.y, hero.facing, hero.speed, hero.health,
+                hero.sprite->width, hero.sprite->height);
+
+    /* The lookup's typed failure, checked on purpose: a definition the
+       table does not hold is a value — never an entity with assumed
+       attributes. */
+    DefResult unknown = TableFind(table, "dragon");
+    std::printf("engine: table: \"dragon\" -> %s\n",
+                unknown.error == DEF_OK ? "found" : "unknown");
 
     /* Lesson 066: the run's two sounds as files' bytes — the music that
        loops and the effect that plays once. Lesson 061's tone leaves the

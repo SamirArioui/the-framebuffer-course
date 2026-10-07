@@ -228,6 +228,7 @@ TableResult LoadTable(Arena &arena, const char *path)
         }
 
         EntityDef &def = defs[result.table.count];
+        def.image = 0; /* the run hands the definition its art, not the file */
         at = 0;
         for (int i = 0; ok && i < COL_COUNT; ++i) {
             switch (order[i]) {
@@ -286,6 +287,18 @@ TableResult LoadTable(Arena &arena, const char *path)
 
     result.table.rows = defs;
     result.error = TABLE_OK;
+    return result;
+}
+
+DefResult TableFind(const EntityTable &table, const char *name)
+{
+    DefResult result = { 0, DEF_OK };
+    for (int i = 0; i < table.count; ++i)
+        if (SameText(table.rows[i].name, name)) {
+            result.def = &table.rows[i];
+            return result;
+        }
+    result.error = DEF_UNKNOWN;
     return result;
 }
 
