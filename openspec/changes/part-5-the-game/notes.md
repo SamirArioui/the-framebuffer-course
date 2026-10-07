@@ -437,3 +437,51 @@ separate concern (the MVD's 60 fps line, checked at the finale).
 - **ex2 (extend-the-code) — no tunneling.** Sub-step the mover (≤4 px
   each, one-axis rule kept per sub-step) so a long frame cannot carry a
   fast entity across a thin wall. `MAX_STEP` must be under a tile.
+
+## Lesson-085 — hero movement (L4): authoring record
+
+New behavior (the `hero-movement` delta). `hero.h`/`hero.cpp` are the
+hero's own (design D2): `HeroMove` reads the held direction, normalizes
+it (a diagonal scaled by 1/√2 → the straight-line speed), and eases the
+hero's velocity toward the intent (accel) or toward rest (decel) —
+`move += (intent − move) × dt/HERO_TIME`, frame-rate-independent.
+
+### What the runs verified (headless, Xvfb `:99`, scripted input)
+
+Real output — the hero's velocity report:
+
+```
+engine: hero velocity 240,0 (t=3.348)     <- full speed straight, from rest
+engine: hero velocity 0,0 (t=5.864)       <- released, eased to rest
+engine: hero velocity 231,20 (t=3.362)    <- one step of the ease, turning
+engine: hero velocity 169,169 (t=5.377)   <- the diagonal, settled
+```
+
+- **Diagonal = straight-line speed:** `169,169` has magnitude
+  `√(169²+169²) ≈ 239` ≈ the straight `240` — not `√2 × 240`. The
+  normalization works.
+- **Accel/decel from/to rest:** the velocity leaves `0` and returns to
+  `0` (easing, `231,20` is one step), never a step change.
+
+### Note: the ease is sampled coarsely at the headless ~1 fps
+
+The headless loop is event-driven (~1 fps; see the lesson-084 note), so
+`dt ≫ HERO_TIME`, `k` clamps to 1, and the ease completes *within* a
+frame — the smooth "rise over several frames" is what appears at 60 fps
+(where `dt/HERO_TIME` spreads it over ~7 frames). The ease is `dt`-scaled
+and frame-rate-independent either way. Also: X auto-repeat makes a held
+key flicker (KeyPress/KeyRelease pairs), which muddies the intent in a
+scripted run — turn it off (`xset r off`) for a clean hold. The velocity
+report (a diagnostic added in this lesson's step) is what makes the ease
+measurable.
+
+### Lesson-085 exercises
+
+- **ex1 (predict-the-output) — the curve, predicted.** The ease is
+  geometric (`move` closes `dt/HERO_TIME` of the gap per frame): 14%,
+  26%, 36% of full speed after 1, 2, 3 frames at 60 fps with
+  `HERO_TIME=0.12`; half that with `0.24`. Not full in three frames.
+- **ex2 (extend-the-code) — heavier to stop.** Split `HERO_TIME` into
+  `HERO_ACCEL`/`HERO_DECEL`, chosen by whether the intent is faster or
+  slower than the current velocity (magnitude test). Diagonal
+  normalization and frame-rate independence kept.
