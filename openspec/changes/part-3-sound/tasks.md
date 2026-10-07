@@ -23,9 +23,9 @@
 
 ## 5. Music and effects (lesson-066…068)
 
-- [ ] 5.1 Author lesson-066 (music as a looping channel: the loop flag, playback wrapping at the sample's end, stopping explicitly) with its exercises and diff solutions; verify the loop continues and wraps as documented, the page renders, and the commit is tagged `lesson-066`.
-- [ ] 5.2 Author lesson-067 (effects as one-shots: play once to the end, the channel returns to the pool, per-sound volume) with its exercises and diff solutions; verify one-shot playback and channel return as documented, the page renders, and the commit is tagged `lesson-067`.
-- [ ] 5.3 Author lesson-068 (music and effects together through the one mixer — O7 delivered) with its exercises and diff solutions; verify music and sfx mix together as documented with the frame record's audio phase measured, the page renders, and the commit is tagged `lesson-068`.
+- [x] 5.1 Author lesson-066 (music as a looping channel: the loop flag, playback wrapping at the sample's end, stopping explicitly) with its exercises and diff solutions; verify the loop continues and wraps as documented, the page renders, and the commit is tagged `lesson-066`.
+- [x] 5.2 Author lesson-067 (effects as one-shots: play once to the end, the channel returns to the pool, per-sound volume) with its exercises and diff solutions; verify one-shot playback and channel return as documented, the page renders, and the commit is tagged `lesson-067`.
+- [x] 5.3 Author lesson-068 (music and effects together through the one mixer — O7 delivered) with its exercises and diff solutions; verify music and sfx mix together as documented with the frame record's audio phase measured, the page renders, and the commit is tagged `lesson-068`.
 
 ## 6. Close (lesson-069…070)
 
