@@ -24,7 +24,7 @@
 ## 5. Game-time (lesson-078…079)
 
 - [x] 5.1 Author lesson-078 (the game-time scale: one knob the game sets — pause sets 0, hitstop a fraction, play sets full speed — and the simulation's step is the wall-clock step scaled) with its exercises and diff solutions; verify the step scales as documented at 0, at a fraction, and at full speed, the page renders, and the commit is tagged `lesson-078`.
-- [ ] 5.2 Author lesson-079 (the scale reaches the simulation's step and nothing else: the platform clock stays the measurer and the frame record keeps wall-clock durations at any scale) with its exercises and diff solutions; verify the frame record's phases are wall-clock with the scale at 0 as documented, the page renders, and the commit is tagged `lesson-079`.
+- [x] 5.2 Author lesson-079 (the scale reaches the simulation's step and nothing else: the platform clock stays the measurer and the frame record keeps wall-clock durations at any scale) with its exercises and diff solutions; verify the frame record's phases are wall-clock with the scale at 0 as documented, the page renders, and the commit is tagged `lesson-079`.
 
 ## 6. Close (lesson-080…081)
 
