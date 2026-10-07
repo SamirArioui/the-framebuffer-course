@@ -259,11 +259,11 @@ play behaviour (the slice) stays where it is and runs under the machine.
   lesson 087; waves complete the game, lesson 091). The lesson
   demonstrates both transitions with a documented **stand-in**, the same
   device lesson 078 used for the scale: Space is a hit on the hero (the
-  defeat condition is the spec's exact "health reaches zero"), and
-  surviving unharmed a moment is the game being complete. Both are
-  marked as scaffolding in `game.cpp` and are replaced when the real
-  triggers arrive. The *transitions* are the game's own and do not
-  change.
+  defeat condition is the spec's exact "health reaches zero"), and Enter
+  in play is the game being complete. Both are **keyed** — they fire on
+  a key press and never on their own during a gameplay test — marked as
+  scaffolding in `game.cpp`, and replaced when the real triggers arrive.
+  The *transitions* are the game's own and do not change.
 - **The demo scaffolding is reclaimed.** The slice's wall-time scale
   script and the Space-shake demo are gone: the scale is the state's now
   (play = full, else 0), and Space is the hit. The camera's additive
@@ -278,8 +278,8 @@ Two runs cover the five states and every named transition:
   the hero in play; Escape pauses and resumes; Space ×3 lowers the
   hero's health to zero → death; Enter returns to the title. The
   transition log names each one with the spec's reason.
-- **Run B** (title → play → victory): the hero is left unharmed and the
-  completion stand-in fires at ~3 s of play → victory.
+- **Run B** (title → play → victory): the completion key (Enter) is
+  pressed in play → the game is complete → victory.
 
 Transition log (Run A and B, real output):
 
@@ -291,7 +291,7 @@ engine: state pause -> play (the player resumed)
 engine: hero takes a hit — health 2 / 1 / 0 (t=…)
 engine: state play -> death (the hero's health reached zero)
 engine: state death -> title (the player returned to the title)
-engine: the waves are complete (t=3.106)
+engine: the waves are complete (t=0.644)
 engine: state play -> victory (the game's waves are complete)
 ```
 
@@ -359,21 +359,23 @@ Follow (the base tracks `hero + half sprite − half frame`) and clamp
 (base held at `0` and `128`, the map's bounds). Build warning-free,
 boundary clean (the game's world code names no OS), the page renders.
 
-### Note for downstream lessons: the completion stand-in fires on play
+### The completion stand-in: fixed to a keyed trigger
 
-Lesson-082's completion stand-in ("surviving unharmed ~3 s is the game
-being complete") **auto-fires during any play longer than ~3 s with the
-hero untouched** — it pulled lesson-083's camera runs into the victory
-state mid-test. Workaround used here: the check takes one hit first
-(`SPACE`, the defeat stand-in drops health below full), which keeps the
-completion stand-in from firing, then drives freely. **A cleaner
-stand-in** — and the one to reach for if the workaround gets in the way
-before lessons 087/091 replace the stand-ins — is to make completion a
-*manual* trigger: `ENTER` in the play state sets the game complete, the
-same way `SPACE` in play is a hit. Both are then deterministic, keyed
-demonstrations that never fire on their own during a gameplay test. Not
-changed here (lesson-082 is already tagged); recorded so the choice is
-deliberate and the workaround is understood.
+Lesson-082 first shipped the completion stand-in as "surviving unharmed
+~3 s is the game being complete." It **auto-fired during any play longer
+than ~3 s with the hero untouched** — it pulled lesson-083's camera runs
+into the victory state mid-test. Because the fix changes lesson-082's
+code, it was applied as a class-2 revision (conventions §3): the fix,
+rebase-forward of the downstream lesson, and re-tag. The completion
+stand-in is now **`ENTER` in play** — a keyed trigger, like `SPACE` is a
+hit — so it never fires on its own during a gameplay test. Lesson-082's
+prose and code-step diff were updated to match, and its Run B re-quoted
+from a real run of the fixed machine (`the waves are complete
+(t=0.644)`). Both `lesson-082` and `lesson-083` tags were moved to the
+revised commits; the tag-to-tag `src/` diffs still equal each lesson's
+code step. Run A (the defeat path: `SPACE` ×3 → death) is unaffected by
+the fix — the completion stand-in is the only changed code, and Run A
+never triggers it — so its transcript stands.
 
 ## Lesson-083 exercises
 
