@@ -19,11 +19,18 @@ namespace engine {
    and writes entity.x like any other values. */
 struct Entity {
     char name[TABLE_NAME_MAX]; /* the definition's identity, carried */
-    int x, y;                  /* where it is, in world pixels */
+    double x, y;               /* where it is, in world pixels — the
+                                  row's whole pixels, the motion's
+                                  doubles (lesson 076) */
     int facing;                /* 0 right, 1 down, 2 left, 3 up */
     int speed;                 /* world pixels per second */
     int health;                /* points */
     const Sprite *sprite;      /* the art it draws, from its row */
+    double move_x, move_y;     /* lesson 076: this frame's movement
+                                  request — the game sets it (the
+                                  player's input for the hero, Part 5's
+                                  AI for enemies) and the walk turns it
+                                  into motion */
     bool live;                 /* lesson 074: this entity exists — the
                                   slot's state, set by the store */
 };

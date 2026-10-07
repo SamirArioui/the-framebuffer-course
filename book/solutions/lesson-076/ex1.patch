@@ -1,0 +1,28 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 2bdcaa7..0abc6e5 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -238,6 +238,23 @@ int Run(void)
+                 hero.name, hero.x, hero.y, hero.facing, hero.speed, hero.health,
+                 hero.sprite->width, hero.sprite->height);
+ 
++    /* Exercise 1: the movement model, forced — two frames at dt 0.5,
++       with the intents written by hand. The arithmetic is the walk's:
++       request x speed x dt. */
++    Entity probe = hero;
++    probe.move_x = 1.0;
++    probe.move_y = 0.0;
++    probe.x += probe.move_x * probe.speed * 0.5;
++    probe.y += probe.move_y * probe.speed * 0.5;
++    std::printf("engine: probe: Right at dt 0.5 -> %.1f,%.1f\n", probe.x,
++                probe.y);
++    probe.move_x = 1.0;
++    probe.move_y = 1.0;
++    probe.x += probe.move_x * probe.speed * 0.5;
++    probe.y += probe.move_y * probe.speed * 0.5;
++    std::printf("engine: probe: Right+Down at dt 0.5 -> %.1f,%.1f\n", probe.x,
++                probe.y);
++
+     /* Lesson 074: the creation policy — the first free slot, and never
+        a live entity's. Lesson 075: the demo keeps a small world — eight
+        entities, three of them killed before the first walk — so the

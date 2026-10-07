@@ -28,11 +28,6 @@
 
 namespace engine {
 
-/* The scene's one object: the sprite the arrow keys move. Its speed is
-   the engine's — pixels per second — and the clock's dt turns it into a
-   per-frame step. */
-constexpr double SPRITE_SPEED = 240.0; /* pixels per second */
-
 /* Lesson 060: one buffer of stream per feed — one sixtieth of a second,
    the horizon the loop keeps queued. Lesson 062: a feed is always
    exactly this much stream — the sample's frames where the sample has
@@ -124,18 +119,9 @@ int Run(void)
     Framebuffer *fb = GetFramebuffer(arena);
 
     /* The world's assets, loaded whole at startup (lessons 044-053):
-       a sprite, a font, a map, and the map's tile art. Every load is a
-       typed failure or a complete asset — and a failure ends the run by
-       name. */
-    SpriteResult loaded = LoadSprite(arena, "assets/sprite.ppm");
-    if (loaded.error != SPRITE_OK) {
-        std::fprintf(stderr, "engine: assets/sprite.ppm: could not load\n");
-        platform::CloseWindow(opened.window);
-        ArenaRelease(arena);
-        return 1;
-    }
-    Sprite &sprite = loaded.sprite;
-
+       a font, a map, and the map's tile art — and, since lesson 073,
+       the art each definition names. Every load is a typed failure or a
+       complete asset — and a failure ends the run by name. */
     FontResult font_loaded = LoadFont(arena, "assets/font.ppm");
     if (font_loaded.error != FONT_OK) {
         std::fprintf(stderr, "engine: assets/font.ppm: could not load\n");
@@ -248,7 +234,7 @@ int Run(void)
         return 1;
     }
     Entity &hero = *hero_made.entity;
-    std::printf("engine: entity %s: x %d y %d facing %d speed %d health %d sprite %dx%d\n",
+    std::printf("engine: entity %s: x %.0f y %.0f facing %d speed %d health %d sprite %dx%d\n",
                 hero.name, hero.x, hero.y, hero.facing, hero.speed, hero.health,
                 hero.sprite->width, hero.sprite->height);
 
@@ -315,25 +301,23 @@ int Run(void)
     int effect_count = 0;
     int music_wraps = 0;
 
-    double sprite_x = 312.0, sprite_y = 232.0;
     double started = platform::Now();
     double last = started;
-    double distance = 0.0; /* the score: the world the sprite has walked */
+    double distance = 0.0; /* the score: the world the hero has walked */
     int shake_frames = 0; /* lesson 054: the additive hook's demo */
-    bool was_blocked = false; /* lesson 056: the mover's state report */
 
-    /* The demo's identity: what the run is, named at once — the world
-       and its sound, one measured frame loop. */
-    std::printf("engine: part 3 done — the world draws and the sound plays\n");
-    std::printf("engine: world %dx%d cells (%dx%d px), %d kinds; %d glyphs; sprite %dx%d\n",
+    /* The demo's identity: what the run is, named at once — the hero,
+       an entity the game moves, over the world the map draws. */
+    std::printf("engine: the hero, as an entity — a row the game moves, a camera that follows\n");
+    std::printf("engine: world %dx%d cells (%dx%d px), %d kinds; %d glyphs; hero %dx%d\n",
                 map.width, map.height, map.width * TILE_SIZE,
                 map.height * TILE_SIZE, map.kind_count, FONT_COUNT,
-                sprite.width, sprite.height);
+                hero.sprite->width, hero.sprite->height);
     std::printf("engine: sound %d-frame music looping on channel %d, %d-frame effect on the pool; one mixer of %d channels\n",
                 music.frame_count, AUDIO_MUSIC_CHANNEL, effect.frame_count,
                 AUDIO_MIXER_CHANNELS);
-    std::printf("engine: arrow keys move the sprite, space shakes the camera; close the window to stop\n");
-    std::printf("engine: sprite at %d,%d\n", (int)sprite_x, (int)sprite_y);
+    std::printf("engine: arrow keys move the hero, space shakes the camera; close the window to stop\n");
+    std::printf("engine: hero at %.0f,%.0f\n", hero.x, hero.y);
 
     /* Lesson 059: the run's sound is a run of amplitude at the engine's
        rate, and the seam's audio output is what puts those frames in
@@ -396,11 +380,29 @@ int Run(void)
         double dt = now - last;
         last = now;
 
+        /* Lesson 076: the hero's intent — polled input state, read once
+           per frame and written to the hero's own movement request. The
+           walk turns every entity's request into motion; the game never
+           moves an entity except through it. */
+        hero.move_x = 0.0;
+        hero.move_y = 0.0;
+        if (platform::KeyDown(opened.window, platform::KEY_LEFT))
+            hero.move_x -= 1.0;
+        if (platform::KeyDown(opened.window, platform::KEY_RIGHT))
+            hero.move_x += 1.0;
+        if (platform::KeyDown(opened.window, platform::KEY_UP))
+            hero.move_y -= 1.0;
+        if (platform::KeyDown(opened.window, platform::KEY_DOWN))
+            hero.move_y += 1.0;
+        double was_x = hero.x, was_y = hero.y;
+
         /* Lesson 075: the walk — every live entity, once per frame, in
            slot order. The per-entity work is expressed here, once, and
-           not per type; today it is the demo's kill check. An entity
-           retired in passing is not visited again and no other is
-           skipped — the slots do not move under the walk. */
+           not per type; lesson 076 makes it the entity's step — its
+           movement request becomes motion, and its facing follows where
+           it is going. An entity retired in passing is not visited again
+           and no other is skipped — the slots do not move under the
+           walk. */
         int visited = 0;
         for (int i = 0; i < ENTITY_CAP; ++i) {
             if (!store.slots[i].live)
@@ -410,7 +412,19 @@ int Run(void)
                 std::printf("engine: walk (frame %ld): retiring slot %d in passing\n",
                             frame.number, i);
                 EntityRetire(store, store.slots[i]);
+                continue;
             }
+            Entity &e = store.slots[i];
+            e.x += e.move_x * e.speed * dt;
+            e.y += e.move_y * e.speed * dt;
+            if (e.move_x > 0.0)
+                e.facing = 0;
+            else if (e.move_y > 0.0)
+                e.facing = 1;
+            else if (e.move_x < 0.0)
+                e.facing = 2;
+            else if (e.move_y < 0.0)
+                e.facing = 3;
         }
         walk_visits += visited;
         if (frame_number == 1)
@@ -432,49 +446,18 @@ int Run(void)
             std::printf("engine: store: live %d of %d\n", store.live, ENTITY_CAP);
         }
 
-        double was_x = sprite_x, was_y = sprite_y;
-        double move_x = 0.0, move_y = 0.0;
-        if (platform::KeyDown(opened.window, platform::KEY_LEFT))
-            move_x -= SPRITE_SPEED * dt;
-        if (platform::KeyDown(opened.window, platform::KEY_RIGHT))
-            move_x += SPRITE_SPEED * dt;
-        if (platform::KeyDown(opened.window, platform::KEY_UP))
-            move_y -= SPRITE_SPEED * dt;
-        if (platform::KeyDown(opened.window, platform::KEY_DOWN))
-            move_y += SPRITE_SPEED * dt;
+        /* The score, and the hero's own report: where the entity the
+           game moves has got to. */
+        distance += (hero.x > was_x ? hero.x - was_x : was_x - hero.x) +
+                    (hero.y > was_y ? hero.y - was_y : was_y - hero.y);
+        if ((int)hero.x != (int)was_x || (int)hero.y != (int)was_y)
+            std::printf("engine: hero at %d,%d (t=%.3f)\n", (int)hero.x,
+                        (int)hero.y, platform::Now() - started);
 
-        /* Lesson 056: the mover — intent becomes motion only where the
-           map allows it. One axis at a time, so a wall blocks the
-           movement into it and the movement along it still works. */
-        double next_x = sprite_x + move_x;
-        if (!TileRectSolid(map, (int)next_x, (int)sprite_y, sprite.width,
-                           sprite.height))
-            sprite_x = next_x;
-        double next_y = sprite_y + move_y;
-        if (!TileRectSolid(map, (int)sprite_x, (int)next_y, sprite.width,
-                           sprite.height))
-            sprite_y = next_y;
-        distance += (sprite_x > was_x ? sprite_x - was_x : was_x - sprite_x) +
-                    (sprite_y > was_y ? sprite_y - was_y : was_y - sprite_y);
-
-        /* The mover reports its state on transitions: moving, or pushed
-           against something that will not move. */
-        bool blocked = (move_x != 0.0 || move_y != 0.0) &&
-                       sprite_x == was_x && sprite_y == was_y;
-        if (blocked != was_blocked) {
-            std::printf("engine: sprite %s at %d,%d (t=%.3f)\n",
-                        blocked ? "blocked" : "unblocked", (int)sprite_x,
-                        (int)sprite_y, platform::Now() - started);
-            was_blocked = blocked;
-        }
-        if ((int)sprite_x != (int)was_x || (int)sprite_y != (int)was_y)
-            std::printf("engine: sprite at %d,%d (t=%.3f)\n", (int)sprite_x,
-                        (int)sprite_y, platform::Now() - started);
-
-        /* Lesson 054: the camera's base follows the sprite — the world
+        /* Lesson 054: the camera's base follows the hero — the world
            scrolls under the movement — clamped to the map's bounds. */
-        int base_x = (int)sprite_x + sprite.width / 2 - FRAME_WIDTH / 2;
-        int base_y = (int)sprite_y + sprite.height / 2 - FRAME_HEIGHT / 2;
+        int base_x = (int)hero.x + hero.sprite->width / 2 - FRAME_WIDTH / 2;
+        int base_y = (int)hero.y + hero.sprite->height / 2 - FRAME_HEIGHT / 2;
         if (base_x < 0)
             base_x = 0;
         if (base_y < 0)
@@ -596,8 +579,17 @@ int Run(void)
         DrawTileMap(*fb, map, sheet, -CameraX(camera), -CameraY(camera));
         frame.tilemap = platform::Now() - t_tilemap;
         double t_sprites = platform::Now();
-        BlitSprite(*fb, sprite, (int)sprite_x - CameraX(camera),
-                   (int)sprite_y - CameraY(camera));
+
+        /* Lesson 076: the draw walk — every live entity, its art at its
+           position, through the camera's summed offset. Per-entity work
+           expressed once, in one loop, like the update's walk. */
+        for (int i = 0; i < ENTITY_CAP; ++i) {
+            if (!store.slots[i].live)
+                continue;
+            const Entity &e = store.slots[i];
+            BlitSprite(*fb, *e.sprite, (int)e.x - CameraX(camera),
+                       (int)e.y - CameraY(camera));
+        }
         frame.sprites = platform::Now() - t_sprites;
         double t_text = platform::Now();
         char score_line[32];
@@ -606,7 +598,7 @@ int Run(void)
         DrawText(*fb, font, score_line, 8, 8);
         char pos_line[32];
         std::snprintf(pos_line, sizeof pos_line, "X %3d Y %3d",
-                      (int)sprite_x, (int)sprite_y);
+                      (int)hero.x, (int)hero.y);
         DrawText(*fb, font, pos_line, 8, 8 + FONT_CELL + 4);
         frame.text = platform::Now() - t_text;
 

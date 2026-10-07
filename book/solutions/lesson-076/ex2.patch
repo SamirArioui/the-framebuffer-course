@@ -1,0 +1,38 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 2bdcaa7..20d1595 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -304,6 +304,7 @@ int Run(void)
+     double started = platform::Now();
+     double last = started;
+     double distance = 0.0; /* the score: the world the hero has walked */
++    double moving_seconds = 0.0; /* exercise 2: time the hero was asked to move */
+     int shake_frames = 0; /* lesson 054: the additive hook's demo */
+ 
+     /* The demo's identity: what the run is, named at once — the hero,
+@@ -394,6 +395,8 @@ int Run(void)
+             hero.move_y -= 1.0;
+         if (platform::KeyDown(opened.window, platform::KEY_DOWN))
+             hero.move_y += 1.0;
++        if (hero.move_x != 0.0 || hero.move_y != 0.0)
++            moving_seconds += dt;
+         double was_x = hero.x, was_y = hero.y;
+ 
+         /* Lesson 075: the walk — every live entity, once per frame, in
+@@ -642,6 +645,16 @@ int Run(void)
+     std::printf("engine: walk: %ld visits over %ld frames — one per live entity per frame\n",
+                 walk_visits, frame_number);
+ 
++    /* Exercise 2: the hero's account — the ground covered and the time
++       it took, over the run and over the moving frames alone, so the
++       measured speed can be set beside the row's. */
++    double run_seconds = platform::Now() - started;
++    std::printf("engine: hero: walked %.0f px in %.3f s (%.3f moving) — %.0f px/s over the run, %.0f px/s while moving, %d in the row\n",
++                distance, run_seconds, moving_seconds,
++                run_seconds > 0.0 ? distance / run_seconds : 0.0,
++                moving_seconds > 0.0 ? distance / moving_seconds : 0.0,
++                hero.speed);
++
+     /* The account as the frame-budget table (lesson 058): the frame
+        count, the average, the worst frame — and the render attributed to
+        its subsystems, the report Part 5's finale grows. */

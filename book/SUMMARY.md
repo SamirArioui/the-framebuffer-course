@@ -362,6 +362,10 @@
   - [Solution: ex1 — the walk that retires ahead](solutions/lesson-075/ex1.md)
   - [Solution: ex2 — the store's map](solutions/lesson-075/ex2.md)
 
+- [Lesson 076 — the hero as an entity](lessons/part-4/lesson-076-hero.md)
+  - [Solution: ex1 — the step, predicted](solutions/lesson-076/ex1.md)
+  - [Solution: ex2 — the hero on your desktop](solutions/lesson-076/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)
