@@ -1,0 +1,107 @@
+diff --git a/src/game.cpp b/src/game.cpp
+index f66443a..582348b 100644
+--- a/src/game.cpp
++++ b/src/game.cpp
+@@ -57,6 +57,7 @@ void GameInit(Game &game, int hero_health_full)
+     game.waves_remaining = GAME_WAVES;
+     game.hero_health_full = hero_health_full;
+     game.play_clock = 0.0;
++    game.score = 0.0;
+     std::printf("engine: game: %d state%s, starting on %s\n", 5, "s",
+                 GameStateName(game.state));
+ }
+@@ -79,6 +80,7 @@ void GameInput(Game &game, platform::Window *window, Entity &hero,
+             hero.health = game.hero_health_full;
+             game.waves_remaining = GAME_WAVES;
+             game.play_clock = 0.0;
++            game.score = 0.0;
+             Transition(game, GAME_PLAY, "the player started");
+         }
+         break;
+@@ -144,8 +146,9 @@ void GameInput(Game &game, platform::Window *window, Entity &hero,
+ 
+     case GAME_DEATH:
+     case GAME_VICTORY:
+-        /* The end screens accept one thing: back to the title. */
+-        if (platform::KeyPressed(window, platform::KEY_ENTER))
++        /* The end screens accept either key: back to the title. */
++        if (platform::KeyPressed(window, platform::KEY_ENTER) ||
++            platform::KeyPressed(window, platform::KEY_ESCAPE))
+             Transition(game, GAME_TITLE, "the player returned to the title");
+         break;
+     }
+@@ -172,6 +175,16 @@ static void Panel(Framebuffer &fb, const Font &font, const char *title,
+     DrawText(fb, font, hint, hint_x, FRAME_HEIGHT / 2 + FONT_CELL);
+ }
+ 
++/* The run's score, centred under the panel's hint — the end screens
++   report how the run went (exercise 1). */
++static void PanelScore(Framebuffer &fb, const Font &font, double score)
++{
++    char line[32];
++    std::snprintf(line, sizeof line, "SCORE %06d", (int)score);
++    DrawText(fb, font, line, (FRAME_WIDTH - TextWidth(line)) / 2,
++             FRAME_HEIGHT / 2 + 3 * FONT_CELL);
++}
++
+ void GameDrawPanel(const Game &game, Framebuffer &fb, const Font &font)
+ {
+     switch (game.state) {
+@@ -183,9 +196,11 @@ void GameDrawPanel(const Game &game, Framebuffer &fb, const Font &font)
+         break;
+     case GAME_DEATH:
+         Panel(fb, font, "GAME OVER", "ENTER: TITLE");
++        PanelScore(fb, font, game.score);
+         break;
+     default:
+         Panel(fb, font, "VICTORY", "ENTER: TITLE");
++        PanelScore(fb, font, game.score);
+         break;
+     }
+ }
+diff --git a/src/game.h b/src/game.h
+index eccc9de..275dab0 100644
+--- a/src/game.h
++++ b/src/game.h
+@@ -50,6 +50,9 @@ struct Game {
+     int waves_remaining;  /* the named condition for victory */
+     int hero_health_full; /* the health a fresh game starts the hero at */
+     double play_clock;    /* wall seconds spent in play this game */
++    double score;         /* the run's score — the world the hero has
++                            walked. It is the game's fact, so the end
++                            screens can read it (exercise 1). */
+ };
+ 
+ /* The game begins on the title screen. The hero's starting health is the
+diff --git a/src/main.cpp b/src/main.cpp
+index 7f72983..ccb7173 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -316,7 +316,6 @@ int Run(void)
+ 
+     double started = platform::Now();
+     double last = started;
+-    double distance = 0.0; /* the score: the world the hero has walked */
+     GameTime game_time = { GAMETIME_FULL }; /* lesson 078: the scale — set by the state now */
+     bool was_blocked = false; /* lesson 077: the mover's state report */
+ 
+@@ -443,8 +442,8 @@ int Run(void)
+ 
+         /* The score, and the hero's own report: where the entity the
+            game moves has got to. */
+-        distance += (hero.x > was_x ? hero.x - was_x : was_x - hero.x) +
+-                    (hero.y > was_y ? hero.y - was_y : was_y - hero.y);
++        game.score += (hero.x > was_x ? hero.x - was_x : was_x - hero.x) +
++                      (hero.y > was_y ? hero.y - was_y : was_y - hero.y);
+ 
+         /* Lesson 077: the mover's state report, on transitions — the
+            hero moving, or pushed against something that will not move. */
+@@ -593,7 +592,7 @@ int Run(void)
+             double t_text = platform::Now();
+             char score_line[32];
+             std::snprintf(score_line, sizeof score_line, "SCORE %06d",
+-                          (int)distance);
++                          (int)game.score);
+             DrawText(*fb, font, score_line, 8, 8);
+             char pos_line[32];
+             std::snprintf(pos_line, sizeof pos_line, "X %3d Y %3d",

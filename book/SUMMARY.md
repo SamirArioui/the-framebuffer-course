@@ -386,6 +386,12 @@
   - [Solution: ex1 — the row, at two sizes](solutions/lesson-081/ex1.md)
   - [Solution: ex2 — what the row does not say](solutions/lesson-081/ex2.md)
 
+# Part 5 — the game
+
+- [Lesson 082 — the game skeleton](lessons/part-5/lesson-082-skeleton.md)
+  - [Solution: ex1 — the score on the end screens](solutions/lesson-082/ex1.md)
+  - [Solution: ex2 — why the scale](solutions/lesson-082/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

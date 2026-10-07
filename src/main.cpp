@@ -19,6 +19,7 @@
 #include "font.h"
 #include "framebuffer.h"
 #include "frame.h"
+#include "game.h"
 #include "gametime.h"
 #include "platform.h"
 #include "sprite.h"
@@ -239,6 +240,14 @@ int Run(void)
                 hero.name, hero.x, hero.y, hero.facing, hero.speed, hero.health,
                 hero.sprite->width, hero.sprite->height);
 
+    /* Lesson 082: the game-state machine. The game is a state now, not a
+       loop with flags — it starts on the title screen, each state owns
+       its screen and its input, and the transitions are named conditions
+       (D7). The hero's starting health is the row's fact, handed to the
+       machine so a fresh game can restore it. */
+    Game game;
+    GameInit(game, hero.health);
+
     /* Lesson 080: the vertical slice — the game's shape, and nothing
        else. The hero is the row the game asks for by name (it is the
        one the player controls); the world's other kinds come from the
@@ -308,9 +317,7 @@ int Run(void)
     double started = platform::Now();
     double last = started;
     double distance = 0.0; /* the score: the world the hero has walked */
-    int shake_frames = 0; /* lesson 054: the additive hook's demo */
-    GameTime game_time = { GAMETIME_FULL }; /* lesson 078: the scale, at play */
-    int scale_phase = 0;  /* lesson 078: the demo's script, by wall seconds */
+    GameTime game_time = { GAMETIME_FULL }; /* lesson 078: the scale — set by the state now */
     bool was_blocked = false; /* lesson 077: the mover's state report */
 
     /* The slice's identity: what the run is, named at once — L0*, the
@@ -379,7 +386,7 @@ int Run(void)
         if (platform::CloseRequested(opened.window))
             break;
 
-        FrameRecord frame;
+        FrameRecord frame = {};
         frame.number = ++frame_number;
         double t0 = platform::Now();
 
@@ -388,32 +395,15 @@ int Run(void)
         double wall_dt = now - last;
         last = now;
 
-        /* Lesson 078: the game-time scale — the one knob the game sets.
-           The demo's script is the game here: play, then hitstop (a
-           fraction of full speed), then pause (0), then play again —
-           the same three settings Part 5's juice toolkit and pause
-           screen will make. Each transition names the step that comes
-           out: the wall clock's step, scaled. */
-        double running = now - started;
-        if (scale_phase == 0 && running >= 3.0) {
-            GameTimeSetScale(game_time, 0.25);
-            scale_phase = 1;
-            std::printf("engine: game-time: scale %.2f (hitstop) — step %.3f ms of a %.3f ms wall step\n",
-                        game_time.scale, GameTimeStep(game_time, wall_dt) * 1e3,
-                        wall_dt * 1e3);
-        } else if (scale_phase == 1 && running >= 5.0) {
-            GameTimeSetScale(game_time, 0.0);
-            scale_phase = 2;
-            std::printf("engine: game-time: scale %.2f (pause) — step %.3f ms of a %.3f ms wall step\n",
-                        game_time.scale, GameTimeStep(game_time, wall_dt) * 1e3,
-                        wall_dt * 1e3);
-        } else if (scale_phase == 2 && running >= 7.0) {
-            GameTimeSetScale(game_time, GAMETIME_FULL);
-            scale_phase = 3;
-            std::printf("engine: game-time: scale %.2f (play) — step %.3f ms of a %.3f ms wall step\n",
-                        game_time.scale, GameTimeStep(game_time, wall_dt) * 1e3,
-                        wall_dt * 1e3);
-        }
+        /* Lesson 082: the state machine reads this frame's input and the
+           named transitions, and sets the game-time scale the current
+           state calls for. Play advances the world at full speed; every
+           other state holds it still — so the simulation stands still
+           outside play while the presentation keeps drawing the state's
+           screen. The hero's movement request is written here (play's
+           arrows) and left at rest in every other state. */
+        GameInput(game, opened.window, hero, wall_dt);
+        GameTimeSetScale(game_time, GameScale(game));
 
         /* Lesson 078: the update advances by game time — the wall
            clock's step, scaled. Everything the simulation does with dt
@@ -423,20 +413,6 @@ int Run(void)
         double dt = GameTimeStep(game_time, wall_dt);
         frame.step = dt;
 
-        /* Lesson 076: the hero's intent — polled input state, read once
-           per frame and written to the hero's own movement request. The
-           walk turns every entity's request into motion; the game never
-           moves an entity except through it. */
-        hero.move_x = 0.0;
-        hero.move_y = 0.0;
-        if (platform::KeyDown(opened.window, platform::KEY_LEFT))
-            hero.move_x -= 1.0;
-        if (platform::KeyDown(opened.window, platform::KEY_RIGHT))
-            hero.move_x += 1.0;
-        if (platform::KeyDown(opened.window, platform::KEY_UP))
-            hero.move_y -= 1.0;
-        if (platform::KeyDown(opened.window, platform::KEY_DOWN))
-            hero.move_y += 1.0;
         double was_x = hero.x, was_y = hero.y;
 
         /* Lesson 075: the walk — every live entity, once per frame, in
@@ -503,24 +479,12 @@ int Run(void)
                         base_y, platform::Now() - started);
         }
 
-        /* The additive offset: the hook the juice toolkit will drive.
-           Here SPACE demonstrates it — a shake that ends at zero, which
-           is where it lives at rest. */
-        if (platform::KeyPressed(opened.window, platform::KEY_SPACE) &&
-            shake_frames <= 0) {
-            shake_frames = 30;
-            std::printf("engine: camera additive 6,0 (shake starts)\n");
-        }
-        if (shake_frames > 0) {
-            --shake_frames;
-            camera.add_x = (shake_frames % 2) ? 6 : -6;
-            camera.add_y = 0;
-            if (shake_frames == 0) {
-                camera.add_x = 0;
-                camera.add_y = 0;
-                std::printf("engine: camera additive 0,0 (at rest)\n");
-            }
-        }
+        /* Lesson 082: the camera's additive offset is the juice hook
+           lesson 054 defined, and the game skeleton keeps it at exactly
+           zero — the screenshake that will drive it arrives in lesson
+           092. At rest the sum every scene draw uses is the base alone. */
+        camera.add_x = 0;
+        camera.add_y = 0;
 
         frame.update = platform::Now() - t0;
 
@@ -601,36 +565,49 @@ int Run(void)
 
         double t1 = platform::Now();
 
-        /* Render: every frame draws the whole scene — clear, the world
-           through the camera, and the HUD over it — each timed as its own
-           named phase: the subsystems the frame record can name. */
-        ClearBuffer(*fb, 32, 32, 64);
-        double t_tilemap = platform::Now();
-        DrawTileMap(*fb, map, sheet, -CameraX(camera), -CameraY(camera));
-        frame.tilemap = platform::Now() - t_tilemap;
-        double t_sprites = platform::Now();
+        /* Render: the current state's screen, and only that one (lesson
+           082). The backdrop is the state's own — the world's blue in
+           play, the panel's darker blue on the panel screens — cleared
+           once here, in the render phase, before the named sub-phases. */
+        if (game.state == GAME_PLAY)
+            ClearBuffer(*fb, 32, 32, 64);
+        else
+            ClearBuffer(*fb, 24, 24, 40);
+        if (game.state == GAME_PLAY) {
+            double t_tilemap = platform::Now();
+            DrawTileMap(*fb, map, sheet, -CameraX(camera), -CameraY(camera));
+            frame.tilemap = platform::Now() - t_tilemap;
+            double t_sprites = platform::Now();
 
-        /* Lesson 076: the draw walk — every live entity, its art at its
-           position, through the camera's summed offset. Per-entity work
-           expressed once, in one loop, like the update's walk. */
-        for (int i = 0; i < ENTITY_CAP; ++i) {
-            if (!store.slots[i].live)
-                continue;
-            const Entity &e = store.slots[i];
-            BlitSprite(*fb, *e.sprite, (int)e.x - CameraX(camera),
-                       (int)e.y - CameraY(camera));
+            /* Lesson 076: the draw walk — every live entity, its art at its
+               position, through the camera's summed offset. Per-entity work
+               expressed once, in one loop, like the update's walk. */
+            for (int i = 0; i < ENTITY_CAP; ++i) {
+                if (!store.slots[i].live)
+                    continue;
+                const Entity &e = store.slots[i];
+                BlitSprite(*fb, *e.sprite, (int)e.x - CameraX(camera),
+                           (int)e.y - CameraY(camera));
+            }
+            frame.sprites = platform::Now() - t_sprites;
+            double t_text = platform::Now();
+            char score_line[32];
+            std::snprintf(score_line, sizeof score_line, "SCORE %06d",
+                          (int)distance);
+            DrawText(*fb, font, score_line, 8, 8);
+            char pos_line[32];
+            std::snprintf(pos_line, sizeof pos_line, "X %3d Y %3d",
+                          (int)hero.x, (int)hero.y);
+            DrawText(*fb, font, pos_line, 8, 8 + FONT_CELL + 4);
+            frame.text = platform::Now() - t_text;
+        } else {
+            /* The state's own screen. The world is frozen outside play —
+               the simulation stands still — and the panel is what the
+               window shows. */
+            double t_text = platform::Now();
+            GameDrawPanel(game, *fb, font);
+            frame.text = platform::Now() - t_text;
         }
-        frame.sprites = platform::Now() - t_sprites;
-        double t_text = platform::Now();
-        char score_line[32];
-        std::snprintf(score_line, sizeof score_line, "SCORE %06d",
-                      (int)distance);
-        DrawText(*fb, font, score_line, 8, 8);
-        char pos_line[32];
-        std::snprintf(pos_line, sizeof pos_line, "X %3d Y %3d",
-                      (int)hero.x, (int)hero.y);
-        DrawText(*fb, font, pos_line, 8, 8 + FONT_CELL + 4);
-        frame.text = platform::Now() - t_text;
 
         frame.render = platform::Now() - t1;
         double t2 = platform::Now();

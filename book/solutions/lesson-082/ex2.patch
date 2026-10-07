@@ -1,0 +1,15 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 7f72983..e7d9049 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -633,8 +633,8 @@ int Run(void)
+            phase (lesson 060) joins in the record's own order, and
+            lesson 079's step leads it: the game's advance beside the
+            machine's durations. */
+-        std::printf("frame %ld: step %.3f ms, update %.3f ms (entities %.3f), audio %.3f ms, render %.3f ms (sprites %.3f, text %.3f, tilemap %.3f), present %.3f ms, total %.3f ms\n",
+-                    frame.number, frame.step * 1e3, frame.update * 1e3,
++        std::printf("frame %ld: scale %.2f, step %.3f ms, update %.3f ms (entities %.3f), audio %.3f ms, render %.3f ms (sprites %.3f, text %.3f, tilemap %.3f), present %.3f ms, total %.3f ms\n",
++                    frame.number, game_time.scale, frame.step * 1e3, frame.update * 1e3,
+                     frame.entities * 1e3,
+                     frame.audio * 1e3,
+                     frame.render * 1e3,
