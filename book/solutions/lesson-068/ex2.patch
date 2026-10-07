@@ -1,0 +1,39 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index a8264b5..de8bb02 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -210,6 +210,34 @@ int Run(void)
+     int effect_count = 0;
+     int music_wraps = 0;
+ 
++    /* Exercise 2 (lesson 068): the music that ducks — when an effect
++       fires over it, the music drops to half volume for ten buffers and
++       climbs back over ten more, all in the mixer's own fixed-point
++       volumes. */
++    Mixer duck;
++    MixerInit(duck);
++    MixerPlayMusic(duck, music, AUDIO_VOLUME_FULL);
++    MixerPlayEffect(duck, effect, AUDIO_VOLUME_FULL / 4);
++    for (int b = 0; b <= 20; ++b) {
++        Channel &ducked = duck.channels[AUDIO_MUSIC_CHANNEL];
++        if (b == 0)
++            ducked.volume = AUDIO_VOLUME_FULL / 2; /* the drop */
++        else if (b >= 10 && b <= 19)
++            ducked.volume =
++                AUDIO_VOLUME_FULL / 2 +
++                (AUDIO_VOLUME_FULL - AUDIO_VOLUME_FULL / 2) * (b - 9) / 10;
++        MixBuffer(duck, stream, CHUNK_FRAMES);
++        std::printf("engine: duck: buffer %2d: music volume %d of %d%s\n", b,
++                    ducked.volume, AUDIO_VOLUME_FULL,
++                    b == 0    ? " — the drop"
++                    : b == 10 ? " — the climb begins"
++                    : b == 19 ? " — back where it was"
++                              : "");
++    }
++    std::printf("engine: duck: the music's frame 1: %d at full volume, %d at the duck's floor\n",
++                music.frames[1] * AUDIO_VOLUME_FULL / AUDIO_VOLUME_FULL,
++                music.frames[1] * (AUDIO_VOLUME_FULL / 2) / AUDIO_VOLUME_FULL);
++
+     double sprite_x = 312.0, sprite_y = 232.0;
+     double started = platform::Now();
+     double last = started;

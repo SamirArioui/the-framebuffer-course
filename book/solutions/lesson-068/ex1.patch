@@ -1,0 +1,47 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index a8264b5..18d0b8c 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -210,6 +210,42 @@ int Run(void)
+     int effect_count = 0;
+     int music_wraps = 0;
+ 
++    /* Exercise 1 (lesson 068): the mix's cost, measured on this machine.
++       The busiest mix the pool allows — the music looping on its channel
++       and every effect channel playing — beside an idle mixer, each
++       mixed a thousand times on the platform clock. The channels loop       so that no measurement includes an ending; what a channel holds
++       cannot matter to the arithmetic the mix does, and the numbers are
++       where that is checked. */
++    Mixer busy;
++    MixerInit(busy);
++    MixerPlayMusic(busy, music, AUDIO_VOLUME_FULL / 16);
++    for (int c = AUDIO_MUSIC_CHANNEL + 1; c < AUDIO_MIXER_CHANNELS; ++c) {
++        ChannelPlay(busy.channels[c], music, AUDIO_VOLUME_FULL / 16);
++        busy.channels[c].loop = true;
++    }
++    Mixer idle;
++    MixerInit(idle);
++
++    constexpr int MIXES = 1000;
++    double t_idle = platform::Now();
++    for (int i = 0; i < MIXES; ++i)
++        MixBuffer(idle, stream, CHUNK_FRAMES);
++    double idle_seconds = platform::Now() - t_idle;
++
++    double t_busy = platform::Now();
++    for (int i = 0; i < MIXES; ++i)
++        MixBuffer(busy, stream, CHUNK_FRAMES);
++    double busy_seconds = platform::Now() - t_busy;
++
++    std::printf("engine: cost: idle mixer, %d buffers of %d frames x %d channels: %.3f ms total, %.1f us per buffer\n",
++                MIXES, CHUNK_FRAMES, AUDIO_MIXER_CHANNELS,
++                idle_seconds * 1e3, idle_seconds * 1e6 / MIXES);
++    std::printf("engine: cost: busiest mix, %d buffers of %d frames x %d channels: %.3f ms total, %.1f us per buffer, %.0f ns per channel frame\n",
++                MIXES, CHUNK_FRAMES, AUDIO_MIXER_CHANNELS,
++                busy_seconds * 1e3, busy_seconds * 1e6 / MIXES,
++                busy_seconds * 1e9 / ((double)MIXES * CHUNK_FRAMES *
++                                       AUDIO_MIXER_CHANNELS));
++
+     double sprite_x = 312.0, sprite_y = 232.0;
+     double started = platform::Now();
+     double last = started;

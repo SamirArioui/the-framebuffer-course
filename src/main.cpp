@@ -193,28 +193,22 @@ int Run(void)
     PrintSample("music", music);
     PrintSample("effect", effect);
 
-    /* Lesson 067: the effect route's contract, in front of the reader.
-       Two effects of one sample at different volumes, fired together —
-       one sample, two different sounds — and then one more after they
-       have played to their end, so the pool's answer is visible: the
-       channel the first effect had comes back. The music is loaded and
-       silent here; lesson 068 starts it. */
+    /* Lesson 068: the game's sound as the game has it — the music
+       looping on the music channel and effects firing over it on the
+       pool's channels, every one of them summed by the same MixBuffer
+       into the one stream. Nothing in the mix knows which is which. */
     Mixer mixer;
     MixerInit(mixer);
-    int first_channel = MixerPlayEffect(mixer, effect, AUDIO_VOLUME_FULL);
-    std::printf("engine: mix: effect 1 -> channel %2d (volume %d of %d)\n",
-                first_channel, mixer.channels[first_channel].volume,
+    MixerPlayMusic(mixer, music, AUDIO_VOLUME_FULL);
+    std::printf("engine: mix: music   -> channel %2d (looping, volume %d of %d)\n",
+                AUDIO_MUSIC_CHANNEL, mixer.channels[AUDIO_MUSIC_CHANNEL].volume,
                 AUDIO_VOLUME_FULL);
-    int second_channel = MixerPlayEffect(mixer, effect, AUDIO_VOLUME_FULL / 4);
-    std::printf("engine: mix: effect 2 -> channel %2d (volume %d of %d)\n",
-                second_channel, mixer.channels[second_channel].volume,
-                AUDIO_VOLUME_FULL);
-    std::printf("engine: mix: one sample, two volumes — two different sounds\n");
 
-    /* The script's one decision: when both effects have played to their
-       end, fire one more. Its channel is the pool's own answer. */
-    int third_channel = -1;
-    int effect_step = 0;
+    /* The run's rhythm: a burst of effects at the start — up to three in
+       flight — then one a second, all at a quarter volume so the music
+       and the busiest moment still sum inside the format. */
+    int effect_count = 0;
+    int music_wraps = 0;
 
     double sprite_x = 312.0, sprite_y = 232.0;
     double started = platform::Now();
@@ -272,13 +266,11 @@ int Run(void)
        last one — and the loop knows that without asking the platform. */
     double next_feed = platform::Now();
 
-    /* Lesson 067: the run's account of its sounds, in the mix's own
-       numbers — how many buffers have been fed and how many carried
-       sound, and whether the final silence has been named. Nothing here
-       assumes how long a sound is. */
+    /* Lesson 068: the run's bookkeeping — how many buffers have been
+       handed to the device, which drives the rhythm above. The mix's own
+       account of what it carried is the frame record's audio phase now,
+       measured like every other phase of the frame. */
     int feeds = 0;         /* buffers handed to the device */
-    int sound_feeds = 0;   /* buffers that carried sound */
-    bool silence_named = false;
     while (!platform::CloseRequested(opened.window)) {
         platform::PumpEvents(opened.window);
         if (platform::CloseRequested(opened.window))
@@ -388,69 +380,49 @@ int Run(void)
            difference. */
         double t_audio = platform::Now();
         if (audio.output && t_audio >= next_feed) {
-            /* Did this buffer carry sound? A channel speaks in it exactly
-               when it is active and has frames left to give: a one-shot at
-               its end gives none, and a looping channel at its end gives
-               everything again. */
-            bool any = false;
-            for (int c = 0; c < AUDIO_MIXER_CHANNELS; ++c) {
-                const Channel &ch = mixer.channels[c];
-                if (ch.active && ch.sample && ch.sample->frame_count > 0 &&
-                    (ch.loop || ch.cursor < ch.sample->frame_count))
-                    any = true;
+            /* The run's rhythm, in the game's own terms: an effect every
+               fifth buffer through the opening burst, then one every
+               second — each one a MixerPlayEffect on the pool's channels,
+               over the music that keeps looping. */
+            bool fire = (feeds < 30 && feeds % 5 == 0) ||
+                        (feeds >= 30 && feeds % 30 == 0);
+            if (fire) {
+                int ch = MixerPlayEffect(mixer, effect,
+                                         AUDIO_VOLUME_FULL / 4);
+                effect_count += 1;
+                std::printf("engine: mix: effect %2d -> channel %2d (volume %d of %d)\n",
+                            effect_count, ch, mixer.channels[ch].volume,
+                            AUDIO_VOLUME_FULL);
             }
+
+            int music_before = mixer.channels[AUDIO_MUSIC_CHANNEL].cursor;
 
             MixBuffer(mixer, stream, CHUNK_FRAMES);
 
             if (feeds == 0) {
-                /* The mix's own bytes while the two effects play: every
-                   output frame is their two contributions added. */
-                std::printf("engine: mix: first frames (summed):");
+                /* The mix's own bytes with both kinds of sound in it:
+                   every frame is the music's and the effect's next frame
+                   added — the same sum either way. */
+                std::printf("engine: mix: first frames (music + effect 1, summed):");
                 for (int i = 0; i < 8 && i < CHUNK_FRAMES; ++i)
                     std::printf(" %d", (int)stream[i]);
                 std::printf("\n");
             }
 
-            /* The one-shot contract's second half, observed: a channel
-               whose sound has played to its end is free again. The run's
-               next effect is fired the moment the pair is done. */
-            if (effect_step == 0 && !mixer.channels[first_channel].active &&
-                !mixer.channels[second_channel].active) {
-                effect_step = 1;
-                std::printf("engine: effect: both ended in %d buffers — channels %d and %d are free again\n",
-                            (effect.frame_count + CHUNK_FRAMES - 1) /
-                                CHUNK_FRAMES,
-                            first_channel, second_channel);
-                third_channel =
-                    MixerPlayEffect(mixer, effect, AUDIO_VOLUME_FULL);
-                std::printf("engine: mix: effect 3 -> channel %2d (volume %d of %d)%s\n",
-                            third_channel,
-                            mixer.channels[third_channel].volume,
-                            AUDIO_VOLUME_FULL,
-                            third_channel == first_channel
-                                ? " — the pool returned the first effect's channel"
-                                : "");
-            } else if (effect_step == 1 && third_channel >= 0 &&
-                       !mixer.channels[third_channel].active) {
-                effect_step = 2;
-                std::printf("engine: effect: effect 3 ended in %d buffers — channel %d is free again\n",
-                            (effect.frame_count + CHUNK_FRAMES - 1) /
-                                CHUNK_FRAMES,
-                            third_channel);
+            if (mixer.channels[AUDIO_MUSIC_CHANNEL].active &&
+                mixer.channels[AUDIO_MUSIC_CHANNEL].cursor < music_before) {
+                /* The wrap: the cursor went backwards — the loop's own
+                   arithmetic, visible from outside the mixer. */
+                music_wraps += 1;
+                int cursor = mixer.channels[AUDIO_MUSIC_CHANNEL].cursor;
+                std::printf("engine: loop: music wrapped on channel %d — wrap %d, %ld frames played, cursor %d of %d\n",
+                            AUDIO_MUSIC_CHANNEL, music_wraps,
+                            (long)music_wraps * music.frame_count + cursor,
+                            cursor, music.frame_count);
             }
 
-            if (platform::SubmitSamples(audio.output, stream,
-                                        CHUNK_FRAMES)) {
-                if (any)
-                    sound_feeds += 1;
-                /* The account closes when the script is done, in the mix's
-                   own numbers: how many buffers carried sound. */
-                if (!silence_named && !any && effect_step == 2) {
-                    silence_named = true;
-                    std::printf("engine: mix: %d buffers of sound, then silence\n",
-                                sound_feeds);
-                }
-            } else {
+            if (!platform::SubmitSamples(audio.output, stream,
+                                         CHUNK_FRAMES)) {
                 /* A device that will not take the samples is named once,
                    not once per frame: the run closes the output and carries
                    on in silence — its wait unbounded again. */

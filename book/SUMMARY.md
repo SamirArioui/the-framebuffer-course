@@ -328,6 +328,10 @@
   - [Solution: ex1 — one sample, two volumes](solutions/lesson-067/ex1.md)
   - [Solution: ex2 — the effect that must not stack](solutions/lesson-067/ex2.md)
 
+- [Lesson 068 — music and effects together](lessons/part-3/lesson-068-together.md)
+  - [Solution: ex1 — the audio phase, measured](solutions/lesson-068/ex1.md)
+  - [Solution: ex2 — the music that ducks](solutions/lesson-068/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)
