@@ -17,6 +17,32 @@
 // the services (table, store, mover, game-time, camera) never grow game
 // behavior, and the game never grows inside them. The play state's
 // gameplay stands on those services and invents nothing.
+//
+// Lesson 103: the hand-over — the engine and the toolkit are finished,
+// and now they are yours. This header names where the codebase is meant
+// to change and where it is meant to hold still: the four seams.
+//
+//   1. The platform layer — `platform.h` is the seam, and one OS
+//      answers it in two files (the window side, the sound side). A
+//      second OS implements the same contract in its own files, and no
+//      engine file changes when it does (tools/check-boundary.sh audits
+//      that); the Windows module of lesson 102's epilogue map is
+//      exactly this seam, a second time.
+//   2. The table format — `table.*`/`load.*` and the files under
+//      `assets/`. Your game's kinds are rows; grow the format only by
+//      named columns, additively, so every file you ship keeps loading.
+//   3. The game layer's files — game.*, hero.*, combat.*, ai.*, feel.*,
+//      hud.*, sound.*: your game's rules, yours to rewrite. The
+//      services under them hold still until measurement says otherwise
+//      (arena, table, entity, gametime, tilemap, audio, camera,
+//      framebuffer — the engine Parts 1-4 built).
+//   4. Where to measure — `frame.*`'s account and the closing report.
+//      Name the hotspot before you fix it (lesson 098's discipline):
+//      measure, fix what you measured, report what you did not.
+//
+// And one discipline more: an idea outside your game's frozen checklist
+// is extras — recorded in your ledger, never added. Lesson 102 kept
+// that rule for this course; keeping it for your game is now your job.
 #ifndef GAME_H
 #define GAME_H
 

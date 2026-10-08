@@ -1,0 +1,110 @@
+diff --git a/assets/enemies.txt b/assets/enemies.txt
+index 7bf2e74..e709fa4 100644
+--- a/assets/enemies.txt
++++ b/assets/enemies.txt
+@@ -1,5 +1,6 @@
+ name x y facing speed health sprite damage rate fires behavior wave count
+ bat 560 72 2 160 2 assets/bat.ppm 1 20 bolt chase 1 2
++hound 448 232 0 192 2 assets/bat.ppm 1 20 bolt chase 1 2
+ wisp 640 336 2 120 1 assets/wisp.ppm 1 20 bolt flee 2 1
+ spitter 120 400 0 96 3 assets/spitter.ppm 1 30 shell keep 2 2
+ golem 384 96 1 72 8 assets/golem.ppm 2 20 shell boss 3 1
+diff --git a/src/combat.cpp b/src/combat.cpp
+index 2b3e69d..521900d 100644
+--- a/src/combat.cpp
++++ b/src/combat.cpp
+@@ -123,7 +123,7 @@ bool CombatFire(EntityStore &store, const EntityTable &shots,
+ 
+ void CombatFly(const TileMap &map, EntityStore &store, const Entity &hero,
+                Entity &shot, Feedback &feel, const EntityDef &spark,
+-               double dt, Sound &sound)
++               double dt, Sound &sound, double &score)
+ {
+     /* The flight, in game time: the shot's speed over dt, sub-stepped
+        through the mover so each sub-step is small. What is checked at
+@@ -188,6 +188,13 @@ void CombatFly(const TileMap &map, EntityStore &store, const Entity &hero,
+                 std::printf("engine: %s retired — zero health\n",
+                             target->name);
+                 EntityRetire(store, *target);
++
++                /* Lesson 103's exercise 1: the game's first rule of its
++                   own — a kill is worth 100 points. The rule is the
++                   game layer's, so it crosses the game layer's file
++                   pairs (this file's event, the score the HUD reads)
++                   and touches no service. */
++                score += 100.0;
+             }
+             if (target->health == 0) {
+                 /* Lesson 092: a death is the toolkit's heavier event —
+diff --git a/src/combat.h b/src/combat.h
+index a2e8eff..ee45121 100644
+--- a/src/combat.h
++++ b/src/combat.h
+@@ -63,10 +63,12 @@ bool CombatFire(EntityStore &store, const EntityTable &shots,
+    are the toolkit's events — the feedback hooks fire here, in the
+    event's own frame, through `feel`. Lesson 093: they burst particles
+    of `spark` too — the cosmetic kind the game names, spawned in the
+-   same frame from the same event. */
++   same frame from the same event. Lesson 103's exercise 1: the score
++   the game keeps is the kill's to raise, so it is handed along — a
++   game-layer rule reaching a game-layer event. */
+ void CombatFly(const TileMap &map, EntityStore &store, const Entity &hero,
+                Entity &shot, Feedback &feel, const EntityDef &spark,
+-               double dt, Sound &sound);
++               double dt, Sound &sound, double &score);
+ 
+ /* Lesson 090: the enemy attack, once per frame of game time. An armed
+    entity — one whose row names a projectile kind — fires it at the
+diff --git a/src/game.cpp b/src/game.cpp
+index f88c950..704a142 100644
+--- a/src/game.cpp
++++ b/src/game.cpp
+@@ -311,7 +311,7 @@ void GameDrawSprites(const Game &game, Framebuffer &fb,
+ 
+ int GameWalk(EntityStore &store, const TileMap &map, const Entity &hero,
+              const EntityTable &shots, Feedback &feel, const EntityDef &spark,
+-             double dt, Sound &sound)
++             double dt, Sound &sound, double &score)
+ {
+     /* Lesson 084: the walk — every live entity, once per frame, in slot
+        order, its movement resolved against the tilemap. The per-entity
+@@ -343,7 +343,7 @@ int GameWalk(EntityStore &store, const TileMap &map, const Entity &hero,
+         Entity &e = store.slots[i];
+         switch (e.behavior) {
+         case BEHAVIOR_FLY:
+-            CombatFly(map, store, hero, e, feel, spark, dt, sound);
++            CombatFly(map, store, hero, e, feel, spark, dt, sound, score);
+             continue; /* the flight moves itself, through the mover */
+         case BEHAVIOR_SETTLE:
+             FeelParticle(store, e, dt);
+diff --git a/src/game.h b/src/game.h
+index c340fbb..3e2c7e9 100644
+--- a/src/game.h
++++ b/src/game.h
+@@ -161,10 +161,11 @@ void GameDrawSprites(const Game &game, Framebuffer &fb,
+    Lesson 093: the toolkit's particles settle here (FeelParticle) and
+    burst of `spark` — the cosmetic kind the game names. The hero is
+    handed along for the combat's rules to know the game's actor by.
+-   Returns the visit count. */
++   Lesson 103's exercise 1: and the game's score rides along, so a kill
++   can be worth something. Returns the visit count. */
+ int GameWalk(EntityStore &store, const TileMap &map, const Entity &hero,
+              const EntityTable &shots, Feedback &feel, const EntityDef &spark,
+-             double dt, Sound &sound);
++             double dt, Sound &sound, double &score);
+ 
+ /* Lesson 091: the waves, once per frame of play. A fresh fight clears
+    the last one from the store; a wave spawns its composition from the
+diff --git a/src/main.cpp b/src/main.cpp
+index 5ef73e3..a8d826f 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -200,7 +200,7 @@ int Run(void)
+         double t_entities = platform::Now();
+         int visited = GameWalk(world.store, world.map, hero, world.shots,
+                                feel, world.particles.rows[0], dt,
+-                               world.sound);
++                               world.sound, game.score);
+         frame.entities = platform::Now() - t_entities;
+         walk_visits += visited;
+ 

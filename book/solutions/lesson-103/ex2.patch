@@ -1,0 +1,17 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 5ef73e3..8f0c4d2 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -34,8 +34,9 @@ namespace engine {
+    What this name means for the numbers: a paced headless run (the
+    loop is event-driven; the pacing is window-move jiggles at ~25 fps),
+    a `-O0` build, the audio mixed in silence (no sound device), and the
+-   display's copy through the X server. */
++   display's copy through the X server. Exercise 2 (lesson 103): yours
++   is yours to name — describe the machine the card was measured on. */
+ constexpr const char *RUN_MACHINE =
+-    "WSL2, Xvfb :99, no sound hardware (the course's authoring machine)";
++    "your machine — CPU, OS, display, sound device (fill this in)";
+ 
+ int Run(void)
+ {

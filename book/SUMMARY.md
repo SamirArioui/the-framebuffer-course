@@ -472,6 +472,10 @@
   - [Solution: ex1 — our engine, honestly compared](solutions/lesson-102/ex1.md)
   - [Solution: ex2 — the epilogue map on your machine](solutions/lesson-102/ex2.md)
 
+- [Lesson 103 — now make YOUR game](lessons/part-5/lesson-103-your-game.md)
+  - [Solution: ex1 — your game's first change](solutions/lesson-103/ex1.md)
+  - [Solution: ex2 — your machine's hand-over card](solutions/lesson-103/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)
