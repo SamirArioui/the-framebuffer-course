@@ -59,15 +59,33 @@ struct FrameStats {
     double entities_sum; /* lesson 081: the update's entity work, summed */
     double worst;      /* the longest frame so far */
     long worst_number; /* and which one it was */
+
+    /* Lesson 101: the final report's own account — the frames split by
+       what they were doing (the record's `step` says it: a frame that
+       advanced game time was playing, one at zero was showing a
+       screen), and the count that checks the 60 fps line frame by
+       frame. */
+    long play_frames;
+    double play_sum;
+    long screen_frames;
+    double screen_sum;
+    long over_budget; /* frames that spent more than the 60 fps budget */
 };
+
+/* Lesson 101: the 60 fps frame — the budget the finished game is
+   measured against (the MVD's perf line). One sixtieth of a second. */
+constexpr double FRAME_BUDGET_MS = 1000.0 / 60.0;
 
 void AccountFrame(FrameStats &stats, const FrameRecord &frame);
 
 /* Lesson 058: the frame-budget table — the account, attributed per
    subsystem, as the report Part 5's finale grows. Every number in it is
    a measured sum from the frames that actually ran; the shares are of
-   the average frame. */
-void PrintFrameBudget(const FrameStats &stats);
+   the average frame. Lesson 101: it is the final frame-budget report
+   now — the attribution, the by-state split, the 60 fps budget line,
+   and the machine the numbers came from (D12: a performance claim
+   carries its machine). */
+void PrintFrameBudget(const FrameStats &stats, const char *machine);
 
 } /* namespace engine */
 

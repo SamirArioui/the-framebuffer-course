@@ -1,0 +1,47 @@
+diff --git a/src/frame.cpp b/src/frame.cpp
+index 383b424..d586727 100644
+--- a/src/frame.cpp
++++ b/src/frame.cpp
+@@ -34,6 +34,7 @@ void AccountFrame(FrameStats &stats, const FrameRecord &frame)
+     if (frame.total > stats.worst) {
+         stats.worst = frame.total;
+         stats.worst_number = frame.number;
++        stats.worst_record = frame; /* exercise 2 */
+     }
+ }
+ 
+@@ -104,6 +105,17 @@ void PrintFrameBudget(const FrameStats &stats, const char *machine)
+     std::printf("engine:   budget      60 fps is %.3f ms a frame — %ld of %ld frames over it, worst %.3f ms (%.0f%% of it)\n",
+                 FRAME_BUDGET_MS, stats.over_budget, stats.frames,
+                 stats.worst * 1e3, 100.0 * stats.worst * 1e3 / FRAME_BUDGET_MS);
++    /* Exercise 2: the worst frame, attributed — the same row the
++       table gives the average, given to the frame that spent the
++       most. */
++    if (stats.frames) {
++        const FrameRecord &w = stats.worst_record;
++        std::printf("engine:   worst was   %.3f ms (frame %ld): update %.3f (entities %.3f), audio %.3f, render %.3f (clear %.3f, sprites %.3f, text %.3f, tilemap %.3f), present %.3f\n",
++                    w.total * 1e3, w.number, w.update * 1e3,
++                    w.entities * 1e3, w.audio * 1e3, w.render * 1e3,
++                    w.clear * 1e3, w.sprites * 1e3, w.text * 1e3,
++                    w.tilemap * 1e3, w.present * 1e3);
++    }
+     std::printf("engine:   machine     %s\n", machine ? machine : "(unnamed)");
+ }
+ 
+diff --git a/src/frame.h b/src/frame.h
+index 7fb1cd6..0152a60 100644
+--- a/src/frame.h
++++ b/src/frame.h
+@@ -70,6 +70,12 @@ struct FrameStats {
+     long screen_frames;
+     double screen_sum;
+     long over_budget; /* frames that spent more than the 60 fps budget */
++
++    /* Exercise 2: the worst frame, whole — not just its cost but its
++       shape: the record of the frame that spent the most, so the
++       report can attribute the worst case the way it attributes the
++       average. */
++    FrameRecord worst_record;
+ };
+ 
+ /* Lesson 101: the 60 fps frame — the budget the finished game is

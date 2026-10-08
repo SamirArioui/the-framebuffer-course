@@ -21,13 +21,23 @@ void AccountFrame(FrameStats &stats, const FrameRecord &frame)
     stats.tilemap_sum += frame.tilemap;
     stats.clear_sum += frame.clear;
     stats.entities_sum += frame.entities;
+    /* Lesson 101: the by-state split, and the budget line's count. */
+    if (frame.step > 0.0) {
+        stats.play_frames += 1;
+        stats.play_sum += frame.total;
+    } else {
+        stats.screen_frames += 1;
+        stats.screen_sum += frame.total;
+    }
+    if (frame.total * 1e3 > FRAME_BUDGET_MS)
+        stats.over_budget += 1;
     if (frame.total > stats.worst) {
         stats.worst = frame.total;
         stats.worst_number = frame.number;
     }
 }
 
-void PrintFrameBudget(const FrameStats &stats)
+void PrintFrameBudget(const FrameStats &stats, const char *machine)
 {
     if (!stats.frames)
         return;
@@ -79,6 +89,22 @@ void PrintFrameBudget(const FrameStats &stats)
     std::printf("engine:   present     %6.3f      %2.0f%%\n", present,
                 100.0 * present / (avg * 1e3));
     std::printf("engine:   total       %6.3f     100%%\n", avg * 1e3);
+
+    /* Lesson 101: the final report's close — the frames split by what
+       they were doing, the 60 fps line checked frame by frame, and the
+       machine these numbers belong to (D12). */
+    double play = stats.play_frames ? stats.play_sum / (double)stats.play_frames
+                                    : 0.0;
+    double screen =
+        stats.screen_frames ? stats.screen_sum / (double)stats.screen_frames
+                            : 0.0;
+    std::printf("engine:   by state    %ld play frames at %.3f ms, %ld screen frames at %.3f ms\n",
+                stats.play_frames, play * 1e3, stats.screen_frames,
+                screen * 1e3);
+    std::printf("engine:   budget      60 fps is %.3f ms a frame — %ld of %ld frames over it, worst %.3f ms (%.0f%% of it)\n",
+                FRAME_BUDGET_MS, stats.over_budget, stats.frames,
+                stats.worst * 1e3, 100.0 * stats.worst * 1e3 / FRAME_BUDGET_MS);
+    std::printf("engine:   machine     %s\n", machine ? machine : "(unnamed)");
 }
 
 } /* namespace engine */

@@ -1,0 +1,82 @@
+diff --git a/src/frame.cpp b/src/frame.cpp
+index 383b424..d3d9179 100644
+--- a/src/frame.cpp
++++ b/src/frame.cpp
+@@ -31,6 +31,13 @@ void AccountFrame(FrameStats &stats, const FrameRecord &frame)
+     }
+     if (frame.total * 1e3 > FRAME_BUDGET_MS)
+         stats.over_budget += 1;
++    /* Exercise 1: the frame's time, binned. */
++    {
++        int bucket = (int)(frame.total * 1e3 / FRAME_BUCKET_MS);
++        if (bucket > FRAME_HISTOGRAM)
++            bucket = FRAME_HISTOGRAM;
++        stats.buckets[bucket] += 1;
++    }
+     if (frame.total > stats.worst) {
+         stats.worst = frame.total;
+         stats.worst_number = frame.number;
+@@ -104,6 +111,26 @@ void PrintFrameBudget(const FrameStats &stats, const char *machine)
+     std::printf("engine:   budget      60 fps is %.3f ms a frame — %ld of %ld frames over it, worst %.3f ms (%.0f%% of it)\n",
+                 FRAME_BUDGET_MS, stats.over_budget, stats.frames,
+                 stats.worst * 1e3, 100.0 * stats.worst * 1e3 / FRAME_BUDGET_MS);
++    /* Exercise 1: the percentiles — the median and the tail, read off
++       the histogram. The average hides the tail; the 60 fps line lives
++       in the tail. */
++    {
++        long want[3] = { (long)(stats.frames * 0.50),
++                         (long)(stats.frames * 0.95),
++                         (long)(stats.frames * 0.99) };
++        double at[3] = { 0.0, 0.0, 0.0 };
++        long seen = 0;
++        int found = 0;
++        for (int b = 0; b <= FRAME_HISTOGRAM && found < 3; ++b) {
++            seen += stats.buckets[b];
++            while (found < 3 && seen > want[found]) {
++                at[found] = (b + 1) * FRAME_BUCKET_MS;
++                found += 1;
++            }
++        }
++        std::printf("engine:   percentiles p50 %.3f ms, p95 %.3f ms, p99 %.3f ms (%.2f ms buckets)\n",
++                    at[0], at[1], at[2], FRAME_BUCKET_MS);
++    }
+     std::printf("engine:   machine     %s\n", machine ? machine : "(unnamed)");
+ }
+ 
+diff --git a/src/frame.h b/src/frame.h
+index 7fb1cd6..5f9c863 100644
+--- a/src/frame.h
++++ b/src/frame.h
+@@ -44,6 +44,15 @@ struct FrameRecord {
+     double step;
+ };
+ 
++/* Lesson 101: the 60 fps frame — the budget the finished game is
++   measured against (the MVD's perf line). One sixtieth of a second. */
++constexpr double FRAME_BUDGET_MS = 1000.0 / 60.0;
++
++/* Exercise 1: the histogram's grain — buckets of a quarter millisecond
++   out to 16 ms (64 of them), the last one an overflow pail. */
++constexpr double FRAME_BUCKET_MS = 0.25;
++constexpr int FRAME_HISTOGRAM = 64;
++
+ /* The running account: every frame measured so far. */
+ struct FrameStats {
+     long frames;
+@@ -70,11 +79,12 @@ struct FrameStats {
+     long screen_frames;
+     double screen_sum;
+     long over_budget; /* frames that spent more than the 60 fps budget */
+-};
+ 
+-/* Lesson 101: the 60 fps frame — the budget the finished game is
+-   measured against (the MVD's perf line). One sixtieth of a second. */
+-constexpr double FRAME_BUDGET_MS = 1000.0 / 60.0;
++    /* Exercise 1: the frame times' histogram — buckets of 0.25 ms out
++       to the budget, the account's own memory (no allocation, the
++       language law's habit) — where the percentiles are read from. */
++    long buckets[FRAME_HISTOGRAM + 1];
++};
+ 
+ void AccountFrame(FrameStats &stats, const FrameRecord &frame);
+ 

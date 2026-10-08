@@ -29,6 +29,16 @@
 
 namespace engine {
 
+/* Lesson 101: the machine these measurements belong to (D12 — a
+   performance claim carries its machine). The report prints it with
+   its numbers; a run on different hardware names different hardware.
+   What this name means for the numbers: a paced headless run (the
+   loop is event-driven; the pacing is window-move jiggles at ~25 fps),
+   a `-O0` build, the audio mixed in silence (no sound device), and the
+   display's copy through the X server. */
+constexpr const char *RUN_MACHINE =
+    "WSL2, Xvfb :99, no sound hardware (the course's authoring machine)";
+
 int Run(void)
 {
     platform::WindowResult opened =
@@ -321,7 +331,7 @@ int Run(void)
        (the frame account's own table) and the arena's. */
     ReportEnd(world.sound, feed, world.store, hero, walk_visits,
               frame_number);
-    PrintFrameBudget(stats);
+    PrintFrameBudget(stats, RUN_MACHINE);
     std::printf("engine: arena: %zu of %zu bytes used\n", world.arena.used,
                 world.arena.memory.size);
 

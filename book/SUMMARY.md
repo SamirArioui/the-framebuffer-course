@@ -464,6 +464,10 @@
   - [Solution: ex1 — the price of a pixel](solutions/lesson-100/ex1.md)
   - [Solution: ex2 — what the word knows](solutions/lesson-100/ex2.md)
 
+- [Lesson 101 — pass 3: the frame-budget report](lessons/part-5/lesson-101-frame-budget.md)
+  - [Solution: ex1 — the 60 fps line on your machine](solutions/lesson-101/ex1.md)
+  - [Solution: ex2 — the worst frame, predicted](solutions/lesson-101/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)
