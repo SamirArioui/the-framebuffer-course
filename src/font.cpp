@@ -68,6 +68,7 @@ FontResult LoadFont(Arena &arena, const char *path)
                 dst[1] = src[1];
                 dst[2] = src[2];
             }
+        glyph.key_count = CountKeyPixels(glyph); /* lesson 099 */
     }
     ArenaRollback(arena, mark); /* the sheet's bytes are copied; give back */
     result.error = FONT_OK;

@@ -456,6 +456,10 @@
   - [Solution: ex1 — what the profile cannot see](solutions/lesson-098/ex1.md)
   - [Solution: ex2 — the measure pass on your machine](solutions/lesson-098/ex2.md)
 
+- [Lesson 099 — pass 2a: fix the map's draw](lessons/part-5/lesson-099-map-draw.md)
+  - [Solution: ex1 — the sprites' draw gets the same medicine](solutions/lesson-099/ex1.md)
+  - [Solution: ex2 — the cost per tile](solutions/lesson-099/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

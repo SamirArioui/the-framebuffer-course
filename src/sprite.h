@@ -27,6 +27,9 @@ struct Sprite {
     int width;
     int height;
     unsigned char key_r, key_g, key_b; /* the transparent color */
+    int key_count; /* lesson 099: how many pixels are that color, counted
+                      once at load. Zero says the sprite is opaque — the
+                      draw can skip its per-pixel decision entirely. */
 };
 
 /* A load either hands over a complete sprite or names what went wrong —
@@ -47,6 +50,12 @@ struct SpriteResult {
    the pixel bytes are copied into the arena, and the file's own bytes go
    back to the OS — what the engine keeps is its copy. */
 SpriteResult LoadSprite(Arena &arena, const char *path);
+
+/* Lesson 099: the sprite's transparent pixels, counted — the fact the
+   draw's fast path is keyed on. Counted once where a sprite is born
+   (the loader, the tile sheet's cut, the font's cut), never at draw
+   time: the frame pays no decision the load already made. */
+int CountKeyPixels(const Sprite &sprite);
 
 } /* namespace engine */
 

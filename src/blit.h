@@ -17,7 +17,11 @@ namespace engine {
    becomes one framebuffer pixel carrying the exact color the sprite has,
    except the sprite's transparent color, which writes nothing at all.
    Pixels whose destination falls outside the framebuffer are dropped —
-   lesson 015's fold at rectangle scale, never a wrap into other pixels. */
+   lesson 015's fold at rectangle scale, never a wrap into other pixels.
+   Lesson 099: a sprite with no transparent pixel (`key_count` zero —
+   counted where sprites are born) draws through a straight expand with
+   no per-pixel decision; a sprite with one keeps the decision per
+   pixel. Both paths write the same pixels. */
 void BlitSprite(Framebuffer &fb, const Sprite &sprite, int x, int y);
 
 /* Lesson 086: one frame of a sprite sheet — the `frame_w`-wide column of

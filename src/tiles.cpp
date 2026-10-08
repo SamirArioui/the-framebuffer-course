@@ -12,7 +12,7 @@ namespace engine {
 
 TileSheetResult LoadTileSheet(Arena &arena, const char *path, int kind_count)
 {
-    TileSheetResult result = { { { { 0, 0, 0, 0, 0, 0 } } }, TILES_OK };
+    TileSheetResult result = { { { { 0, 0, 0, 0, 0, 0, 0 } } }, TILES_OK };
 
     if (kind_count <= 0 || kind_count > TILE_MAX_KINDS) {
         result.error = TILES_MALFORMED;
@@ -65,6 +65,7 @@ TileSheetResult LoadTileSheet(Arena &arena, const char *path, int kind_count)
                 dst[1] = src[1];
                 dst[2] = src[2];
             }
+        tile.key_count = CountKeyPixels(tile); /* lesson 099 */
     }
     ArenaRollback(arena, mark); /* the sheet's bytes are copied; give back */
     result.error = TILES_OK;
@@ -74,8 +75,25 @@ TileSheetResult LoadTileSheet(Arena &arena, const char *path, int kind_count)
 void DrawTileMap(Framebuffer &fb, const TileMap &map, const TileSheet &sheet,
                  int x, int y)
 {
-    for (int cy = 0; cy < map.height; ++cy)
-        for (int cx = 0; cx < map.width; ++cx) {
+    /* Lesson 099: copy less — the walk visits only the cells the frame
+       can show. The window is the visible span of cells computed once
+       from the map's offset: the first cell whose right edge passes the
+       frame's left (at offset x, cell -x/TILE_SIZE is the first one
+       with a pixel on screen), through the last whose left edge is
+       inside the frame (the fold's exclusive bound). A cell outside
+       writes nothing through the blit's clipping either way — the
+       pixels drawn are the same pixels; the walk is shorter. */
+    int cx0 = x < 0 ? -x / TILE_SIZE : 0;
+    int cy0 = y < 0 ? -y / TILE_SIZE : 0;
+    int cx1 = (fb.width - x + TILE_SIZE - 1) / TILE_SIZE;
+    int cy1 = (fb.height - y + TILE_SIZE - 1) / TILE_SIZE;
+    if (cx1 > map.width)
+        cx1 = map.width;
+    if (cy1 > map.height)
+        cy1 = map.height;
+
+    for (int cy = cy0; cy < cy1; ++cy)
+        for (int cx = cx0; cx < cx1; ++cx) {
             int kind = map.cells[cy * map.width + cx];
             BlitSprite(fb, sheet.kinds[kind],
                        x + cx * TILE_SIZE, y + cy * TILE_SIZE);

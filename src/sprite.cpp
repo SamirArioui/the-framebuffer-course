@@ -64,7 +64,7 @@ bool ReadNumber(const unsigned char *data, size_t size, size_t &at, long &out)
 
 SpriteResult LoadSprite(Arena &arena, const char *path)
 {
-    SpriteResult result = { { 0, 0, 0, 0, 0, 0 }, SPRITE_OK };
+    SpriteResult result = { { 0, 0, 0, 0, 0, 0, 0 }, SPRITE_OK };
 
     platform::FileData file = platform::ReadFile(path);
     if (file.error != platform::FILE_OK) {
@@ -119,8 +119,21 @@ SpriteResult LoadSprite(Arena &arena, const char *path)
     result.sprite.key_r = SPRITE_KEY_R;
     result.sprite.key_g = SPRITE_KEY_G;
     result.sprite.key_b = SPRITE_KEY_B;
+    result.sprite.key_count = CountKeyPixels(result.sprite); /* 099 */
     result.error = SPRITE_OK;
     return result;
+}
+
+int CountKeyPixels(const Sprite &sprite)
+{
+    int count = 0;
+    for (int i = 0; i < sprite.width * sprite.height; ++i) {
+        const unsigned char *p = &sprite.pixels[(size_t)i * 3];
+        if (p[0] == sprite.key_r && p[1] == sprite.key_g &&
+            p[2] == sprite.key_b)
+            count += 1;
+    }
+    return count;
 }
 
 } /* namespace engine */

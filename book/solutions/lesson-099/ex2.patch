@@ -1,0 +1,32 @@
+diff --git a/src/tiles.cpp b/src/tiles.cpp
+index 0a25834..12f9859 100644
+--- a/src/tiles.cpp
++++ b/src/tiles.cpp
+@@ -6,6 +6,8 @@
+ 
+ #include "tiles.h"
+ 
++#include <cstdio>
++
+ #include "blit.h"
+ 
+ namespace engine {
+@@ -98,6 +100,18 @@ void DrawTileMap(Framebuffer &fb, const TileMap &map, const TileSheet &sheet,
+             BlitSprite(fb, sheet.kinds[kind],
+                        x + cx * TILE_SIZE, y + cy * TILE_SIZE);
+         }
++
++    /* Exercise 2: the probe — how many cells the walk drew, and where
++       the map sat. It prints when the count changes, so a run shows
++       every distinct shape the walk takes as the camera clamps along
++       the map. */
++    int cells = (cx1 - cx0) * (cy1 - cy0);
++    static int was_cells = -1;
++    if (cells != was_cells) {
++        was_cells = cells;
++        std::printf("engine: probe: map draw %d of %d cells at offset %d,%d\n",
++                    cells, map.width * map.height, x, y);
++    }
+ }
+ 
+ } /* namespace engine */
