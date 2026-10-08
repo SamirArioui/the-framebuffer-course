@@ -12,6 +12,7 @@
 #include <cstdio>
 
 #include "blit.h"
+#include "ai.h"
 #include "combat.h"
 #include "text.h"
 #include "tilemap.h"
@@ -239,17 +240,38 @@ int GameWalk(EntityStore &store, const TileMap &map, const Entity &hero,
        Lesson 087: the per-entity work branches on the entity's behavior
        — the fact its row carries. A projectile flies: its own
        sub-stepped flight through the same mover, retiring at walls, at
-       its range's end, and at the entity it hit. Every other behavior
-       leaves the request for the mover below. */
+       its range's end, and at the entity it hit.
+
+       Lesson 089: the rest of the branch is the enemy behaviors —
+       chase, keep-distance, flee — each a small function writing this
+       entity's movement request the way the player's input writes the
+       hero's. One branch on the behavior, per-entity work expressed
+       once: the boss (lesson 090) is one more value here, not one more
+       shape. */
     int visited = 0;
     for (int i = 0; i < ENTITY_CAP; ++i) {
         if (!store.slots[i].live)
             continue;
         visited += 1;
         Entity &e = store.slots[i];
-        if (e.behavior == BEHAVIOR_FLY) {
+        switch (e.behavior) {
+        case BEHAVIOR_FLY:
             CombatFly(map, store, hero, e, dt);
-            continue;
+            continue; /* the flight moves itself, through the mover */
+        case BEHAVIOR_CHASE:
+            AiChase(e, hero);
+            break;
+        case BEHAVIOR_KEEP:
+            AiKeep(e, hero);
+            break;
+        case BEHAVIOR_FLEE:
+            AiFlee(e, hero);
+            break;
+        default:
+            /* `none` stands where it stands — the request is its row's
+               (lesson 084's stand-in walk writes one) — and `boss` is
+               lesson 090's pattern, composed of these same behaviors. */
+            break;
         }
         MoveEntity(map, e, e.move_x * e.speed * dt, e.move_y * e.speed * dt);
         if (e.move_x > 0.0)

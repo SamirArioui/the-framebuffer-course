@@ -416,6 +416,10 @@
   - [Solution: ex1 — the kinds nobody made yet](solutions/lesson-088/ex1.md)
   - [Solution: ex2 — why the boss does not deserve code](solutions/lesson-088/ex2.md)
 
+- [Lesson 089 — enemy AI](lessons/part-5/lesson-089-enemy-ai.md)
+  - [Solution: ex1 — the keeper's distance is data](solutions/lesson-089/ex1.md)
+  - [Solution: ex2 — the chaser's staircase](solutions/lesson-089/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

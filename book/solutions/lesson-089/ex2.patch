@@ -1,0 +1,26 @@
+diff --git a/src/ai.cpp b/src/ai.cpp
+index 1ed2dc4..efa1a32 100644
+--- a/src/ai.cpp
++++ b/src/ai.cpp
+@@ -8,6 +8,8 @@
+ 
+ #include "ai.h"
+ 
++#include <cstdio>
++
+ #include "combat.h" /* CombatAim — the same eight compass points */
+ 
+ namespace engine {
+@@ -17,7 +19,12 @@ void AiChase(Entity &e, const Entity &hero)
+     /* The request is the compass point at the hero — the same eight
+        directions the player's arrows write for the hero, so the chaser
+        covers ground at its own speed whichever way it runs. */
++    double was_x = e.move_x, was_y = e.move_y;
+     CombatAim(hero.x - e.x, hero.y - e.y, e.move_x, e.move_y);
++    /* Exercise 2: the staircase made visible — the direction asked
++       for, printed whenever this entity's compass point turns. */
++    if (e.move_x != was_x || e.move_y != was_y)
++        std::printf("ai: %s steers %.3f,%.3f\n", e.name, e.move_x, e.move_y);
+ }
+ 
+ void AiKeep(Entity &e, const Entity &hero)

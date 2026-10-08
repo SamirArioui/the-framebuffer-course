@@ -9,6 +9,7 @@
 // is invented here; today the parts fit, and the fit is what the demo
 // shows. The language law of lesson 026 still holds over all of it.
 
+#include <cmath>
 #include <cstdio>
 
 #include "arena.h"
@@ -347,12 +348,10 @@ int Run(void)
             ArenaRelease(arena);
             return 1;
         }
-        /* Lesson 084: a non-hero entity walks (down-right) so its
-           movement is resolved against the map like the hero's — a stand
-           in for the AI lesson 089 brings. The walk slides it along
-           walls and stops it at solid tiles. */
-        made.entity->move_x = 1.0;
-        made.entity->move_y = 1.0;
+        /* Lesson 084: a non-hero entity walked (down-right) here — a
+           stand-in for the AI. Lesson 089 replaced it: the behaviors
+           are real now, and the world's kinds move the ways their rows
+           say (the slime's row says `none`, so it stands). */
         if (!foe)
             foe = made.entity;
         created += 1;
@@ -441,6 +440,8 @@ int Run(void)
     bool was_blocked = false; /* lesson 077: the mover's state report */
     int was_vx = 0, was_vy = 0; /* lesson 085: the hero's velocity, as it eases */
     int was_frame = 0;          /* lesson 086: the hero's walk-cycle frame */
+    double seen_x[ENTITY_CAP] = {}, seen_y[ENTITY_CAP] = {}; /* lesson 089:
+                                  where each entity was last reported */
 
     /* The slice's identity: what the run is, named at once — L0*, the
        gate this part closes on. Every service it uses was finished
@@ -586,6 +587,26 @@ int Run(void)
         int visited = GameWalk(store, map, hero, dt);
         frame.entities = platform::Now() - t_entities;
         walk_visits += visited;
+
+        /* Lesson 089: the world's motion, as the behaviors produce it —
+           every non-hero entity reported as it travels about a tile, its
+           distance to the hero beside it (the number all three behaviors
+           are about: chase shrinks it, flee grows it, keep holds it). */
+        for (int i = 0; i < ENTITY_CAP; ++i) {
+            Entity &e = store.slots[i];
+            if (!e.live || &e == &hero)
+                continue;
+            double dx = e.x - seen_x[i], dy = e.y - seen_y[i];
+            if (dx * dx + dy * dy < 24.0 * 24.0)
+                continue;
+            seen_x[i] = e.x;
+            seen_y[i] = e.y;
+            double to_x = hero.x - e.x, to_y = hero.y - e.y;
+            std::printf("engine: %s at %d,%d — %d px of the hero (t=%.3f)\n",
+                        e.name, (int)e.x, (int)e.y,
+                        (int)std::sqrt(to_x * to_x + to_y * to_y),
+                        platform::Now() - started);
+        }
 
         /* The score, and the hero's own report: where the entity the
            game moves has got to. */
@@ -789,6 +810,21 @@ int Run(void)
        sound's buffers, together — before the cost's table below. */
     std::printf("engine: demo: %ld frames measured, %d buffers fed, %d effects fired, %d music wraps\n",
                 frame_number, feeds, effect_count, music_wraps);
+
+    /* Lesson 089: where the behaviors left the world — every live
+       entity's position and its distance to the hero, the number all
+       three behaviors are about (chase shrinks it, flee grows it, keep
+       holds it). The report above samples a moving world; this one
+       states where it ended. */
+    for (int i = 0; i < ENTITY_CAP; ++i) {
+        Entity &e = store.slots[i];
+        if (!e.live || &e == &hero)
+            continue;
+        double to_x = hero.x - e.x, to_y = hero.y - e.y;
+        std::printf("engine: world: %s ends at %d,%d — %d px of the hero\n",
+                    e.name, (int)e.x, (int)e.y,
+                    (int)std::sqrt(to_x * to_x + to_y * to_y));
+    }
 
     /* Lesson 075: the walk's account — one visit per live entity per
        frame, and nothing else. */
