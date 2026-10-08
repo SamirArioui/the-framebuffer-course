@@ -6,6 +6,8 @@
 
 #include "hero.h"
 
+#include "combat.h"
+
 namespace engine {
 
 void HeroMove(Entity &hero, platform::Window *window, double dt)
@@ -31,13 +33,15 @@ void HeroMove(Entity &hero, platform::Window *window, double dt)
         intent_y *= HERO_DIAG;
     }
 
-    /* The ease: the velocity closes on the intent by dt/HERO_TIME each
-       frame — toward the intent when the player steers (acceleration),
-       toward rest when they let go (deceleration). A turn passes through
-       the ease instead of snapping to full speed the other way. The
-       hero's movement request carries the eased velocity; the walk turns
-       it into motion (move x speed = the velocity). */
-    double k = dt / HERO_TIME;
+    /* The ease: the velocity closes on the intent by dt/accel each frame
+       — toward the intent when the player steers (acceleration), toward
+       rest when they let go (deceleration). A turn passes through the
+       ease instead of snapping to full speed the other way. The feel is
+       the hero's own `accel` — its row's fact, milliseconds (lesson
+       087); an accel of 0 is instant weightless motion. The hero's
+       movement request carries the eased velocity; the walk turns it
+       into motion (move x speed = the velocity). */
+    double k = hero.accel > 0 ? dt / (hero.accel / 1000.0) : 1.0;
     if (k > 1.0)
         k = 1.0;
     hero.move_x += (intent_x - hero.move_x) * k;
@@ -59,6 +63,49 @@ void HeroMove(Entity &hero, platform::Window *window, double dt)
         hero.frame = 0;
         hero.frame_t = 0.0;
     }
+}
+
+void HeroFire(Entity &hero, platform::Window *window,
+              const EntityTable &weapons, const EntityTable &shots,
+              EntityStore &store, double dt)
+{
+    /* Lesson 087: the number keys arm the weapons table's rows. A weapon
+       is a row — arming carries its values — so the weapons grow as
+       rows: one row more is one key more, and no weapon code. */
+    if (platform::KeyPressed(window, platform::KEY_1) && weapons.count > 0)
+        CombatArm(hero, weapons.rows[0]);
+    if (platform::KeyPressed(window, platform::KEY_2) && weapons.count > 1)
+        CombatArm(hero, weapons.rows[1]);
+
+    /* The rate is the row's, in rounds per minute: the trigger answers
+       again only when the cooldown it earns has run out. At most one
+       shot per frame — a long frame is caught up by the next shot, never
+       by a burst of them. */
+    if (hero.cooldown > 0.0) {
+        hero.cooldown -= dt;
+        return;
+    }
+    if (!platform::KeyDown(window, platform::KEY_SPACE))
+        return;
+    if (hero.rate <= 0 || !hero.fires[0])
+        return; /* unarmed, or a row that never fires */
+
+    /* The aim: the compass point of the hero's motion — the eight
+       directions, a diagonal at 1/sqrt(2) — or its facing at rest. */
+    double dir_x = 0.0, dir_y = 0.0;
+    CombatAim(hero.move_x, hero.move_y, dir_x, dir_y);
+    if (dir_x == 0.0 && dir_y == 0.0) {
+        if (hero.facing == 0)
+            dir_x = 1.0;
+        else if (hero.facing == 1)
+            dir_y = 1.0;
+        else if (hero.facing == 2)
+            dir_x = -1.0;
+        else
+            dir_y = -1.0;
+    }
+    if (CombatFire(store, shots, hero, dir_x, dir_y))
+        hero.cooldown = 60.0 / (double)hero.rate;
 }
 
 } /* namespace engine */

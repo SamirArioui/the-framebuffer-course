@@ -1,0 +1,180 @@
+diff --git a/assets/weapons.txt b/assets/weapons.txt
+index ee42dd4..6e5d499 100644
+--- a/assets/weapons.txt
++++ b/assets/weapons.txt
+@@ -1,3 +1,4 @@
+-name damage rate fires
+-blaster 1 300 bolt
+-cannon 2 60 shell
++name damage rate fires burst
++blaster 1 300 bolt 1
++cannon 2 60 shell 1
++scatter 1 120 bolt 3
+diff --git a/src/combat.cpp b/src/combat.cpp
+index 905cfc7..a68a755 100644
+--- a/src/combat.cpp
++++ b/src/combat.cpp
+@@ -51,12 +51,13 @@ void CombatArm(Entity &shooter, const EntityDef &weapon)
+        and may be armed with another row's. */
+     shooter.damage = weapon.damage;
+     shooter.rate = weapon.rate;
++    shooter.burst = weapon.burst;
+     for (int i = 0; i < TABLE_NAME_MAX; ++i)
+         shooter.fires[i] = weapon.fires[i];
+     shooter.cooldown = 0.0;
+-    std::printf("engine: arm: %s arms %s (damage %d, rate %d, fires %s)\n",
++    std::printf("engine: arm: %s arms %s (damage %d, rate %d, burst %d, fires %s)\n",
+                 shooter.name, weapon.name, weapon.damage, weapon.rate,
+-                weapon.fires[0] ? weapon.fires : "none");
++                weapon.burst, weapon.fires[0] ? weapon.fires : "none");
+ }
+ 
+ bool CombatFire(EntityStore &store, const EntityTable &shots,
+diff --git a/src/entity.cpp b/src/entity.cpp
+index 77cdd42..1fe9ade 100644
+--- a/src/entity.cpp
++++ b/src/entity.cpp
+@@ -25,6 +25,7 @@ Entity EntityFromDef(const EntityDef &def)
+     entity.accel = def.accel;
+     entity.damage = def.damage;
+     entity.rate = def.rate;
++    entity.burst = def.burst;
+     entity.range = def.range;
+     entity.behavior = def.behavior;
+     return entity;
+diff --git a/src/entity.h b/src/entity.h
+index c214bb8..faa7fd7 100644
+--- a/src/entity.h
++++ b/src/entity.h
+@@ -48,6 +48,7 @@ struct Entity {
+     int damage;                /* points a hit from this entity removes */
+     int rate;                  /* rounds per minute; 0 = never fires */
+     char fires[TABLE_NAME_MAX]; /* the projectile kind it fires */
++    int burst;               /* shots one trigger pull fires at once */
+     int range;                 /* a projectile's flight budget, pixels */
+     double traveled;           /* how far a projectile has flown */
+     const Entity *owner;       /* the shooter of a projectile — a shot
+diff --git a/src/hero.cpp b/src/hero.cpp
+index 8945263..425b4c3 100644
+--- a/src/hero.cpp
++++ b/src/hero.cpp
+@@ -76,6 +76,8 @@ void HeroFire(Entity &hero, platform::Window *window,
+         CombatArm(hero, weapons.rows[0]);
+     if (platform::KeyPressed(window, platform::KEY_2) && weapons.count > 1)
+         CombatArm(hero, weapons.rows[1]);
++    if (platform::KeyPressed(window, platform::KEY_3) && weapons.count > 2)
++        CombatArm(hero, weapons.rows[2]);
+ 
+     /* The rate is the row's, in rounds per minute: the trigger answers
+        again only when the cooldown it earns has run out. At most one
+@@ -104,8 +106,31 @@ void HeroFire(Entity &hero, platform::Window *window,
+         else
+             dir_y = -1.0;
+     }
+-    if (CombatFire(store, shots, hero, dir_x, dir_y))
+-        hero.cooldown = 60.0 / (double)hero.rate;
++    /* Exercise 1: the scatter gun — one trigger pull fires `burst`
++       shots: the middle along the aim and the spread's others turned
++       one 45-degree step at a time to either side. A turn of a unit
++       direction by 45 degrees — ((x-y)/sqrt(2), (x+y)/sqrt(2)) — keeps
++       its length, so every shot of the spread flies at the shot's own
++       speed. */
++    double cw_x = dir_x, cw_y = dir_y;
++    double ccw_x = dir_x, ccw_y = dir_y;
++    for (int i = 0; i < hero.burst; ++i) {
++        if (i == 0) {
++            CombatFire(store, shots, hero, dir_x, dir_y);
++            continue;
++        }
++        double nx = (cw_x - cw_y) * AIM_DIAG, ny = (cw_x + cw_y) * AIM_DIAG;
++        cw_x = nx;
++        cw_y = ny;
++        double mx = (ccw_x + ccw_y) * AIM_DIAG, my = (ccw_y - ccw_x) * AIM_DIAG;
++        ccw_x = mx;
++        ccw_y = my;
++        if (i % 2)
++            CombatFire(store, shots, hero, cw_x, cw_y);
++        else
++            CombatFire(store, shots, hero, ccw_x, ccw_y);
++    }
++    hero.cooldown = 60.0 / (double)hero.rate;
+ }
+ 
+ } /* namespace engine */
+diff --git a/src/platform.h b/src/platform.h
+index cd860ae..ff2fb5a 100644
+--- a/src/platform.h
++++ b/src/platform.h
+@@ -45,6 +45,7 @@ enum Key {
+     KEY_ESCAPE,
+     KEY_1,
+     KEY_2,
++    KEY_3,
+     KEY_G,
+     KEY_COUNT
+ };
+diff --git a/src/platform_x11.cpp b/src/platform_x11.cpp
+index bd91201..6213338 100644
+--- a/src/platform_x11.cpp
++++ b/src/platform_x11.cpp
+@@ -166,6 +166,7 @@ static int KeyIndex(KeySym sym)
+     case XK_Escape: return KEY_ESCAPE;
+     case XK_1:      return KEY_1;
+     case XK_2:      return KEY_2;
++    case XK_3:      return KEY_3;
+     case XK_g:      return KEY_G;
+     default:        return -1;
+     }
+diff --git a/src/table.cpp b/src/table.cpp
+index fd179ab..1c60d05 100644
+--- a/src/table.cpp
++++ b/src/table.cpp
+@@ -118,6 +118,7 @@ enum Column {
+     COL_DAMAGE,
+     COL_RATE,
+     COL_FIRES,
++    COL_BURST,
+     COL_RANGE,
+     COL_BEHAVIOR,
+     COL_WAVE,
+@@ -127,8 +128,8 @@ enum Column {
+ 
+ const char *const COLUMN_NAMES[COL_COUNT] = {
+     "name", "x", "y", "facing", "speed", "health", "sprite",
+-    "accel", "damage", "rate", "fires", "range", "behavior", "wave",
+-    "count"
++    "accel", "damage", "rate", "fires", "burst", "range", "behavior",
++    "wave", "count"
+ };
+ 
+ /* Lesson 087: the behavior column's spellings, the format's own. */
+@@ -156,6 +157,7 @@ void DefaultRow(EntityDef &def)
+     def.accel = TABLE_ACCEL_DEFAULT;
+     def.damage = 0;
+     def.rate = 0;
++    def.burst = 1;
+     def.range = 0;
+     def.behavior = BEHAVIOR_NONE;
+     def.wave = 0;
+@@ -346,6 +348,9 @@ TableResult LoadTable(Arena &arena, const char *path)
+             case COL_FIRES:
+                 ok = ReadText(line, len, at, def.fires, TABLE_NAME_MAX);
+                 break;
++            case COL_BURST:
++                ok = ReadInt(line, len, at, def.burst);
++                break;
+             case COL_RANGE:
+                 ok = ReadInt(line, len, at, def.range);
+                 break;
+diff --git a/src/table.h b/src/table.h
+index c4d7572..5cb3ada 100644
+--- a/src/table.h
++++ b/src/table.h
+@@ -83,6 +83,7 @@ struct EntityDef {
+                                     row's damage, carried by its shots */
+     int rate;                    /* rounds per minute; 0 = never fires */
+     char fires[TABLE_NAME_MAX];  /* the projectile kind this row fires */
++    int burst;                   /* shots one trigger pull fires at once */
+     int range;                   /* world pixels: a projectile's flight
+                                     budget — its life */
+     int behavior;                /* BehaviorKind, its row's */

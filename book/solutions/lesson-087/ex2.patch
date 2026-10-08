@@ -1,0 +1,55 @@
+diff --git a/src/combat.cpp b/src/combat.cpp
+index 905cfc7..c90e900 100644
+--- a/src/combat.cpp
++++ b/src/combat.cpp
+@@ -79,7 +79,9 @@ bool CombatFire(EntityStore &store, const EntityTable &shots,
+        the store, in a slot like every entity. */
+     EntityResult made = EntityCreate(store, *kind.def);
+     if (made.error != ENTITY_OK) {
+-        std::printf("engine: fire refused — the store is full\n");
++        std::printf("engine: fire refused — %s\n",
++                    made.error == ENTITY_FULL ? "the store is full"
++                                              : "the kind has no art");
+         return false;
+     }
+ 
+diff --git a/src/entity.cpp b/src/entity.cpp
+index 77cdd42..efc04e5 100644
+--- a/src/entity.cpp
++++ b/src/entity.cpp
+@@ -34,6 +34,15 @@ EntityResult EntityCreate(EntityStore &store, const EntityDef &def)
+ {
+     EntityResult result = { 0, ENTITY_OK };
+ 
++    /* A definition with no image is not an entity: every entity draws
++       and collides as its art (its sprite is the size the mover and the
++       draw read), and a row without art — a weapon row — must never
++       become one. Typed and named, like every refusal here. */
++    if (!def.image) {
++        result.error = ENTITY_NO_ART;
++        return result;
++    }
++
+     /* The first free slot — the lowest one that holds nothing. With the
+        slots fixed in place that rule also answers which slot a new
+        entity takes after one is retired: the freed one, before any slot
+diff --git a/src/entity.h b/src/entity.h
+index c214bb8..a74a523 100644
+--- a/src/entity.h
++++ b/src/entity.h
+@@ -82,10 +82,13 @@ struct EntityStore {
+ };
+ 
+ /* The creation request, answered with the entity or with the typed
+-   failure that says there is no room. */
++   failure that says why not. */
+ enum EntityError {
+     ENTITY_OK = 0,
+-    ENTITY_FULL, /* every slot holds a live entity */
++    ENTITY_FULL,   /* every slot holds a live entity */
++    ENTITY_NO_ART, /* the definition carries no image — an entity draws
++                      and collides as its art, and cannot be one
++                      without it */
+ };
+ 
+ struct EntityResult {

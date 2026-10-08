@@ -12,23 +12,24 @@
 #include <cstdio>
 
 #include "blit.h"
+#include "combat.h"
 #include "text.h"
 #include "tilemap.h"
 #include "tiles.h"
 
 namespace engine {
 
-/* The demonstration stand-in, named so it cannot be mistaken for the
-   game. Lesson 082 has the state machine but not yet the gameplay that
-   drives two of its named conditions: combat reduces the hero's health
-   (lesson 087) and the waves spend the game's completion (lesson 091).
-   Until those land, keys stand in for them: SPACE is a hit on the hero,
-   and ENTER in play says the game is complete — the same kind of keyed
-   demonstration, and like lesson 078's script before the juice toolkit
-   drove it. Both are removed when the real triggers arrive; the
-   transitions they fire are the game's own (defeat on zero health,
-   completion on no waves). Keyed, they never fire on their own during a
-   gameplay test. */
+/* The demonstration stand-ins, named so they cannot be mistaken for the
+   game. Lesson 087 made the hit real: a projectile reduces its target's
+   health by its row's damage, and a zero-health entity is retired. What
+   still stands in is the *enemy's fire* — who shoots at the hero, and
+   when. Until the enemies' attacks land (lesson 090), the run's G key
+   makes the slime spit at the hero (a keyed stand-in in the run, like
+   the feel demonstration beside it), and ENTER in play below says the
+   game is complete — lesson 091's waves spend it for real. Both die
+   when the real triggers arrive; the transitions they fire are the
+   game's own (defeat on zero health, completion on no waves). Keyed,
+   they never fire on their own during a gameplay test. */
 
 /* A transition, named once here and printed the moment it happens, so a
    run shows the machine moving between states and why. */
@@ -86,19 +87,10 @@ void GameInput(Game &game, platform::Window *window, Entity &hero,
         break;
 
     case GAME_PLAY: {
-        /* Play's movement is the hero's own (HeroMove, lesson 085) — the
-           held direction read and eased into motion there. What is left
-           here is the play state's other input and the named conditions. */
-
-        /* The stand-in for combat: SPACE is a hit on the hero (lesson 087
-           makes real hits land). The named condition below reads the
-           health this lowers. */
-        if (platform::KeyPressed(window, platform::KEY_SPACE) &&
-            hero.health > 0) {
-            hero.health -= 1;
-            std::printf("engine: hero takes a hit — health %d (t=%.3f)\n",
-                        hero.health, game.play_clock);
-        }
+        /* Play's movement is the hero's own (HeroMove, lesson 085) and
+           its fire is the hero's weapon's (HeroFire, lesson 087) — both
+           the run's, in play. What is left here is the play state's
+           other input and the named conditions. */
 
         game.play_clock += wall_dt;
 
@@ -234,7 +226,8 @@ void GameDrawSprites(const Game &game, Framebuffer &fb,
     }
 }
 
-int GameWalk(EntityStore &store, const TileMap &map, double dt)
+int GameWalk(EntityStore &store, const TileMap &map, const Entity &hero,
+             double dt)
 {
     /* Lesson 084: the walk — every live entity, once per frame, in slot
        order, its movement resolved against the tilemap. The per-entity
@@ -242,13 +235,22 @@ int GameWalk(EntityStore &store, const TileMap &map, double dt)
        turns the request into motion one axis at a time, so an entity
        that meets a solid tile stops on that axis and slides along the
        wall on the other — and the facing follows where it is going.
-       The hero and every other entity resolve the same way. */
+
+       Lesson 087: the per-entity work branches on the entity's behavior
+       — the fact its row carries. A projectile flies: its own
+       sub-stepped flight through the same mover, retiring at walls, at
+       its range's end, and at the entity it hit. Every other behavior
+       leaves the request for the mover below. */
     int visited = 0;
     for (int i = 0; i < ENTITY_CAP; ++i) {
         if (!store.slots[i].live)
             continue;
         visited += 1;
         Entity &e = store.slots[i];
+        if (e.behavior == BEHAVIOR_FLY) {
+            CombatFly(map, store, hero, e, dt);
+            continue;
+        }
         MoveEntity(map, e, e.move_x * e.speed * dt, e.move_y * e.speed * dt);
         if (e.move_x > 0.0)
             e.facing = 0;

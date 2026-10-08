@@ -10,11 +10,22 @@
 //   slime 400 320 2 96 1 assets/sprite.ppm
 //
 // The header names the columns, and the loader fills the fields the
-// header declares — so the columns may come in any order, but every
-// column the format knows comes exactly once. `name` and `sprite` are
-// text (a run of non-space bytes); x, y, facing, speed, and health are
-// whole numbers, and facing is one of the four the format defines:
-// 0 right, 1 down, 2 left, 3 up.
+// header declares — so the columns may come in any order, and every
+// column the format knows comes at most once. `name`, `sprite`, and
+// `fires` are text (a run of non-space bytes); the rest are whole
+// numbers, and facing is one of the four the format defines: 0 right,
+// 1 down, 2 left, 3 up.
+//
+// Lesson 087: the format grows by named columns, additively. A file's
+// header names the columns it uses — and may omit any column the format
+// knows; the unnamed fields take the defaults the format defines below.
+// This is a deliberate fix-forward of lesson 071/072's refusal edge ("a
+// column not named at all"): a file may now omit columns, because the
+// game's facts (a weapon's damage, a projectile's life) must not be
+// crammed into columns that would lie about them, and every file the
+// course has shipped keeps loading byte-for-byte. A column the format
+// does *not* know is still a malformed file — and so is a name the
+// table already holds, or a row with one value too few or too many.
 #ifndef TABLE_H
 #define TABLE_H
 
@@ -31,12 +42,29 @@ namespace engine {
 constexpr int TABLE_NAME_MAX = 16;
 constexpr int TABLE_PATH_MAX = 64;
 
+/* Lesson 087: the behavior column's values — what a kind does each
+   frame, the fact its row carries. The format defines the spellings,
+   like it defines facing's four numbers: `none` stands still, `fly` is a
+   projectile in flight, and chase / keep / flee / boss are the enemy
+   behaviors (lessons 089-090) — the boss's value names its pattern. */
+enum BehaviorKind {
+    BEHAVIOR_NONE = 0,
+    BEHAVIOR_FLY,
+    BEHAVIOR_CHASE,
+    BEHAVIOR_KEEP,
+    BEHAVIOR_FLEE,
+    BEHAVIOR_BOSS,
+    BEHAVIOR_COUNT
+};
+
 /* One definition: a row of the table, carrying every value its row
    states — the identity and the attributes an entity is created from.
    The image is the one fact the file states as a name: the run loads the
    art the sprite column names and hands the definition its image, so an
    entity created from the definition is answered from the definition
-   alone. */
+   alone. A weapon is one of these rows (lesson 087): it names the
+   projectile kind it fires and carries its rate and damage — and is
+   never itself an entity. */
 struct EntityDef {
     char name[TABLE_NAME_MAX];   /* the definition's identity */
     int x, y;                    /* where it starts, in world pixels */
@@ -45,7 +73,33 @@ struct EntityDef {
     int health;                  /* points */
     char sprite[TABLE_PATH_MAX]; /* the art file it draws */
     const Sprite *image;         /* that art, loaded at startup */
+
+    /* Lesson 087: the format's named columns. Every field below takes
+       its default when a file's header does not name it — the defaults
+       are the format's contract, not a gap in it. */
+    int accel;                   /* ms: the eased-move time constant —
+                                    the feel (the hero's weight) */
+    int damage;                  /* points a hit removes — a weapon
+                                    row's damage, carried by its shots */
+    int rate;                    /* rounds per minute; 0 = never fires */
+    char fires[TABLE_NAME_MAX];  /* the projectile kind this row fires */
+    int range;                   /* world pixels: a projectile's flight
+                                    budget — its life */
+    int behavior;                /* BehaviorKind, its row's */
+    int wave;                    /* which wave spawns this kind;
+                                    0 = never by wave */
+    int count;                   /* how many of this kind join the wave */
 };
+
+/* Lesson 087: the defaults the format defines. A file may omit any
+   column; the field takes the value named here. The accel default is
+   the feel lesson 085 shipped as a constant — the hero's row predates
+   the column and keeps loading byte-for-byte, and its weight is exactly
+   this. */
+constexpr int TABLE_ACCEL_DEFAULT = 120; /* ms */
+
+/* A behavior value's spelling (and back), for the format's own reports. */
+const char *BehaviorName(int behavior);
 
 /* A loaded table: one definition per row, in the arena — as many rows as
    the file has, and not one more. */
@@ -71,11 +125,14 @@ struct TableResult {
 
 /* Loads an entity table from a file read whole. The header and the rows
    are parsed byte by byte — no library reads it — and anything the format
-   does not describe is refused typed: a column it does not know, a row
-   with the wrong number of values, a value where a number is required, a
-   value where text is, a name the table already holds. The rows are
-   copied into the arena behind a mark, and every refusal path rolls back
-   to it: a load that refuses leaves nothing behind. */
+   does not describe is refused typed: a column it does not know, a column
+   named twice, a row with the wrong number of values (exactly as many as
+   the header names), a value where a number is required, a value where
+   text is, a behavior the format does not define, a name the table
+   already holds. The rows are copied into the arena behind a mark, and
+   every refusal path rolls back to it: a load that refuses leaves
+   nothing behind. (Lesson 087: a column the header does *not* name is
+   no longer a refusal — its field takes the format's default.) */
 TableResult LoadTable(Arena &arena, const char *path);
 
 /* Lesson 073: a definition lookup — the request the game makes when it

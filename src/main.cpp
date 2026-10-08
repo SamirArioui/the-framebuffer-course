@@ -14,6 +14,7 @@
 #include "arena.h"
 #include "audio.h"
 #include "blit.h"
+#include "combat.h"
 #include "entity.h"
 #include "feel.h"
 #include "font.h"
@@ -93,6 +94,75 @@ static bool LoadRunSample(Arena &arena, const char *path, Sample &into)
     return false;
 }
 
+/* Lesson 087: one table load's whole failure path, the same shape — the
+   load either hands over every definition or names what went wrong typed
+   and the run ends by name. Used for every table file the game loads. */
+static bool LoadRunTable(Arena &arena, const char *path, EntityTable &into)
+{
+    TableResult loaded = LoadTable(arena, path);
+    if (loaded.error == TABLE_OK) {
+        into = loaded.table;
+        return true;
+    }
+    switch (loaded.error) {
+    case TABLE_MISSING:
+        std::fprintf(stderr, "engine: %s: could not load (missing)\n", path);
+        break;
+    case TABLE_MALFORMED:
+        std::fprintf(stderr, "engine: %s: could not load (malformed)\n", path);
+        break;
+    default:
+        std::fprintf(stderr, "engine: %s: could not load (no room)\n", path);
+        break;
+    }
+    return false;
+}
+
+/* Lesson 073/087: the definitions' art, loaded at startup. The sprite
+   column names the file; the run loads each one and hands the definition
+   its image, so an entity created from the definition is answered from
+   the definition alone. A row that names no sprite (a weapon row) has no
+   art and needs none. */
+static bool LoadRunArt(Arena &arena, EntityTable &table)
+{
+    Sprite *images = (Sprite *)ArenaAlloc(
+        arena, (size_t)table.count * sizeof(Sprite), 4);
+    if (!images) {
+        std::fprintf(stderr, "engine: no room for the definitions' art\n");
+        return false;
+    }
+    for (int i = 0; i < table.count; ++i) {
+        EntityDef &def = table.rows[i];
+        if (!def.sprite[0])
+            continue;
+        SpriteResult art = LoadSprite(arena, def.sprite);
+        if (art.error != SPRITE_OK) {
+            std::fprintf(stderr, "engine: %s: could not load\n", def.sprite);
+            return false;
+        }
+        images[i] = art.sprite;
+        def.image = &images[i];
+    }
+    return true;
+}
+
+/* Lesson 087: the byte-level check on a table, before anything uses it —
+   every definition, carrying every field: the values its row states and
+   the format's defaults for the columns its file did not name. */
+static void PrintDefs(const char *path, const EntityTable &table)
+{
+    std::printf("engine: table %s: %d definition%s\n", path, table.count,
+                table.count == 1 ? "" : "s");
+    for (int i = 0; i < table.count; ++i) {
+        const EntityDef &def = table.rows[i];
+        std::printf("engine: def %s: x %d y %d facing %d speed %d health %d sprite %s accel %d damage %d rate %d fires %s range %d behavior %s wave %d count %d\n",
+                    def.name, def.x, def.y, def.facing, def.speed, def.health,
+                    def.sprite[0] ? def.sprite : "none", def.accel, def.damage,
+                    def.rate, def.fires[0] ? def.fires : "none", def.range,
+                    BehaviorName(def.behavior), def.wave, def.count);
+    }
+}
+
 int Run(void)
 {
     platform::WindowResult opened =
@@ -153,67 +223,50 @@ int Run(void)
     }
     TileSheet &sheet = tiles_loaded.sheet;
 
-    /* Lesson 071: the run's entities are data. The table file holds one
+    /* Lesson 071: the run's entities are data. A table file holds one
        row per definition — its columns named by its header — and the load
        either hands over every definition or names what went wrong, like
        every asset above. Lesson 072: the rows are the arena's, and a
-       refused load keeps none of them. */
-    TableResult table_loaded = LoadTable(arena, "assets/entities.txt");
-    if (table_loaded.error != TABLE_OK) {
-        switch (table_loaded.error) {
-        case TABLE_MISSING:
-            std::fprintf(stderr,
-                         "engine: assets/entities.txt: could not load (missing)\n");
-            break;
-        case TABLE_MALFORMED:
-            std::fprintf(stderr,
-                         "engine: assets/entities.txt: could not load (malformed)\n");
-            break;
-        default:
-            std::fprintf(stderr,
-                         "engine: assets/entities.txt: could not load (no room)\n");
-            break;
-        }
+       refused load keeps none of them. Lesson 087: the format grew by
+       named columns — and this file keeps loading byte-for-byte, its
+       seven columns exactly as lesson 071 wrote them, every field it
+       never named at the format's default. */
+    EntityTable table;
+    if (!LoadRunTable(arena, "assets/entities.txt", table)) {
         platform::CloseWindow(opened.window);
         ArenaRelease(arena);
         return 1;
     }
-    EntityTable &table = table_loaded.table;
 
-    /* The byte-level check, before anything uses the table: every
-       definition, carrying the values its row states. */
-    std::printf("engine: table: %d definition%s\n", table.count,
-                table.count == 1 ? "" : "s");
-    for (int i = 0; i < table.count; ++i) {
-        const EntityDef &def = table.rows[i];
-        std::printf("engine: def %s: x %d y %d facing %d speed %d health %d sprite %s\n",
-                    def.name, def.x, def.y, def.facing, def.speed, def.health,
-                    def.sprite);
-    }
-
-    /* Lesson 073: the definitions' art, loaded at startup. The table's
-       sprite column names the file; the run loads each one and hands the
-       definition its image, so an entity created from a definition is
-       answered from the definition alone. */
-    Sprite *images = (Sprite *)ArenaAlloc(
-        arena, (size_t)table.count * sizeof(Sprite), 4);
-    if (!images) {
-        std::fprintf(stderr, "engine: no room for the definitions' art\n");
+    /* Lesson 087: the game's own data, in the grown format. The weapons
+       are rows that name the projectile kind they fire and carry their
+       rate and damage; the projectile kinds are rows a fired shot is an
+       entity of. Each file's header names the columns it uses — and only
+       those; what it leaves unnamed sits at the format's defaults. */
+    EntityTable weapons, shots;
+    if (!LoadRunTable(arena, "assets/weapons.txt", weapons) ||
+        !LoadRunTable(arena, "assets/projectiles.txt", shots)) {
         platform::CloseWindow(opened.window);
         ArenaRelease(arena);
         return 1;
     }
-    for (int i = 0; i < table.count; ++i) {
-        EntityDef &def = table.rows[i];
-        SpriteResult art = LoadSprite(arena, def.sprite);
-        if (art.error != SPRITE_OK) {
-            std::fprintf(stderr, "engine: %s: could not load\n", def.sprite);
-            platform::CloseWindow(opened.window);
-            ArenaRelease(arena);
-            return 1;
-        }
-        images[i] = art.sprite;
-        def.image = &images[i];
+
+    /* The byte-level check, before anything uses the tables: every
+       definition of every table, carrying every field — the values its
+       row states and the format's defaults for the columns its file did
+       not name. */
+    std::printf("engine: table: unnamed fields at their defaults — accel %d, damage 0, rate 0, fires none, range 0, behavior none, wave 0, count 1\n",
+                TABLE_ACCEL_DEFAULT);
+    PrintDefs("assets/entities.txt", table);
+    PrintDefs("assets/weapons.txt", weapons);
+    PrintDefs("assets/projectiles.txt", shots);
+
+    /* Lesson 073: the definitions' art, loaded at startup. A row that
+       names no sprite (a weapon row) has no art and needs none. */
+    if (!LoadRunArt(arena, table) || !LoadRunArt(arena, shots)) {
+        platform::CloseWindow(opened.window);
+        ArenaRelease(arena);
+        return 1;
     }
 
     /* Lesson 073: the game's first entity — created from the hero's
@@ -263,6 +316,7 @@ int Run(void)
        same table, one entity per row. A new row is a new entity; the
        run has no per-kind code to grow. */
     int created = 1;
+    Entity *foe = 0; /* the world's one enemy row (the slime) */
     for (int i = 0; i < table.count; ++i) {
         if (&table.rows[i] == hero_def.def)
             continue;
@@ -280,10 +334,23 @@ int Run(void)
            walls and stops it at solid tiles. */
         made.entity->move_x = 1.0;
         made.entity->move_y = 1.0;
+        if (!foe)
+            foe = made.entity;
         created += 1;
     }
     std::printf("engine: world: %d entities from the table's rows, live %d of %d\n",
                 created, store.live, ENTITY_CAP);
+
+    /* Lesson 087: weapons are rows. The hero starts armed with the
+       weapons table's first row; the number keys arm the rest (HeroFire).
+       The demonstration stand-in arms the foe with the second row — its
+       projectile is what G spits at the hero. The enemy rows that carry
+       their own attacks arrive in lesson 088; this stand-in and its key
+       die when those attacks land (lesson 090). */
+    if (weapons.count > 0)
+        CombatArm(hero, weapons.rows[0]);
+    if (weapons.count > 1 && foe)
+        CombatArm(*foe, weapons.rows[1]);
 
     /* The lookup's typed failure, checked on purpose: a definition the
        table does not hold is a value — never an entity with assumed
@@ -348,7 +415,7 @@ int Run(void)
     std::printf("engine: sound %d-frame music looping on channel %d, %d-frame effect on the pool; one mixer of %d channels\n",
                 music.frame_count, AUDIO_MUSIC_CHANNEL, effect.frame_count,
                 AUDIO_MIXER_CHANNELS);
-    std::printf("engine: arrow keys move the hero, space shakes the camera; close the window to stop\n");
+    std::printf("engine: arrows move the hero, 1 and 2 arm the weapons, space fires, G is the enemy spit; close the window to stop\n");
     std::printf("engine: hero at %.0f,%.0f\n", hero.x, hero.y);
 
     /* Lesson 059: the run's sound is a run of amplitude at the engine's
@@ -451,16 +518,34 @@ int Run(void)
 
         /* Lesson 085: the hero's movement — the held direction eased into
            motion (accel/decel, the diagonal at the straight-line speed).
-           Only in play; the walk turns the eased velocity into steps. */
-        if (game.state == GAME_PLAY)
+           Lesson 087: and its weapon — the number keys arm the weapons
+           table's rows, the fire key sends a shot. Only in play; the
+           walk turns the eased velocity into steps and the shot into its
+           flight. */
+        if (game.state == GAME_PLAY) {
             HeroMove(hero, opened.window, dt);
+            HeroFire(hero, opened.window, weapons, shots, store, dt);
+
+            /* Lesson 087: the enemy-fire stand-in — G makes the slime
+               spit at the hero. What it demonstrates is real: the shot
+               is an entity, its hit reduces the hero's health by the
+               row's damage, and the hero's zero health is the game's
+               defeat. Only the shooter and its aim are scripted — the
+               enemies' own attacks (lesson 090) replace this key. */
+            if (foe && platform::KeyPressed(opened.window, platform::KEY_G)) {
+                double dir_x = 0.0, dir_y = 0.0;
+                CombatAim(hero.x - foe->x, hero.y - foe->y, dir_x, dir_y);
+                CombatFire(store, shots, *foe, dir_x, dir_y);
+            }
+        }
 
         /* Lesson 084: the game resolves its movement against its map —
            the walk is the game's now (GameWalk, in game.cpp), turning
-           every live entity's request into motion through the mover.
-           The loop times it as the frame record's entity sub-phase. */
+           every live entity's request into motion through the mover (and
+           every projectile into its flight). The loop times it as the
+           frame record's entity sub-phase. */
         double t_entities = platform::Now();
-        int visited = GameWalk(store, map, dt);
+        int visited = GameWalk(store, map, hero, dt);
         frame.entities = platform::Now() - t_entities;
         walk_visits += visited;
 

@@ -12,6 +12,13 @@
 // file's fact, so the file is walked once to count them and once to fill
 // them, and the whole load is bracketed by a mark — a refused load rolls
 // the arena back and keeps nothing.
+//
+// Lesson 087: the format grows by named columns, additively. The header
+// names the columns a file uses — any subset of the ones below — and the
+// fill starts every row at the format's defaults (DefaultRow), writing
+// only the named fields. A file that omits a column is no longer
+// refused; its fields sit at their defaults. A column the format does
+// not know is still malformed.
 
 #include "table.h"
 
@@ -98,7 +105,7 @@ bool ReadText(const unsigned char *line, int len, int &at, char *out,
     return true;
 }
 
-/* The columns the format knows. */
+/* The columns the format knows (lesson 087: grown by named columns). */
 enum Column {
     COL_NAME,
     COL_X,
@@ -107,12 +114,53 @@ enum Column {
     COL_SPEED,
     COL_HEALTH,
     COL_SPRITE,
-    COL_COUNT
+    COL_ACCEL,
+    COL_DAMAGE,
+    COL_RATE,
+    COL_FIRES,
+    COL_RANGE,
+    COL_BEHAVIOR,
+    COL_WAVE,
+    COL_SPAWN_COUNT,
+    COL_COUNT /* how many columns the format knows, not a column */
 };
 
 const char *const COLUMN_NAMES[COL_COUNT] = {
-    "name", "x", "y", "facing", "speed", "health", "sprite"
+    "name", "x", "y", "facing", "speed", "health", "sprite",
+    "accel", "damage", "rate", "fires", "range", "behavior", "wave",
+    "count"
 };
+
+/* Lesson 087: the behavior column's spellings, the format's own. */
+const char *const BEHAVIOR_NAMES[BEHAVIOR_COUNT] = {
+    "none", "fly", "chase", "keep", "flee", "boss"
+};
+
+/* Lesson 087: one row at the format's defaults, before the named fields
+   are written. A file may omit any column; whatever it omits keeps the
+   value set here — the defaults are part of the format's contract. */
+void DefaultRow(EntityDef &def)
+{
+    for (int i = 0; i < TABLE_NAME_MAX; ++i) {
+        def.name[i] = 0;
+        def.fires[i] = 0;
+    }
+    for (int i = 0; i < TABLE_PATH_MAX; ++i)
+        def.sprite[i] = 0;
+    def.x = 0;
+    def.y = 0;
+    def.facing = 0;
+    def.speed = 0;
+    def.health = 0;
+    def.image = 0;
+    def.accel = TABLE_ACCEL_DEFAULT;
+    def.damage = 0;
+    def.rate = 0;
+    def.range = 0;
+    def.behavior = BEHAVIOR_NONE;
+    def.wave = 0;
+    def.count = 1;
+}
 
 bool TokenIs(const unsigned char *token, int token_len, const char *name)
 {
@@ -144,7 +192,30 @@ int FindColumn(const unsigned char *token, int token_len)
     return -1;
 }
 
+/* Lesson 087: a behavior value — one of the format's spellings, mapped
+   to its number. A spelling the format does not define is refused, like
+   a facing that is not one of the four. */
+bool ReadBehavior(const unsigned char *line, int len, int &at, int &out)
+{
+    char text[TABLE_NAME_MAX];
+    if (!ReadText(line, len, at, text, TABLE_NAME_MAX))
+        return false;
+    for (int b = 0; b < BEHAVIOR_COUNT; ++b)
+        if (SameText(text, BEHAVIOR_NAMES[b])) {
+            out = b;
+            return true;
+        }
+    return false;
+}
+
 } /* namespace */
+
+const char *BehaviorName(int behavior)
+{
+    if (behavior < 0 || behavior >= BEHAVIOR_COUNT)
+        return "?";
+    return BEHAVIOR_NAMES[behavior];
+}
 
 TableResult LoadTable(Arena &arena, const char *path)
 {
@@ -199,23 +270,29 @@ TableResult LoadTable(Arena &arena, const char *path)
     ok = ok && NextLine(lines, line, len);
     int at = 0;
     int order[COL_COUNT];
+    int named = 0; /* lesson 087: how many columns this file names */
     for (int c = 0; c < COL_COUNT; ++c)
         order[c] = -1;
-    for (int i = 0; ok && i < COL_COUNT; ++i) {
+    /* Lesson 087: the header names the columns this file's rows carry —
+       any subset of the format's, each at most once, at least one. A
+       column the header does not name is not a refusal any more: the
+       field sits at the format's default. A name the format does not
+       know is still refused here, and so is a name said twice. */
+    while (ok) {
         const unsigned char *token = 0;
         int token_len = 0;
-        ok = ok && NextToken(line, len, at, token, token_len);
+        if (!NextToken(line, len, at, token, token_len))
+            break; /* the header's line ends */
+        int column = FindColumn(token, token_len);
+        ok = ok && column >= 0;
+        for (int prev = 0; ok && prev < named; ++prev)
+            ok = ok && order[prev] != column; /* one name, one column */
         if (ok) {
-            int column = FindColumn(token, token_len);
-            ok = ok && column >= 0;
-            for (int prev = 0; ok && prev < i; ++prev)
-                ok = ok && order[prev] != column; /* one name, one column */
-            order[i] = column;
+            order[named] = column;
+            named += 1;
         }
     }
-    const unsigned char *extra = 0;
-    int extra_len = 0;
-    ok = ok && !NextToken(line, len, at, extra, extra_len);
+    ok = ok && named > 0;
 
     while (ok) {
         if (!NextLine(lines, line, len))
@@ -228,9 +305,12 @@ TableResult LoadTable(Arena &arena, const char *path)
         }
 
         EntityDef &def = defs[result.table.count];
-        def.image = 0; /* the run hands the definition its art, not the file */
+        /* Lesson 087: the row begins at the format's defaults. The named
+           fields below overwrite theirs; every field the header does not
+           name keeps its default. */
+        DefaultRow(def);
         at = 0;
-        for (int i = 0; ok && i < COL_COUNT; ++i) {
+        for (int i = 0; ok && i < named; ++i) {
             switch (order[i]) {
             case COL_NAME:
                 ok = ReadText(line, len, at, def.name, TABLE_NAME_MAX);
@@ -253,6 +333,30 @@ TableResult LoadTable(Arena &arena, const char *path)
                 break;
             case COL_SPRITE:
                 ok = ReadText(line, len, at, def.sprite, TABLE_PATH_MAX);
+                break;
+            case COL_ACCEL:
+                ok = ReadInt(line, len, at, def.accel);
+                break;
+            case COL_DAMAGE:
+                ok = ReadInt(line, len, at, def.damage);
+                break;
+            case COL_RATE:
+                ok = ReadInt(line, len, at, def.rate);
+                break;
+            case COL_FIRES:
+                ok = ReadText(line, len, at, def.fires, TABLE_NAME_MAX);
+                break;
+            case COL_RANGE:
+                ok = ReadInt(line, len, at, def.range);
+                break;
+            case COL_BEHAVIOR:
+                ok = ReadBehavior(line, len, at, def.behavior);
+                break;
+            case COL_WAVE:
+                ok = ReadInt(line, len, at, def.wave);
+                break;
+            case COL_SPAWN_COUNT:
+                ok = ReadInt(line, len, at, def.count);
                 break;
             default:
                 ok = false;

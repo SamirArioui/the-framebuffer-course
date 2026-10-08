@@ -103,8 +103,13 @@ void GameDrawSprites(const Game &game, Framebuffer &fb,
 /* Lesson 084: the walk — the game resolves every live entity's movement
    against the tilemap. Each entity's movement request becomes motion
    through the mover (MoveEntity), one axis at a time, so it stops at a
-   solid tile and slides along a wall. Returns the visit count. */
-int GameWalk(EntityStore &store, const TileMap &map, double dt);
+   solid tile and slides along a wall. Lesson 087: a projectile's
+   behavior flies it (CombatFly — its own sub-stepped flight, retiring at
+   walls, at its range, at what it hits) instead of the request. The hero
+   is handed along for the combat's rules to know the game's actor by.
+   Returns the visit count. */
+int GameWalk(EntityStore &store, const TileMap &map, const Entity &hero,
+             double dt);
 
 } /* namespace engine */
 

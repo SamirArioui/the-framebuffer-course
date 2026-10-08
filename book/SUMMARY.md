@@ -408,6 +408,10 @@
   - [Solution: ex1 — feedback starts with the event](solutions/lesson-086/ex1.md)
   - [Solution: ex2 — why wall-time](solutions/lesson-086/ex2.md)
 
+- [Lesson 087 — projectiles and two weapons](lessons/part-5/lesson-087-projectiles-weapons.md)
+  - [Solution: ex1 — the scatter shot](solutions/lesson-087/ex1.md)
+  - [Solution: ex2 — the projectile with no art](solutions/lesson-087/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

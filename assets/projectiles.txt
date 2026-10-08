@@ -1,0 +1,3 @@
+name speed sprite range behavior
+bolt 480 assets/bolt.ppm 160 fly
+shell 240 assets/shell.ppm 400 fly

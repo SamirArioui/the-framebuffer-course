@@ -1,0 +1,3 @@
+name damage rate fires
+blaster 1 300 bolt
+cannon 2 60 shell

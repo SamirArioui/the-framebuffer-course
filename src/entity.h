@@ -38,6 +38,23 @@ struct Entity {
                                   into motion */
     bool live;                 /* lesson 074: this entity exists — the
                                   slot's state, set by the store */
+
+    /* Lesson 087: the combat facts, carried from the row the entity was
+       created from (or, for a shooter armed with a weapon row, from that
+       row — a weapon's values are data like any other's). */
+    int accel;                 /* ms: the eased-move time constant — the
+                                  feel; the format's default if its row
+                                  named no accel column */
+    int damage;                /* points a hit from this entity removes */
+    int rate;                  /* rounds per minute; 0 = never fires */
+    char fires[TABLE_NAME_MAX]; /* the projectile kind it fires */
+    int range;                 /* a projectile's flight budget, pixels */
+    double traveled;           /* how far a projectile has flown */
+    const Entity *owner;       /* the shooter of a projectile — a shot
+                                  never hits its owner */
+    int behavior;              /* BehaviorKind, its row's: what this
+                                  entity does each frame */
+    double cooldown;           /* seconds until it may fire again */
 };
 
 /* An entity created from a definition: every attribute its row states,

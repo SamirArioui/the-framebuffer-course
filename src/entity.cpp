@@ -12,14 +12,21 @@ namespace engine {
 Entity EntityFromDef(const EntityDef &def)
 {
     Entity entity = {};
-    for (int i = 0; i < TABLE_NAME_MAX; ++i)
+    for (int i = 0; i < TABLE_NAME_MAX; ++i) {
         entity.name[i] = def.name[i];
+        entity.fires[i] = def.fires[i];
+    }
     entity.x = def.x;
     entity.y = def.y;
     entity.facing = def.facing;
     entity.speed = def.speed;
     entity.health = def.health;
     entity.sprite = def.image;
+    entity.accel = def.accel;
+    entity.damage = def.damage;
+    entity.rate = def.rate;
+    entity.range = def.range;
+    entity.behavior = def.behavior;
     return entity;
 }
 

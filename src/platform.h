@@ -32,7 +32,9 @@ struct WindowResult {
 WindowResult OpenWindow(int width, int height);
 
 /* The keys the engine tracks. Plain values — no OS key code ever crosses
-   the seam. */
+   the seam. Lesson 087: the game's combat needs three more (the two
+   weapon rows the number keys arm, and the enemy-fire demonstration
+   key); a second OS maps its own three. */
 enum Key {
     KEY_UP = 0,
     KEY_DOWN,
@@ -41,6 +43,9 @@ enum Key {
     KEY_SPACE,
     KEY_ENTER,
     KEY_ESCAPE,
+    KEY_1,
+    KEY_2,
+    KEY_G,
     KEY_COUNT
 };
 
