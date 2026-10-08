@@ -45,7 +45,6 @@ enum Key {
     KEY_ESCAPE,
     KEY_1,
     KEY_2,
-    KEY_G,
     KEY_COUNT
 };
 

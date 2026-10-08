@@ -57,6 +57,10 @@ struct Entity {
     int wave;                  /* lesson 088: which wave spawns this
                                   kind — carried like every row value */
     int count;                 /* and how many join that wave */
+    int phase;                 /* lesson 090: where a pattern is in its
+                                  schedule — per-entity state, the one
+                                  thing a row cannot carry */
+    double phase_t;            /* and how long this phase has run */
     double cooldown;           /* seconds until it may fire again */
 };
 

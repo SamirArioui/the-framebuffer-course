@@ -1,0 +1,83 @@
+diff --git a/src/ai.cpp b/src/ai.cpp
+index 67b9ceb..47042de 100644
+--- a/src/ai.cpp
++++ b/src/ai.cpp
+@@ -10,7 +10,7 @@
+ 
+ #include <cstdio>
+ 
+-#include "combat.h" /* CombatAim — the same eight compass points */
++#include "combat.h" /* CombatAim, CombatAttack */
+ 
+ namespace engine {
+ 
+@@ -47,7 +47,8 @@ void AiFlee(Entity &e, const Entity &hero)
+     CombatAim(e.x - hero.x, e.y - hero.y, e.move_x, e.move_y);
+ }
+ 
+-void AiBoss(Entity &e, const Entity &hero, double dt)
++void AiBoss(EntityStore &store, const EntityTable &shots, Entity &e,
++            const Entity &hero, double dt)
+ {
+     /* The schedule: one timer per entity (its `phase_t`) counting how
+        long the current phase has run, in game time — so a frozen world
+@@ -72,9 +73,12 @@ void AiBoss(Entity &e, const Entity &hero, double dt)
+        movement of its own. */
+     if (e.phase == 0)
+         AiChase(e, hero);
+-    else if (e.phase == 1)
++    else if (e.phase == 1) {
+         AiKeep(e, hero);
+-    else
++        /* Exercise 1: the hold-and-fire beat — the pattern's own
++           attack, on its own phase. */
++        CombatAttack(store, shots, e, hero, dt);
++    } else
+         AiFlee(e, hero);
+ }
+ 
+diff --git a/src/ai.h b/src/ai.h
+index f5fd324..61c5560 100644
+--- a/src/ai.h
++++ b/src/ai.h
+@@ -49,8 +49,10 @@ constexpr double BOSS_FLEE_S = 1.0;
+ 
+ /* One boss's pattern, once per frame of game time: the schedule
+    advances, and the phase it lands on writes the request — through
+-   AiChase, AiKeep, or AiFlee, like every other entity. */
+-void AiBoss(Entity &e, const Entity &hero, double dt);
++   AiChase, AiKeep, or AiFlee, like every other entity. Exercise 1: the
++   pattern owns its attacks too — the keep phase fires, the rest hold. */
++void AiBoss(EntityStore &store, const EntityTable &shots, Entity &e,
++            const Entity &hero, double dt);
+ 
+ } /* namespace engine */
+ 
+diff --git a/src/game.cpp b/src/game.cpp
+index f9350ae..125b291 100644
+--- a/src/game.cpp
++++ b/src/game.cpp
+@@ -265,7 +265,7 @@ int GameWalk(EntityStore &store, const TileMap &map, const Entity &hero,
+             AiFlee(e, hero);
+             break;
+         case BEHAVIOR_BOSS:
+-            AiBoss(e, hero, dt);
++            AiBoss(store, shots, e, hero, dt);
+             break;
+         default:
+             /* `none` stands where it stands — the request is its row's
+@@ -275,9 +275,11 @@ int GameWalk(EntityStore &store, const TileMap &map, const Entity &hero,
+ 
+         /* Lesson 090: the attack, once per entity — an armed kind fires
+            its row's weapon at the hero at its rate. The hero is exempt
+-           (its trigger is the player's); an unarmed kind fires
+-           nothing. */
+-        CombatAttack(store, shots, e, hero, dt);
++           (its trigger is the player's); an unarmed kind fires nothing.
++           Exercise 1: the boss's pattern owns its attacks — only its
++           keep phase fires — so the generic rule skips it. */
++        if (e.behavior != BEHAVIOR_BOSS)
++            CombatAttack(store, shots, e, hero, dt);
+         MoveEntity(map, e, e.move_x * e.speed * dt, e.move_y * e.speed * dt);
+         if (e.move_x > 0.0)
+             e.facing = 0;

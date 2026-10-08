@@ -60,6 +60,14 @@ bool CombatFire(EntityStore &store, const EntityTable &shots,
 void CombatFly(const TileMap &map, EntityStore &store, const Entity &hero,
                Entity &shot, double dt);
 
+/* Lesson 090: the enemy attack, once per frame of game time. An armed
+   entity — one whose row names a projectile kind — fires it at the
+   hero at its row's rate, while the hero is within the shot's reach.
+   The hero itself is never its own attacker: its trigger is the
+   player's. */
+void CombatAttack(EntityStore &store, const EntityTable &shots, Entity &e,
+                  const Entity &hero, double dt);
+
 } /* namespace engine */
 
 #endif

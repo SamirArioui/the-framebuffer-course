@@ -180,4 +180,36 @@ void CombatFly(const TileMap &map, EntityStore &store, const Entity &hero,
     }
 }
 
+void CombatAttack(EntityStore &store, const EntityTable &shots, Entity &e,
+                  const Entity &hero, double dt)
+{
+    /* An unarmed entity never fires — and the hero is never its own
+       attacker: its trigger is the player's (HeroFire). */
+    if (!e.fires[0] || e.rate <= 0 || &e == &hero)
+        return;
+    if (e.cooldown > 0.0) {
+        e.cooldown -= dt;
+        return;
+    }
+
+    /* The shot's reach is its kind's row: an attacker threatens only
+       as far as its shot flies, and stays quiet beyond it. */
+    DefResult kind = TableFind(shots, e.fires);
+    if (kind.error != DEF_OK)
+        return;
+    double dx = hero.x - e.x, dy = hero.y - e.y;
+    double reach = (double)kind.def->range;
+    if (dx * dx + dy * dy > reach * reach)
+        return;
+
+    /* The attack aims the way everything else does: the compass point
+       at the hero. */
+    double dir_x = 0.0, dir_y = 0.0;
+    CombatAim(dx, dy, dir_x, dir_y);
+    if (dir_x == 0.0 && dir_y == 0.0)
+        return;
+    if (CombatFire(store, shots, e, dir_x, dir_y))
+        e.cooldown = 60.0 / (double)e.rate;
+}
+
 } /* namespace engine */

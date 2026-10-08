@@ -420,6 +420,10 @@
   - [Solution: ex1 — the keeper's distance is data](solutions/lesson-089/ex1.md)
   - [Solution: ex2 — the chaser's staircase](solutions/lesson-089/ex2.md)
 
+- [Lesson 090 — the boss](lessons/part-5/lesson-090-boss.md)
+  - [Solution: ex1 — the pattern owns its attacks](solutions/lesson-090/ex1.md)
+  - [Solution: ex2 — the schedule's timeline](solutions/lesson-090/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

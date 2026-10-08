@@ -336,7 +336,6 @@ int Run(void)
        same table, one entity per row. A new row is a new entity; the
        run has no per-kind code to grow. */
     int created = 1;
-    Entity *foe = 0; /* the world's one enemy row (the slime) */
     for (int i = 0; i < table.count; ++i) {
         if (&table.rows[i] == hero_def.def)
             continue;
@@ -352,8 +351,6 @@ int Run(void)
            stand-in for the AI. Lesson 089 replaced it: the behaviors
            are real now, and the world's kinds move the ways their rows
            say (the slime's row says `none`, so it stands). */
-        if (!foe)
-            foe = made.entity;
         created += 1;
     }
     std::printf("engine: world: %d entities from the table's rows, live %d of %d\n",
@@ -379,15 +376,12 @@ int Run(void)
                 foes.count, store.live, ENTITY_CAP);
 
     /* Lesson 087: weapons are rows. The hero starts armed with the
-       weapons table's first row; the number keys arm the rest (HeroFire).
-       The demonstration stand-in arms the foe with the second row — its
-       projectile is what G spits at the hero. The enemy rows that carry
-       their own attacks arrive in lesson 088; this stand-in and its key
-       die when those attacks land (lesson 090). */
+       weapons table's first row; the number keys arm the rest
+       (HeroFire). Lesson 090: the enemy-fire stand-in and its key are
+       gone — the enemy rows carry their own weapons and the walk's
+       attack fires them. */
     if (weapons.count > 0)
         CombatArm(hero, weapons.rows[0]);
-    if (weapons.count > 1 && foe)
-        CombatArm(*foe, weapons.rows[1]);
 
     /* The lookup's typed failure, checked on purpose: a definition the
        table does not hold is a value — never an entity with assumed
@@ -454,7 +448,7 @@ int Run(void)
     std::printf("engine: sound %d-frame music looping on channel %d, %d-frame effect on the pool; one mixer of %d channels\n",
                 music.frame_count, AUDIO_MUSIC_CHANNEL, effect.frame_count,
                 AUDIO_MIXER_CHANNELS);
-    std::printf("engine: arrows move the hero, 1 and 2 arm the weapons, space fires, G is the enemy spit; close the window to stop\n");
+    std::printf("engine: arrows move the hero, 1 and 2 arm the weapons, space fires; close the window to stop\n");
     std::printf("engine: hero at %.0f,%.0f\n", hero.x, hero.y);
 
     /* Lesson 059: the run's sound is a run of amplitude at the engine's
@@ -565,17 +559,6 @@ int Run(void)
             HeroMove(hero, opened.window, dt);
             HeroFire(hero, opened.window, weapons, shots, store, dt);
 
-            /* Lesson 087: the enemy-fire stand-in — G makes the slime
-               spit at the hero. What it demonstrates is real: the shot
-               is an entity, its hit reduces the hero's health by the
-               row's damage, and the hero's zero health is the game's
-               defeat. Only the shooter and its aim are scripted — the
-               enemies' own attacks (lesson 090) replace this key. */
-            if (foe && platform::KeyPressed(opened.window, platform::KEY_G)) {
-                double dir_x = 0.0, dir_y = 0.0;
-                CombatAim(hero.x - foe->x, hero.y - foe->y, dir_x, dir_y);
-                CombatFire(store, shots, *foe, dir_x, dir_y);
-            }
         }
 
         /* Lesson 084: the game resolves its movement against its map —
@@ -584,7 +567,7 @@ int Run(void)
            every projectile into its flight). The loop times it as the
            frame record's entity sub-phase. */
         double t_entities = platform::Now();
-        int visited = GameWalk(store, map, hero, dt);
+        int visited = GameWalk(store, map, hero, shots, dt);
         frame.entities = platform::Now() - t_entities;
         walk_visits += visited;
 

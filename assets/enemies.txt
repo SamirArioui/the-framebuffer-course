@@ -2,4 +2,4 @@ name x y facing speed health sprite damage rate fires behavior wave count
 bat 560 72 2 160 2 assets/bat.ppm 1 60 bolt chase 1 2
 wisp 640 336 2 120 1 assets/wisp.ppm 1 20 bolt flee 1 1
 spitter 120 400 0 96 3 assets/spitter.ppm 1 30 shell keep 2 2
-golem 384 96 1 72 8 assets/golem.ppm 2 30 shell boss 3 1
+golem 384 96 1 72 8 assets/golem.ppm 2 20 shell boss 3 1

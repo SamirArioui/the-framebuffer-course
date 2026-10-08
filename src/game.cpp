@@ -22,15 +22,12 @@ namespace engine {
 
 /* The demonstration stand-ins, named so they cannot be mistaken for the
    game. Lesson 087 made the hit real: a projectile reduces its target's
-   health by its row's damage, and a zero-health entity is retired. What
-   still stands in is the *enemy's fire* — who shoots at the hero, and
-   when. Until the enemies' attacks land (lesson 090), the run's G key
-   makes the slime spit at the hero (a keyed stand-in in the run, like
-   the feel demonstration beside it), and ENTER in play below says the
-   game is complete — lesson 091's waves spend it for real. Both die
-   when the real triggers arrive; the transitions they fire are the
-   game's own (defeat on zero health, completion on no waves). Keyed,
-   they never fire on their own during a gameplay test. */
+   health by its row's damage, and a zero-health entity is retired.
+   Lesson 090 made the enemy fire real: the enemy rows carry their own
+   weapons and the walk's attack fires them at the hero — the `G` key's
+   stand-in is gone. What remains is ENTER in play below: the game's
+   completion stood in for, until lesson 091's waves spend it for real.
+   Keyed, it never fires on its own during a gameplay test. */
 
 /* A transition, named once here and printed the moment it happens, so a
    run shows the machine moving between states and why. */
@@ -228,7 +225,7 @@ void GameDrawSprites(const Game &game, Framebuffer &fb,
 }
 
 int GameWalk(EntityStore &store, const TileMap &map, const Entity &hero,
-             double dt)
+             const EntityTable &shots, double dt)
 {
     /* Lesson 084: the walk — every live entity, once per frame, in slot
        order, its movement resolved against the tilemap. The per-entity
@@ -267,12 +264,20 @@ int GameWalk(EntityStore &store, const TileMap &map, const Entity &hero,
         case BEHAVIOR_FLEE:
             AiFlee(e, hero);
             break;
+        case BEHAVIOR_BOSS:
+            AiBoss(e, hero, dt);
+            break;
         default:
             /* `none` stands where it stands — the request is its row's
-               (lesson 084's stand-in walk writes one) — and `boss` is
-               lesson 090's pattern, composed of these same behaviors. */
+               (lesson 084's stand-in walk used to write one). */
             break;
         }
+
+        /* Lesson 090: the attack, once per entity — an armed kind fires
+           its row's weapon at the hero at its rate. The hero is exempt
+           (its trigger is the player's); an unarmed kind fires
+           nothing. */
+        CombatAttack(store, shots, e, hero, dt);
         MoveEntity(map, e, e.move_x * e.speed * dt, e.move_y * e.speed * dt);
         if (e.move_x > 0.0)
             e.facing = 0;

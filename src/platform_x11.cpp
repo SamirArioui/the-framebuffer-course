@@ -166,7 +166,6 @@ static int KeyIndex(KeySym sym)
     case XK_Escape: return KEY_ESCAPE;
     case XK_1:      return KEY_1;
     case XK_2:      return KEY_2;
-    case XK_g:      return KEY_G;
     default:        return -1;
     }
 }

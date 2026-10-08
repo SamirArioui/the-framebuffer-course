@@ -1,0 +1,31 @@
+diff --git a/src/ai.cpp b/src/ai.cpp
+index 67b9ceb..68bf5ab 100644
+--- a/src/ai.cpp
++++ b/src/ai.cpp
+@@ -49,6 +49,11 @@ void AiFlee(Entity &e, const Entity &hero)
+ 
+ void AiBoss(Entity &e, const Entity &hero, double dt)
+ {
++    /* Exercise 2: the pattern's own game clock — for the timeline the
++       probe below stamps its phases with. */
++    static double clock;
++    clock += dt;
++
+     /* The schedule: one timer per entity (its `phase_t`) counting how
+        long the current phase has run, in game time — so a frozen world
+        freezes the pattern too — and the phase index cycling when a
+@@ -62,9 +67,12 @@ void AiBoss(Entity &e, const Entity &hero, double dt)
+         e.phase = (e.phase + 1) % 3;
+         length = e.phase == 0 ? BOSS_CHASE_S
+                               : e.phase == 1 ? BOSS_KEEP_S : BOSS_FLEE_S;
+-        std::printf("engine: boss: %s's pattern -> %s (%.0f s)\n", e.name,
++        /* Exercise 2: the schedule's timeline — every phase change
++           stamped with the game time the pattern has seen. */
++        std::printf("engine: boss: %s's pattern -> %s (%.0f s) at t=%.1f\n",
++                    e.name,
+                     e.phase == 0 ? "chase" : e.phase == 1 ? "keep" : "flee",
+-                    length);
++                    length, clock);
+     }
+ 
+     /* And what the schedule schedules: the same three behaviors every

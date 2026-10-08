@@ -105,11 +105,13 @@ void GameDrawSprites(const Game &game, Framebuffer &fb,
    through the mover (MoveEntity), one axis at a time, so it stops at a
    solid tile and slides along a wall. Lesson 087: a projectile's
    behavior flies it (CombatFly — its own sub-stepped flight, retiring at
-   walls, at its range, at what it hits) instead of the request. The hero
-   is handed along for the combat's rules to know the game's actor by.
-   Returns the visit count. */
+   walls, at its range, at what it hits) instead of the request. Lesson
+   089-090: the enemy behaviors and the boss's pattern write the request
+   the way the player's input writes the hero's, and an armed entity
+   attacks at its row's rate. The hero is handed along for the combat's
+   rules to know the game's actor by. Returns the visit count. */
 int GameWalk(EntityStore &store, const TileMap &map, const Entity &hero,
-             double dt);
+             const EntityTable &shots, double dt);
 
 } /* namespace engine */
 
