@@ -958,3 +958,108 @@ the `combat` and `enemies` deltas of the audit (§1.2) on the grown
 table format (D3), with weapons as rows and projectiles as entities
 (D5) and the AI over the mover (D6) — and the state machine's five
 named conditions are now all driven by real gameplay (no stand-ins).
+
+## Lesson-092 — hitstop and screenshake (L11): authoring record
+
+New wiring on 086's hooks (the `game-feel` delta's first half). The code
+step fires `FeelHitstop`/`FeelShake` from the game's own events — a hit
+lands, a death falls — at the lines where they happen in the flight
+(`CombatFly`), removes the wall-time demonstration script from
+`main.cpp`, and moves the toolkit's per-frame run (`FeelUpdate`) to
+after the frame's events and before its draw. The hooks' fire-and-rest
+mechanisms are untouched; the hooks now report their own firing beside
+the event's lines (the demonstration's print died with the
+demonstration).
+
+### The design decisions this lesson settled
+
+- **The event fires the hook at the event's own line.** `Feedback
+  &feel` is threaded through `GameWalk` into `CombatFly` and the calls
+  sit in the hit branch — the alternative (collect events, fire in the
+  loop) keeps the causality in bookkeeping; here "feedback starts with
+  the event" is literal: the fire is on the hit's line of the flight.
+- **The weights are the event's.** A hit: hitstop `0.25x / 0.15s` +
+  shake `5 px / 0.25s`. A death: `0.25x / 0.30s` + `10 px / 0.50s`. A
+  killing blow answers as both and the death's weights win — firing is
+  overwrite semantics (the hooks are re-armed, never stacked), so the
+  heaviest event of the frame is what the player feels.
+- **The frame order is half the rule.** The toolkit settles after the
+  walk (which fired it) and before the render (which shows it), so a
+  hit's shake is in the hit's own frame's picture. Honest limit
+  recorded in the prose: the frame's *step* is already spent when the
+  hit lands — the first slowed step is the next frame's; a step cannot
+  shrink retroactively. What the event's frame carries is the fire, the
+  shaken draw, and the factor already down.
+- **The deadline answers at the frame's granularity, and that is
+  measured, not assumed.** `FeelUpdate` settles a frame once, after its
+  events, subtracting the frame's whole wall step — so a 0.15 s
+  hitstop rested after 124 ms of wall time on this run's ~44 ms paced
+  frames (one frame early, never late; ≤16 ms at 60 fps). 086's
+  mechanism is not touched for this.
+
+### What the runs verified (headless, Xvfb `:99`, scripted input)
+
+- **Feedback starts with the event** (run A, the real roster — the hero
+  holding still while wave 1's bats close in): two bolts land in one
+  frame and every `fired` line sits between frame 101's account and
+  frame 102's — no `frame` line between a hit and its feedback:
+  `hit: bolt hits hero — damage 1, health 3 -> 2` → `feel: hitstop
+  fired (0.25x, 0.15s)` → `feel: shake fired (5 px, 0.25s)` → …
+- **Hitstop slows to a fraction and returns on its own wall-time
+  deadline**: frames 103-105 at `step 10.779 / 11.001 / 10.808 ms`
+  against the paced `43 ms` — the fired quarter — with `feel: hitstop
+  rested — full speed again` before frame 106 (`step 43.493 ms`).
+  Wall-stamped fire→rest: `32.265 → 32.389` = 124 ms for the 0.15 s
+  asked (frame granularity, above). Frame 105 is still slow although
+  the rest prints before it: its step was computed at its start.
+- **The shake's offset rests at exactly zero**: `feel: shake rested at
+  0,0` in every run (wall `32.265 → 32.476` = 211 ms for the 0.25 s),
+  and a scratch probe printing the offset the draw uses shows it moving
+  — `camera add 10,0 / 10,0 / -10,0 …` (the death's 10 px, alternating)
+  — then the rest at `0,0`. (Probe, not shipped; stated as such.)
+- **The two events, one frame** (run B, scratch roster — one fragile
+  standing kind at the hero's feet, stated as such): `hit: bolt hits
+  bag — health 1 -> 0` → hit's two firings → `bag retired — zero
+  health` → death's two heavier firings, all in one frame's account.
+  The hero's own death (run A, `health 1 -> 0`) answers the same way
+  and `state play -> death` follows.
+- **Honest edge, measured and recorded**: the volley's second bolt hits
+  a hero already at zero (`health 0 -> 0`) and fires feedback again —
+  the hit rule asks "is it live", the game's actor is never retired, and
+  the defeat condition is read next frame. One frame of double
+  feedback; not hidden.
+- **The pause's product** (exercise 2's probe): `state pause, scale
+  0.00 x hitstop 0.25 = 0.00 (hitstop 0.08s left)` with `step 0.000`
+  frames, `hitstop rested` between two *paused* frames, the shake
+  resting during the pause too, and the resume straight back to the
+  paced `43 ms` steps.
+
+### Note: the verification harness (updated)
+
+Two gotchas this lesson hit, recorded so the next batch does not:
+`DISPLAY` in the authoring shell is `:0` — every run and every xdotool
+call must pin `DISPLAY=:99` or the game opens its window on `:0` while
+the harness drives `:99` (the search then finds nothing and the run
+hangs un-paced). And xdotool's key name is lowercase `space`
+(`keydown Space` is "No such key name"). Frame pacing is still
+`hold.sh`'s windowmove jiggle (~25/s); wall stamps come from wrapping
+the run's stdout in a line-stamping reader (`stdbuf -oL` keeps printf
+line-buffered through the pipe).
+
+### Lesson-092 exercises
+
+- **ex1 (extend-the-code) — the shake that settles.** `shake_total`
+  records the shake's whole life and the drive scales the offset's
+  magnitude by what is left. Real ramp (the death's 10 px): `-9, -8,
+  -7, 6, 5, 4, 3, -3, -2, -1, 0` over the shake's half-second, then
+  `shake rested at 0,0` — still one effect (screenshake), still resting
+  at exactly zero. The first probe line reads `-9`, not `-10`: the
+  fire's frame already settled once — the lesson's frame granularity
+  again.
+- **ex2 (predict-the-output) — the pause that meets the hitstop.** The
+  prediction (the product is zero, the rest lands *during* the pause,
+  the resume is clean) against the probe's measured product: `scale
+  0.00 x hitstop 0.25 = 0.00`, `hitstop rested` between two `step
+  0.000` frames, resume at the paced `43 ms` with nothing hanging over.
+  The walkthrough defends the product over an if-else: zero times
+  anything settles every edge for free.
