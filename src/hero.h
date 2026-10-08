@@ -14,6 +14,7 @@
 
 #include "entity.h"
 #include "platform.h"
+#include "sound.h"
 
 namespace engine {
 
@@ -43,7 +44,7 @@ void HeroMove(Entity &hero, platform::Window *window, double dt);
    states is the ceiling on how often the trigger answers. */
 void HeroFire(Entity &hero, platform::Window *window,
               const EntityTable &weapons, const EntityTable &shots,
-              EntityStore &store, double dt);
+              EntityStore &store, double dt, Sound &sound);
 
 } /* namespace engine */
 

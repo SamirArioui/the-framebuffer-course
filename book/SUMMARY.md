@@ -440,6 +440,10 @@
   - [Solution: ex1 — the score for the kills](solutions/lesson-094/ex1.md)
   - [Solution: ex2 — why the HUD never scrolls](solutions/lesson-094/ex2.md)
 
+- [Lesson 095 — audio integration](lessons/part-5/lesson-095-audio.md)
+  - [Solution: ex1 — the volume follows the distance](solutions/lesson-095/ex1.md)
+  - [Solution: ex2 — the pool under fire](solutions/lesson-095/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

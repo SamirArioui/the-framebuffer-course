@@ -380,41 +380,39 @@ int Run(void)
     std::printf("engine: table: \"dragon\" -> %s\n",
                 unknown.error == DEF_OK ? "found" : "unknown");
 
-    /* Lesson 066: the run's two sounds as files' bytes — the music that
-       loops and the effect that plays once. Lesson 061's tone leaves the
-       run here (it stays on disk: the file lessons 059-065 were built
-       on); the game's own sounds are these two. Each load either yields
-       the complete sample or names what went wrong, and a failure ends
-       the run by name — like every asset above. */
-    Sample music = {}, effect = {};
-    if (!LoadRunSample(arena, "assets/music.wav", music) ||
-        !LoadRunSample(arena, "assets/effect.wav", effect)) {
+    /* Lesson 095: the game's sound — its music and one effect per
+       event, as files' bytes. Lesson 061's tone and lesson 066's
+       demonstration effect leave the run here (both stay on disk: the
+       files lessons 059-068 were built on); the game's own sounds are
+       these four. Each load either yields the complete sample or names
+       what went wrong, and a failure ends the run by name — like every
+       asset above. */
+    Sound sound = {};
+    if (!LoadRunSample(arena, "assets/music.wav", sound.music) ||
+        !LoadRunSample(arena, "assets/shot.wav", sound.shot) ||
+        !LoadRunSample(arena, "assets/hit.wav", sound.hit) ||
+        !LoadRunSample(arena, "assets/death.wav", sound.death)) {
         platform::CloseWindow(opened.window);
         ArenaRelease(arena);
         return 1;
     }
 
-    /* The byte-level check, before anything is played: each sound's facts,
-       its peak, and its first frames — the same check lesson 061 made on
-       its one file, now on both. */
-    PrintSample("music", music);
-    PrintSample("effect", effect);
+    /* The byte-level check, before anything is played: each sound's
+       facts, its peak, and its first frames — the same check lesson 066
+       made on its two files, now on the game's four. */
+    PrintSample("music", sound.music);
+    PrintSample("shot", sound.shot);
+    PrintSample("hit", sound.hit);
+    PrintSample("death", sound.death);
 
-    /* Lesson 068: the game's sound as the game has it — the music
-       looping on the music channel and effects firing over it on the
-       pool's channels, every one of them summed by the same MixBuffer
-       into the one stream. Nothing in the mix knows which is which. */
-    Mixer mixer;
-    MixerInit(mixer);
-    MixerPlayMusic(mixer, music, AUDIO_VOLUME_FULL);
-    std::printf("engine: mix: music   -> channel %2d (looping, volume %d of %d)\n",
-                AUDIO_MUSIC_CHANNEL, mixer.channels[AUDIO_MUSIC_CHANNEL].volume,
-                AUDIO_VOLUME_FULL);
-
-    /* The run's rhythm: a burst of effects at the start — up to three in
-       flight — then one a second, all at a quarter volume so the music
-       and the busiest moment still sum inside the format. */
-    int effect_count = 0;
+    /* Lesson 068: the music loops on the music channel and the effects
+       fire over it on the pool's channels, every one of them summed by
+       the same MixBuffer into the one stream. Lesson 095: what fires
+       them is the game now — the events of lesson 092's toolkit, each
+       with its own sound — and the demonstration rhythm that used to
+       fire them on a clock is gone. Nothing in the mix knows which
+       sound is which. */
+    SoundStart(sound);
     int music_wraps = 0;
 
     double started = platform::Now();
@@ -434,9 +432,10 @@ int Run(void)
                 map.width, map.height, map.width * TILE_SIZE,
                 map.height * TILE_SIZE, map.kind_count, FONT_COUNT,
                 hero.sprite->width, hero.sprite->height);
-    std::printf("engine: sound %d-frame music looping on channel %d, %d-frame effect on the pool; one mixer of %d channels\n",
-                music.frame_count, AUDIO_MUSIC_CHANNEL, effect.frame_count,
-                AUDIO_MIXER_CHANNELS);
+    std::printf("engine: sound %d-frame music looping on channel %d; effects of %d/%d/%d frames on the pool; one mixer of %d channels\n",
+                sound.music.frame_count, AUDIO_MUSIC_CHANNEL,
+                sound.shot.frame_count, sound.hit.frame_count,
+                sound.death.frame_count, AUDIO_MIXER_CHANNELS);
     std::printf("engine: arrows move the hero, 1 and 2 arm the weapons, space fires; close the window to stop\n");
     std::printf("engine: hero at %.0f,%.0f\n", hero.x, hero.y);
 
@@ -460,13 +459,13 @@ int Run(void)
         /* The failure is a value, not an ending: a machine with no output
            still runs — this one continues without sound. */
         std::fprintf(stderr, "engine: continuing without sound\n");
-    } else {
-        /* What the loop does with the sample: one buffer of stream per
-           feed — the horizon the paced wait keeps queued. The buffer's
-           length in time is the sample's own rate answering. */
-        std::printf("engine: stream: %d-frame buffers, horizon %.1f ms; the loop feeds one when it is due\n",
-                    CHUNK_FRAMES, 1e3 * CHUNK_FRAMES / music.rate);
     }
+
+    /* What the loop does with the sample, device or not: one buffer of
+       stream per mix — the horizon the paced wait keeps queued. The
+       buffer's length in time is the sample's own rate answering. */
+    std::printf("engine: stream: %d-frame buffers, horizon %.1f ms; the loop mixes one when it is due\n",
+                CHUNK_FRAMES, 1e3 * CHUNK_FRAMES / sound.music.rate);
 
     /* The frame step: read news, update from polled state, feed the
        stream, draw, present — every phase measured, one record per
@@ -484,7 +483,8 @@ int Run(void)
        handed to the device, which drives the rhythm above. The mix's own
        account of what it carried is the frame record's audio phase now,
        measured like every other phase of the frame. */
-    int feeds = 0;         /* buffers handed to the device */
+    int feeds = 0;         /* buffers of stream mixed */
+    bool reported_effects = false; /* the stream's bytes with effects in */
     long walk_visits = 0;  /* lesson 075: entities visited by the walk */
     while (!platform::CloseRequested(opened.window)) {
         platform::PumpEvents(opened.window);
@@ -532,7 +532,8 @@ int Run(void)
            flight. */
         if (game.state == GAME_PLAY) {
             HeroMove(hero, opened.window, dt);
-            HeroFire(hero, opened.window, weapons, shots, store, dt);
+            HeroFire(hero, opened.window, weapons, shots, store, dt,
+                     sound);
 
         }
 
@@ -550,7 +551,8 @@ int Run(void)
             GameWaves(game, store, foes);
 
         double t_entities = platform::Now();
-        int visited = GameWalk(store, map, hero, shots, feel, spark, dt);
+        int visited = GameWalk(store, map, hero, shots, feel, spark, dt,
+                               sound);
         frame.entities = platform::Now() - t_entities;
         walk_visits += visited;
 
@@ -648,49 +650,59 @@ int Run(void)
            wraps there instead of ending, and the mix does not know the
            difference. */
         double t_audio = platform::Now();
-        if (audio.output && t_audio >= next_feed) {
-            /* The run's rhythm, in the game's own terms: an effect every
-               fifth buffer through the opening burst, then one every
-               second — each one a MixerPlayEffect on the pool's channels,
-               over the music that keeps looping. */
-            bool fire = (feeds < 30 && feeds % 5 == 0) ||
-                        (feeds >= 30 && feeds % 30 == 0);
-            if (fire) {
-                int ch = MixerPlayEffect(mixer, effect,
-                                         AUDIO_VOLUME_FULL / 4);
-                effect_count += 1;
-                std::printf("engine: mix: effect %2d -> channel %2d (volume %d of %d)\n",
-                            effect_count, ch, mixer.channels[ch].volume,
-                            AUDIO_VOLUME_FULL);
-            }
+        if (t_audio >= next_feed) {
+            /* Lesson 095: the mix is the game's work; the device is the
+               seam's. The stream is mixed on the engine's rate whether
+               or not a device exists — with no output this machine runs
+               the whole mix in silence, and the reports still say what
+               the channels and the stream carried. */
+            int music_before =
+                sound.mixer.channels[AUDIO_MUSIC_CHANNEL].cursor;
 
-            int music_before = mixer.channels[AUDIO_MUSIC_CHANNEL].cursor;
-
-            MixBuffer(mixer, stream, CHUNK_FRAMES);
+            MixBuffer(sound.mixer, stream, CHUNK_FRAMES);
 
             if (feeds == 0) {
-                /* The mix's own bytes with both kinds of sound in it:
-                   every frame is the music's and the effect's next frame
-                   added — the same sum either way. */
-                std::printf("engine: mix: first frames (music + effect 1, summed):");
+                /* The stream's own bytes — the first buffer, the music
+                   alone at this point. */
+                std::printf("engine: mix: first frames (music alone):");
                 for (int i = 0; i < 8 && i < CHUNK_FRAMES; ++i)
                     std::printf(" %d", (int)stream[i]);
                 std::printf("\n");
             }
 
-            if (mixer.channels[AUDIO_MUSIC_CHANNEL].active &&
-                mixer.channels[AUDIO_MUSIC_CHANNEL].cursor < music_before) {
+            if (!reported_effects) {
+                /* And the stream with the game's sounds in it: the first
+                   buffer any fired effect reaches — every frame the sum
+                   of the music's next frame and the effects'. */
+                bool any = false;
+                for (int c = AUDIO_MUSIC_CHANNEL + 1;
+                     c < AUDIO_MIXER_CHANNELS && !any; ++c)
+                    any = sound.mixer.channels[c].active;
+                if (any) {
+                    std::printf("engine: mix: first frames with the effects in:");
+                    for (int i = 0; i < 8 && i < CHUNK_FRAMES; ++i)
+                        std::printf(" %d", (int)stream[i]);
+                    std::printf("\n");
+                    reported_effects = true;
+                }
+            }
+
+            if (sound.mixer.channels[AUDIO_MUSIC_CHANNEL].active &&
+                sound.mixer.channels[AUDIO_MUSIC_CHANNEL].cursor <
+                    music_before) {
                 /* The wrap: the cursor went backwards — the loop's own
                    arithmetic, visible from outside the mixer. */
                 music_wraps += 1;
-                int cursor = mixer.channels[AUDIO_MUSIC_CHANNEL].cursor;
+                int cursor = sound.mixer.channels[AUDIO_MUSIC_CHANNEL].cursor;
                 std::printf("engine: loop: music wrapped on channel %d — wrap %d, %ld frames played, cursor %d of %d\n",
                             AUDIO_MUSIC_CHANNEL, music_wraps,
-                            (long)music_wraps * music.frame_count + cursor,
-                            cursor, music.frame_count);
+                            (long)music_wraps * sound.music.frame_count +
+                                cursor,
+                            cursor, sound.music.frame_count);
             }
 
-            if (!platform::SubmitSamples(audio.output, stream,
+            if (audio.output &&
+                !platform::SubmitSamples(audio.output, stream,
                                          CHUNK_FRAMES)) {
                 /* A device that will not take the samples is named once,
                    not once per frame: the run closes the output and carries
@@ -704,7 +716,7 @@ int Run(void)
             /* The schedule restarts from now, not from the missed slot: a
                long frame is caught up by one buffer, never by a backlog. */
             next_feed = platform::Now() +
-                        (double)CHUNK_FRAMES / (double)music.rate;
+                        (double)CHUNK_FRAMES / (double)sound.music.rate;
         }
         frame.audio = platform::Now() - t_audio;
 
@@ -780,8 +792,9 @@ int Run(void)
 
     /* The demo's account: what the run did — the world's frames and the
        sound's buffers, together — before the cost's table below. */
-    std::printf("engine: demo: %ld frames measured, %d buffers fed, %d effects fired, %d music wraps\n",
-                frame_number, feeds, effect_count, music_wraps);
+    std::printf("engine: sound: %ld frames measured, %d buffers of stream mixed (%d frames), %d effects fired, %d music wraps\n",
+                frame_number, feeds, feeds * CHUNK_FRAMES, sound.fired,
+                music_wraps);
 
     /* Lesson 089: where the behaviors left the world — every live
        entity's position and its distance to the hero, the number all

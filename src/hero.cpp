@@ -67,7 +67,7 @@ void HeroMove(Entity &hero, platform::Window *window, double dt)
 
 void HeroFire(Entity &hero, platform::Window *window,
               const EntityTable &weapons, const EntityTable &shots,
-              EntityStore &store, double dt)
+              EntityStore &store, double dt, Sound &sound)
 {
     /* Lesson 087: the number keys arm the weapons table's rows. A weapon
        is a row — arming carries its values — so the weapons grow as
@@ -104,7 +104,7 @@ void HeroFire(Entity &hero, platform::Window *window,
         else
             dir_y = -1.0;
     }
-    if (CombatFire(store, shots, hero, dir_x, dir_y))
+    if (CombatFire(store, shots, hero, dir_x, dir_y, sound))
         hero.cooldown = 60.0 / (double)hero.rate;
 }
 

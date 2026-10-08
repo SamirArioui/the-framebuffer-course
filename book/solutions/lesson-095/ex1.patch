@@ -1,0 +1,181 @@
+diff --git a/src/combat.cpp b/src/combat.cpp
+index 2b3e69d..59c7209 100644
+--- a/src/combat.cpp
++++ b/src/combat.cpp
+@@ -75,7 +75,8 @@ void CombatArm(Entity &shooter, const EntityDef &weapon)
+ }
+ 
+ bool CombatFire(EntityStore &store, const EntityTable &shots,
+-                Entity &shooter, double dir_x, double dir_y, Sound &sound)
++                Entity &shooter, double dir_x, double dir_y, Sound &sound,
++                double dx, double dy)
+ {
+     if (!shooter.fires[0])
+         return false; /* an unarmed shooter fires nothing */
+@@ -116,8 +117,8 @@ bool CombatFire(EntityStore &store, const EntityTable &shots,
+     std::printf("engine: fire: %s -> %s (damage %d, range %d)\n", shooter.name,
+                 shot.name, shot.damage, shot.range);
+     /* Lesson 095: the shot is heard as it is fired — the game's sound,
+-       in the event's own frame. */
+-    SoundShot(sound);
++       in the event's own frame. Exercise 1: at its distance. */
++    SoundShot(sound, dx, dy);
+     return true;
+ }
+ 
+@@ -175,7 +176,7 @@ void CombatFly(const TileMap &map, EntityStore &store, const Entity &hero,
+                particles from the same event's own frame. Lesson 095:
+                and the impact is heard — the hit's sound, same frame. */
+             FeelBurst(store, spark, shot.x, shot.y, 4);
+-            SoundHit(sound);
++            SoundHit(sound, shot.x - hero.x, shot.y - hero.y);
+ 
+             std::printf("engine: shot %s retired — hit %s\n", shot.name,
+                         target->name);
+@@ -204,7 +205,7 @@ void CombatFly(const TileMap &map, EntityStore &store, const Entity &hero,
+                 FeelBurst(store, spark,
+                           target->x + ANIM_FRAME_W / 2.0,
+                           target->y + target->sprite->height / 2.0, 8);
+-                SoundDeath(sound);
++                SoundDeath(sound, target->x - hero.x, target->y - hero.y);
+             }
+             return;
+         }
+@@ -265,7 +266,8 @@ void CombatAttack(EntityStore &store, const EntityTable &shots, Entity &e,
+     CombatAim(dx, dy, dir_x, dir_y);
+     if (dir_x == 0.0 && dir_y == 0.0)
+         return;
+-    if (CombatFire(store, shots, e, dir_x, dir_y, sound))
++    if (CombatFire(store, shots, e, dir_x, dir_y, sound, e.x - hero.x,
++                   e.y - hero.y))
+         e.cooldown = 60.0 / (double)e.rate;
+ }
+ 
+diff --git a/src/combat.h b/src/combat.h
+index a2e8eff..afc9631 100644
+--- a/src/combat.h
++++ b/src/combat.h
+@@ -50,8 +50,8 @@ void CombatArm(Entity &shooter, const EntityDef &weapon);
+    store has no slot: never a stolen entity, never a shot with assumed
+    attributes. */
+ bool CombatFire(EntityStore &store, const EntityTable &shots,
+-                Entity &shooter, double dir_x, double dir_y,
+-                Sound &sound);
++                Entity &shooter, double dir_x, double dir_y, Sound &sound,
++                double dx, double dy);
+ 
+ /* One projectile's flight, once a frame of game time: sub-stepped
+    through the mover, retiring at a wall (the step refused), at its
+diff --git a/src/hero.cpp b/src/hero.cpp
+index a3118d4..f01f8ab 100644
+--- a/src/hero.cpp
++++ b/src/hero.cpp
+@@ -104,7 +104,7 @@ void HeroFire(Entity &hero, platform::Window *window,
+         else
+             dir_y = -1.0;
+     }
+-    if (CombatFire(store, shots, hero, dir_x, dir_y, sound))
++    if (CombatFire(store, shots, hero, dir_x, dir_y, sound, 0.0, 0.0))
+         hero.cooldown = 60.0 / (double)hero.rate;
+ }
+ 
+diff --git a/src/sound.cpp b/src/sound.cpp
+index 2b1dff4..1473f33 100644
+--- a/src/sound.cpp
++++ b/src/sound.cpp
+@@ -8,6 +8,7 @@
+ 
+ #include "sound.h"
+ 
++#include <cmath>
+ #include <cstdio>
+ 
+ namespace engine {
+@@ -23,33 +24,53 @@ void SoundStart(Sound &sound)
+                 AUDIO_VOLUME_FULL);
+ }
+ 
+-/* One event's sound: its sample on the pool's channels, at its volume,
++/* Exercise 1: the loudness follows the distance — full at the hero's
++   ear, fading to nothing at the falloff's edge. The falloff is
++   quadratic in the squared distance: no square root runs to mix a
++   sound. */
++static int Loudness(double dx, double dy, int base)
++{
++    constexpr double FADE = 256.0; /* pixels: silence at this distance */
++    double d2 = dx * dx + dy * dy;
++    double f2 = FADE * FADE;
++    if (d2 >= f2)
++        return 0;
++    return (int)(base * (1.0 - d2 / f2));
++}
++
++/* One event's sound: its sample on the pool's channels, at its loudness,
+    reported with the channel it landed on. The volumes are the sounds'
+    own — a quiet blip for every shot, a heavier thud for a hit, the
+-   loudest for a death — so the mix inside the format stays honest while
+-   the game gets loud. */
+-static void Fire(Sound &sound, const Sample &sample, int volume,
+-                 const char *what)
++   loudest for a death — scaled by the event's distance, so the mix
++   inside the format stays honest while the game gets loud. */
++static void Fire(Sound &sound, const Sample &sample, int base, double dx,
++                 double dy, const char *what)
+ {
++    int volume = Loudness(dx, dy, base);
++    if (volume <= 0) {
++        std::printf("engine: sound: %s — silent at %d px\n", what,
++                    (int)std::sqrt(dx * dx + dy * dy));
++        return;
++    }
+     int ch = MixerPlayEffect(sound.mixer, sample, volume);
+     sound.fired += 1;
+     std::printf("engine: sound: %s -> channel %d (volume %d of %d)\n", what,
+                 ch, volume, AUDIO_VOLUME_FULL);
+ }
+ 
+-void SoundShot(Sound &sound)
++void SoundShot(Sound &sound, double dx, double dy)
+ {
+-    Fire(sound, sound.shot, AUDIO_VOLUME_FULL / 4, "shot");
++    Fire(sound, sound.shot, AUDIO_VOLUME_FULL / 4, dx, dy, "shot");
+ }
+ 
+-void SoundHit(Sound &sound)
++void SoundHit(Sound &sound, double dx, double dy)
+ {
+-    Fire(sound, sound.hit, AUDIO_VOLUME_FULL / 2, "hit");
++    Fire(sound, sound.hit, AUDIO_VOLUME_FULL / 2, dx, dy, "hit");
+ }
+ 
+-void SoundDeath(Sound &sound)
++void SoundDeath(Sound &sound, double dx, double dy)
+ {
+-    Fire(sound, sound.death, AUDIO_VOLUME_FULL / 2, "death");
++    Fire(sound, sound.death, AUDIO_VOLUME_FULL / 2, dx, dy, "death");
+ }
+ 
+ } /* namespace engine */
+diff --git a/src/sound.h b/src/sound.h
+index 457979f..e0837c3 100644
+--- a/src/sound.h
++++ b/src/sound.h
+@@ -36,10 +36,14 @@ void SoundStart(Sound &sound);
+ /* The game's events — a shot left a barrel, a hit landed, a thing fell
+    — each in its own frame. Every one fires its effect on the pool over
+    the music; the mixer's oldest-stealing pool decides what happens when
+-   the game gets loud. */
+-void SoundShot(Sound &sound);
+-void SoundHit(Sound &sound);
+-void SoundDeath(Sound &sound);
++   the game gets loud.
++
++   Exercise 1: each event carries how far away it happened (dx, dy from
++   the hero) and its loudness follows the distance — the game's sounds
++   come from where the game is. */
++void SoundShot(Sound &sound, double dx, double dy);
++void SoundHit(Sound &sound, double dx, double dy);
++void SoundDeath(Sound &sound, double dx, double dy);
+ 
+ } /* namespace engine */
+ 

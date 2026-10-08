@@ -17,6 +17,7 @@
 
 #include "entity.h"
 #include "feel.h"
+#include "sound.h"
 #include "table.h"
 
 namespace engine {
@@ -49,7 +50,8 @@ void CombatArm(Entity &shooter, const EntityDef &weapon);
    store has no slot: never a stolen entity, never a shot with assumed
    attributes. */
 bool CombatFire(EntityStore &store, const EntityTable &shots,
-                Entity &shooter, double dir_x, double dir_y);
+                Entity &shooter, double dir_x, double dir_y,
+                Sound &sound);
 
 /* One projectile's flight, once a frame of game time: sub-stepped
    through the mover, retiring at a wall (the step refused), at its
@@ -64,7 +66,7 @@ bool CombatFire(EntityStore &store, const EntityTable &shots,
    same frame from the same event. */
 void CombatFly(const TileMap &map, EntityStore &store, const Entity &hero,
                Entity &shot, Feedback &feel, const EntityDef &spark,
-               double dt);
+               double dt, Sound &sound);
 
 /* Lesson 090: the enemy attack, once per frame of game time. An armed
    entity — one whose row names a projectile kind — fires it at the
@@ -72,7 +74,7 @@ void CombatFly(const TileMap &map, EntityStore &store, const Entity &hero,
    The hero itself is never its own attacker: its trigger is the
    player's. */
 void CombatAttack(EntityStore &store, const EntityTable &shots, Entity &e,
-                  const Entity &hero, double dt);
+                  const Entity &hero, double dt, Sound &sound);
 
 } /* namespace engine */
 

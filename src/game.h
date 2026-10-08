@@ -27,6 +27,7 @@
 #include "framebuffer.h"
 #include "gametime.h"
 #include "platform.h"
+#include "sound.h"
 #include "tiles.h"
 
 namespace engine {
@@ -123,7 +124,7 @@ void GameDrawSprites(const Game &game, Framebuffer &fb,
    Returns the visit count. */
 int GameWalk(EntityStore &store, const TileMap &map, const Entity &hero,
              const EntityTable &shots, Feedback &feel, const EntityDef &spark,
-             double dt);
+             double dt, Sound &sound);
 
 /* Lesson 091: the waves, once per frame of play. A fresh fight clears
    the last one from the store; a wave spawns its composition from the

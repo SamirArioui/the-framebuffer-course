@@ -75,7 +75,7 @@ void CombatArm(Entity &shooter, const EntityDef &weapon)
 }
 
 bool CombatFire(EntityStore &store, const EntityTable &shots,
-                Entity &shooter, double dir_x, double dir_y)
+                Entity &shooter, double dir_x, double dir_y, Sound &sound)
 {
     if (!shooter.fires[0])
         return false; /* an unarmed shooter fires nothing */
@@ -115,12 +115,15 @@ bool CombatFire(EntityStore &store, const EntityTable &shots,
         shot.facing = 3;
     std::printf("engine: fire: %s -> %s (damage %d, range %d)\n", shooter.name,
                 shot.name, shot.damage, shot.range);
+    /* Lesson 095: the shot is heard as it is fired — the game's sound,
+       in the event's own frame. */
+    SoundShot(sound);
     return true;
 }
 
 void CombatFly(const TileMap &map, EntityStore &store, const Entity &hero,
                Entity &shot, Feedback &feel, const EntityDef &spark,
-               double dt)
+               double dt, Sound &sound)
 {
     /* The flight, in game time: the shot's speed over dt, sub-stepped
        through the mover so each sub-step is small. What is checked at
@@ -169,8 +172,10 @@ void CombatFly(const TileMap &map, EntityStore &store, const Entity &hero,
             FeelShake(feel, 5.0, 0.25);
 
             /* Lesson 093: and the impact scatters sparks — a burst of
-               particles from the same event's own frame. */
+               particles from the same event's own frame. Lesson 095:
+               and the impact is heard — the hit's sound, same frame. */
             FeelBurst(store, spark, shot.x, shot.y, 4);
+            SoundHit(sound);
 
             std::printf("engine: shot %s retired — hit %s\n", shot.name,
                         target->name);
@@ -193,10 +198,13 @@ void CombatFly(const TileMap &map, EntityStore &store, const Entity &hero,
                 FeelShake(feel, 10.0, 0.50);
 
                 /* Lesson 093: and the death bursts harder — the thing
-                   that fell scatters its sparks from its own centre. */
+                   that fell scatters its sparks from its own centre.
+                   Lesson 095: and the fall is heard — the death's
+                   sound, same frame. */
                 FeelBurst(store, spark,
                           target->x + ANIM_FRAME_W / 2.0,
                           target->y + target->sprite->height / 2.0, 8);
+                SoundDeath(sound);
             }
             return;
         }
@@ -230,7 +238,7 @@ void CombatFly(const TileMap &map, EntityStore &store, const Entity &hero,
 }
 
 void CombatAttack(EntityStore &store, const EntityTable &shots, Entity &e,
-                  const Entity &hero, double dt)
+                  const Entity &hero, double dt, Sound &sound)
 {
     /* An unarmed entity never fires — and the hero is never its own
        attacker: its trigger is the player's (HeroFire). */
@@ -257,7 +265,7 @@ void CombatAttack(EntityStore &store, const EntityTable &shots, Entity &e,
     CombatAim(dx, dy, dir_x, dir_y);
     if (dir_x == 0.0 && dir_y == 0.0)
         return;
-    if (CombatFire(store, shots, e, dir_x, dir_y))
+    if (CombatFire(store, shots, e, dir_x, dir_y, sound))
         e.cooldown = 60.0 / (double)e.rate;
 }
 

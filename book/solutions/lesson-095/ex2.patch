@@ -1,0 +1,22 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index faedbc3..3317711 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -550,6 +550,17 @@ int Run(void)
+         if (game.state == GAME_PLAY)
+             GameWaves(game, store, foes);
+ 
++        /* Exercise 2: the probe — the loudest frame this machine can
++           stage: twenty of the game's sounds fired at once, to watch
++           the pool's fifteen effect channels answer and the stealing
++           begin. Once, at the fight's first frame. */
++        static bool probed = false;
++        if (!probed && game.state == GAME_PLAY) {
++            probed = true;
++            for (int i = 0; i < 20; ++i)
++                SoundDeath(sound);
++        }
++
+         double t_entities = platform::Now();
+         int visited = GameWalk(store, map, hero, shots, feel, spark, dt,
+                                sound);

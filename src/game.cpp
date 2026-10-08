@@ -221,7 +221,7 @@ void GameDrawSprites(const Game &game, Framebuffer &fb,
 
 int GameWalk(EntityStore &store, const TileMap &map, const Entity &hero,
              const EntityTable &shots, Feedback &feel, const EntityDef &spark,
-             double dt)
+             double dt, Sound &sound)
 {
     /* Lesson 084: the walk — every live entity, once per frame, in slot
        order, its movement resolved against the tilemap. The per-entity
@@ -253,7 +253,7 @@ int GameWalk(EntityStore &store, const TileMap &map, const Entity &hero,
         Entity &e = store.slots[i];
         switch (e.behavior) {
         case BEHAVIOR_FLY:
-            CombatFly(map, store, hero, e, feel, spark, dt);
+            CombatFly(map, store, hero, e, feel, spark, dt, sound);
             continue; /* the flight moves itself, through the mover */
         case BEHAVIOR_SETTLE:
             FeelParticle(store, e, dt);
@@ -281,7 +281,7 @@ int GameWalk(EntityStore &store, const TileMap &map, const Entity &hero,
            its row's weapon at the hero at its rate. The hero is exempt
            (its trigger is the player's); an unarmed kind fires
            nothing. */
-        CombatAttack(store, shots, e, hero, dt);
+        CombatAttack(store, shots, e, hero, dt, sound);
         MoveEntity(map, e, e.move_x * e.speed * dt, e.move_y * e.speed * dt);
         if (e.move_x > 0.0)
             e.facing = 0;
