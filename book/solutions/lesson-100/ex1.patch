@@ -1,0 +1,68 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 112049a..9a60301 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -66,6 +66,9 @@ int Run(void)
+     }
+     Entity &hero = *world.hero;
+ 
++    /* Exercise 1: the pixel's price — measured at startup. */
++    ReportClearBench(*world.fb);
++
+     double started = platform::Now();
+     double last = started;
+     GameTime game_time = { GAMETIME_FULL }; /* lesson 078: the scale — set by the state now */
+diff --git a/src/report.cpp b/src/report.cpp
+index 425fe4d..4c3e778 100644
+--- a/src/report.cpp
++++ b/src/report.cpp
+@@ -104,4 +104,26 @@ void ReportEnd(const Sound &sound, const Feed &feed,
+                 walk_visits, frames);
+ }
+ 
++void ReportClearBench(const Framebuffer &fb)
++{
++    /* Exercise 1: the bench, in the tradition of lesson 048's sprite
++       bench: the clear timed at three sizes over 200 clears each, so
++       the price per pixel is visible apart from the frame's other
++       work. The views share the real buffer — the clear is the same
++       clear on less memory. */
++    const int sizes[3][2] = { { 640, 480 }, { 320, 240 }, { 160, 120 } };
++    for (int s = 0; s < 3; ++s) {
++        Framebuffer view = { fb.pixels, sizes[s][0], sizes[s][1] };
++        double t0 = platform::Now();
++        for (int rep = 0; rep < 200; ++rep)
++            ClearBuffer(view, 32, 32, 64);
++        double dt = platform::Now() - t0;
++        std::printf("engine: bench: clear %dx%d — %.1f ns/pixel over %d clears\n",
++                    sizes[s][0], sizes[s][1],
++                    dt * 1e9 /
++                        ((double)sizes[s][0] * (double)sizes[s][1] * 200.0),
++                    200);
++    }
++}
++
+ } /* namespace engine */
+diff --git a/src/report.h b/src/report.h
+index df85698..aafa4ad 100644
+--- a/src/report.h
++++ b/src/report.h
+@@ -16,6 +16,7 @@
+ #define REPORT_H
+ 
+ #include "entity.h"
++#include "framebuffer.h"
+ #include "sound.h"
+ 
+ namespace engine {
+@@ -52,6 +53,10 @@ void ReportEnd(const Sound &sound, const Feed &feed,
+                const EntityStore &store, const Entity &hero,
+                long walk_visits, long frames);
+ 
++/* Exercise 1: the price of a pixel — ClearBuffer timed on the real
++   buffer at three sizes, nanoseconds per pixel, printed at startup. */
++void ReportClearBench(const Framebuffer &fb);
++
+ } /* namespace engine */
+ 
+ #endif

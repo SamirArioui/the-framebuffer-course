@@ -1,0 +1,82 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 112049a..ba704c2 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -66,6 +66,9 @@ int Run(void)
+     }
+     Entity &hero = *world.hero;
+ 
++    /* Exercise 2: the word fill's claims — checked at startup. */
++    ReportWordSafety(*world.fb);
++
+     double started = platform::Now();
+     double last = started;
+     GameTime game_time = { GAMETIME_FULL }; /* lesson 078: the scale — set by the state now */
+diff --git a/src/report.cpp b/src/report.cpp
+index 425fe4d..93fd33e 100644
+--- a/src/report.cpp
++++ b/src/report.cpp
+@@ -104,4 +104,39 @@ void ReportEnd(const Sound &sound, const Feed &feed,
+                 walk_visits, frames);
+ }
+ 
++void ReportWordSafety(Framebuffer &fb)
++{
++    /* Exercise 2: the word fill owes its pixels an argument, and an
++       argument you can check beats one you cannot. Three claims: the
++       word pointer may write this memory (alignment), the word's bytes
++       land where the byte stores put them (byte order), and reading
++       the memory back — as pixels and as raw bytes — sees the clear
++       where it was promised (the aliasing question, answered by
++       reading both ways). */
++    bool aligned = ((size_t)(const void *)fb.pixels % 4) == 0;
++    bool stride = (fb.width * 4) % 4 == 0;
++
++    ClearBuffer(fb, 1, 2, 3);
++    unsigned char r = 0, g = 0, b = 0;
++    GetPixel(fb, 0, 0, r, g, b);
++    bool corner = r == 1 && g == 2 && b == 3;
++    GetPixel(fb, fb.width - 1, fb.height - 1, r, g, b);
++    bool far_corner = r == 1 && g == 2 && b == 3;
++    GetPixel(fb, fb.width / 2, fb.height / 2, r, g, b);
++    bool middle = r == 1 && g == 2 && b == 3;
++
++    const unsigned char *raw =
++        fb.pixels + (((size_t)(fb.height / 2) * fb.width) +
++                     (fb.width / 2)) * 4;
++    bool bytes = raw[0] == 3 && raw[1] == 2 && raw[2] == 1 && raw[3] == 0;
++
++    std::printf("engine: probe: word fill — pixels aligned to 4: %s, row stride %s; cleared 1,2,3 reads %s at the corners and %s in the middle; raw bytes %d,%d,%d,%d\n",
++                aligned ? "yes" : "NO", stride ? "ok" : "BROKEN",
++                corner && far_corner ? "1,2,3" : "WRONG",
++                middle ? "1,2,3" : "WRONG", raw[0], raw[1], raw[2],
++                raw[3]);
++    if (!bytes)
++        std::printf("engine: probe: word fill — RAW BYTES WRONG\n");
++}
++
+ } /* namespace engine */
+diff --git a/src/report.h b/src/report.h
+index df85698..9b186e9 100644
+--- a/src/report.h
++++ b/src/report.h
+@@ -16,6 +16,7 @@
+ #define REPORT_H
+ 
+ #include "entity.h"
++#include "framebuffer.h"
+ #include "sound.h"
+ 
+ namespace engine {
+@@ -52,6 +53,11 @@ void ReportEnd(const Sound &sound, const Feed &feed,
+                const EntityStore &store, const Entity &hero,
+                long walk_visits, long frames);
+ 
++/* Exercise 2: the word fill's three claims, checked on the real
++   buffer at startup — alignment, byte order, and the readback that
++   says the words landed where the bytes put them. */
++void ReportWordSafety(Framebuffer &fb);
++
+ } /* namespace engine */
+ 
+ #endif

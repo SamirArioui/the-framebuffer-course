@@ -460,6 +460,10 @@
   - [Solution: ex1 — the sprites' draw gets the same medicine](solutions/lesson-099/ex1.md)
   - [Solution: ex2 — the cost per tile](solutions/lesson-099/ex2.md)
 
+- [Lesson 100 — pass 2b: fix the clear](lessons/part-5/lesson-100-clear.md)
+  - [Solution: ex1 — the price of a pixel](solutions/lesson-100/ex1.md)
+  - [Solution: ex2 — what the word knows](solutions/lesson-100/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)
