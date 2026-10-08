@@ -1,0 +1,98 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index f48d76a..16265be 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -14,7 +14,6 @@
+ 
+ #include "audio.h"
+ #include "entity.h"
+-#include "font.h"
+ #include "framebuffer.h"
+ #include "frame.h"
+ #include "game.h"
+@@ -24,7 +23,6 @@
+ #include "platform.h"
+ #include "report.h"
+ #include "sound.h"
+-#include "tiles.h"
+ #include "world.h"
+ 
+ namespace engine {
+@@ -72,20 +70,8 @@ int Run(void)
+     RunReport report = {};  /* lesson 097: the probes' bookkeeping, named */
+     long walk_visits = 0;   /* lesson 075: entities visited by the walk */
+ 
+-    /* The slice's identity: what the run is, named at once — L0*, the
+-       gate this part closes on. Every service it uses was finished
+-       before this lesson; the lesson is the fit. */
+-    std::printf("engine: part 4 done — the vertical slice: a hero walks the tilemap, the camera follows\n");
+-    std::printf("engine: world %dx%d cells (%dx%d px), %d kinds; %d glyphs; hero %dx%d\n",
+-                world.map.width, world.map.height, world.map.width * TILE_SIZE,
+-                world.map.height * TILE_SIZE, world.map.kind_count, FONT_COUNT,
+-                hero.sprite->width, hero.sprite->height);
+-    std::printf("engine: sound %d-frame music looping on channel %d; effects of %d/%d/%d frames on the pool; one mixer of %d channels\n",
+-                world.sound.music.frame_count, AUDIO_MUSIC_CHANNEL,
+-                world.sound.shot.frame_count, world.sound.hit.frame_count,
+-                world.sound.death.frame_count, AUDIO_MIXER_CHANNELS);
+-    std::printf("engine: arrows move the hero, 1 and 2 arm the weapons, space fires; close the window to stop\n");
+-    std::printf("engine: hero at %.0f,%.0f\n", hero.x, hero.y);
++    /* The run's identity (exercise 1: the report pair's now). */
++    ReportBanners(world);
+ 
+     /* Lesson 059: the run's sound is a run of amplitude at the engine's
+        rate, and the seam's audio output is what puts those frames in
+diff --git a/src/report.cpp b/src/report.cpp
+index 425fe4d..40ea3fa 100644
+--- a/src/report.cpp
++++ b/src/report.cpp
+@@ -73,6 +73,26 @@ void ReportFrame(RunReport &report, const EntityStore &store,
+     }
+ }
+ 
++void ReportBanners(const World &world)
++{
++    /* Exercise 1: the slice's identity: what the run is, named at once —
++       L0*, the gate Part 4 closed on. Every service it uses was finished
++       before the game's lessons; the lesson was the fit. */
++    std::printf("engine: part 4 done — the vertical slice: a hero walks the tilemap, the camera follows\n");
++    std::printf("engine: world %dx%d cells (%dx%d px), %d kinds; %d glyphs; hero %dx%d\n",
++                world.map.width, world.map.height, world.map.width * TILE_SIZE,
++                world.map.height * TILE_SIZE, world.map.kind_count,
++                FONT_COUNT, world.hero->sprite->width,
++                world.hero->sprite->height);
++    std::printf("engine: sound %d-frame music looping on channel %d; effects of %d/%d/%d frames on the pool; one mixer of %d channels\n",
++                world.sound.music.frame_count, AUDIO_MUSIC_CHANNEL,
++                world.sound.shot.frame_count, world.sound.hit.frame_count,
++                world.sound.death.frame_count, AUDIO_MIXER_CHANNELS);
++    std::printf("engine: arrows move the hero, 1 and 2 arm the weapons, space fires; close the window to stop\n");
++    std::printf("engine: hero at %.0f,%.0f\n", world.hero->x,
++                world.hero->y);
++}
++
+ void ReportEnd(const Sound &sound, const Feed &feed,
+                const EntityStore &store, const Entity &hero,
+                long walk_visits, long frames)
+diff --git a/src/report.h b/src/report.h
+index df85698..59ae2da 100644
+--- a/src/report.h
++++ b/src/report.h
+@@ -17,6 +17,7 @@
+ 
+ #include "entity.h"
+ #include "sound.h"
++#include "world.h"
+ 
+ namespace engine {
+ 
+@@ -43,6 +44,11 @@ void ReportFrame(RunReport &report, const EntityStore &store,
+                  const Entity &hero, double was_x, double was_y,
+                  double started);
+ 
++/* Exercise 1: the run's identity banners — what the run is, said once
++   at its start: the slice's name, the world's shape, the sound's, the
++   controls', and where the hero began. */
++void ReportBanners(const World &world);
++
+ /* The account that closes the run: what the sound carried (frames
+    measured, buffers of stream, effects fired, wraps), where the world's
+    live entities ended beside the hero, and the walk's visit count — one

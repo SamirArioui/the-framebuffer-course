@@ -531,5 +531,5 @@ used?
 
 **Part:** [Part 5 — the game](../../index.md) ·
 **Previous:** [Lesson 085 — hero movement](lesson-085-hero-movement.md) ·
-**Next:** [the course home](../../index.md) ·
+**Next:** [Lesson 087 — projectiles and two weapons](lesson-087-projectiles-weapons.md) ·
 **Code tag:** [`lesson-086`](https://github.com/SamirArioui/the-framebuffer-course/tree/lesson-086)

@@ -342,5 +342,5 @@ noticeably sooner than it comes to rest?
 
 **Part:** [Part 5 — the game](../../index.md) ·
 **Previous:** [Lesson 084 — tile collision](lesson-084-collision.md) ·
-**Next:** [the course home](../../index.md) ·
+**Next:** [Lesson 086 — feedback and animation](lesson-086-feedback-animation.md) ·
 **Code tag:** [`lesson-085`](https://github.com/SamirArioui/the-framebuffer-course/tree/lesson-085)

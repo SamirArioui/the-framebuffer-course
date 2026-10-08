@@ -1,23 +1,19 @@
-// main.cpp — the engine: one measured frame loop, the world and its sound.
+// main.cpp — the engine: the run.
 //
-// Lesson 069: the Part 3 closing demo. Every capability of the engine at
-// once — the Part 2 world drawn through the renderer (the map through the
-// camera, the sprite moved by polled input and stopped by the map, text
-// laid out over it all) beside the Part 3 sound through the mixer (music
-// looping on its channel, effects over it on the pool's, one MixBuffer
-// into one stream) — every phase measured, one record per frame. Nothing
-// is invented here; today the parts fit, and the fit is what the demo
-// shows. The language law of lesson 026 still holds over all of it.
+// The run is four things and nothing else: open the window, start the
+// world, run the measured frame loop, hand over the account. Lesson 097
+// paid the debt fifteen lessons of assembly accumulated here — the
+// asset wiring moved to load.*, the world's construction to world.*,
+// the probes and the closing account to report.*, the stream's feed to
+// the sound it belongs to — so what stays in this file is the loop and
+// its phases, and a profiler reading this run sees the frame's work in
+// the functions that do it. The language law of lesson 026 still holds
+// over all of it.
 
-#include <cmath>
 #include <cstdio>
 
-#include "arena.h"
 #include "audio.h"
-#include "blit.h"
-#include "combat.h"
 #include "entity.h"
-#include "feel.h"
 #include "font.h"
 #include "framebuffer.h"
 #include "frame.h"
@@ -26,144 +22,12 @@
 #include "hero.h"
 #include "hud.h"
 #include "platform.h"
-#include "sprite.h"
-#include "table.h"
-#include "text.h"
-#include "tilemap.h"
+#include "report.h"
+#include "sound.h"
 #include "tiles.h"
+#include "world.h"
 
 namespace engine {
-
-/* Lesson 060: one buffer of stream per feed — one sixtieth of a second,
-   the horizon the loop keeps queued. Lesson 062: a feed is always
-   exactly this much stream — the sample's frames where the sample has
-   them, silence beyond its end — so the horizon arithmetic is untouched
-   whatever the sample's length is. The sample's own length is the file's
-   fact: playback stops where its frame_count says it stops, not where a
-   constant here would. */
-constexpr int CHUNK_FRAMES = AUDIO_RATE / 60;   /* 735 */
-
-/* Lesson 062: the buffer of stream one feed hands the device, filled
-   from the sample (or with silence) as the feed is due. Static, like the
-   platform layer's own staging buffers — the language law of lesson 026
-   keeps allocation out of the run. */
-static short stream[CHUNK_FRAMES];
-
-/* Lesson 066: a loaded sample's facts, printed — the run's byte-level
-   check on its two sounds. The peak is the largest frame the sample
-   holds, and it is what says how much room the format still has above
-   the sound. */
-static void PrintSample(const char *name, const Sample &sample)
-{
-    int peak = 0;
-    for (int i = 0; i < sample.frame_count; ++i) {
-        int v = sample.frames[i * sample.channels];
-        if (v < 0)
-            v = -v;
-        if (v > peak)
-            peak = v;
-    }
-    std::printf("engine: %s: %d frames at %d Hz, %d channel%s, peak %d, first frames:",
-                name, sample.frame_count, sample.rate, sample.channels,
-                sample.channels == 1 ? "" : "s", peak);
-    for (int i = 0; i < 8 && i < sample.frame_count; ++i)
-        std::printf(" %d", (int)sample.frames[i]);
-    std::printf(", last frame %d\n",
-                sample.frame_count ? (int)sample.frames[sample.frame_count - 1]
-                                   : 0);
-}
-
-/* Lesson 066: one asset load's whole failure path — a failed load is
-   named typed and ends the run by name, exactly like the loads above it. */
-static bool LoadRunSample(Arena &arena, const char *path, Sample &into)
-{
-    SampleResult loaded = LoadSample(arena, path);
-    if (loaded.error == SAMPLE_OK) {
-        into = loaded.sample;
-        return true;
-    }
-    switch (loaded.error) {
-    case SAMPLE_MISSING:
-        std::fprintf(stderr, "engine: %s: could not load (missing)\n", path);
-        break;
-    case SAMPLE_MALFORMED:
-        std::fprintf(stderr, "engine: %s: could not load (malformed)\n", path);
-        break;
-    default:
-        std::fprintf(stderr, "engine: %s: could not load (no room)\n", path);
-        break;
-    }
-    return false;
-}
-
-/* Lesson 087: one table load's whole failure path, the same shape — the
-   load either hands over every definition or names what went wrong typed
-   and the run ends by name. Used for every table file the game loads. */
-static bool LoadRunTable(Arena &arena, const char *path, EntityTable &into)
-{
-    TableResult loaded = LoadTable(arena, path);
-    if (loaded.error == TABLE_OK) {
-        into = loaded.table;
-        return true;
-    }
-    switch (loaded.error) {
-    case TABLE_MISSING:
-        std::fprintf(stderr, "engine: %s: could not load (missing)\n", path);
-        break;
-    case TABLE_MALFORMED:
-        std::fprintf(stderr, "engine: %s: could not load (malformed)\n", path);
-        break;
-    default:
-        std::fprintf(stderr, "engine: %s: could not load (no room)\n", path);
-        break;
-    }
-    return false;
-}
-
-/* Lesson 073/087: the definitions' art, loaded at startup. The sprite
-   column names the file; the run loads each one and hands the definition
-   its image, so an entity created from the definition is answered from
-   the definition alone. A row that names no sprite (a weapon row) has no
-   art and needs none. */
-static bool LoadRunArt(Arena &arena, EntityTable &table)
-{
-    Sprite *images = (Sprite *)ArenaAlloc(
-        arena, (size_t)table.count * sizeof(Sprite), 4);
-    if (!images) {
-        std::fprintf(stderr, "engine: no room for the definitions' art\n");
-        return false;
-    }
-    for (int i = 0; i < table.count; ++i) {
-        EntityDef &def = table.rows[i];
-        if (!def.sprite[0])
-            continue;
-        SpriteResult art = LoadSprite(arena, def.sprite);
-        if (art.error != SPRITE_OK) {
-            std::fprintf(stderr, "engine: %s: could not load\n", def.sprite);
-            return false;
-        }
-        images[i] = art.sprite;
-        def.image = &images[i];
-    }
-    return true;
-}
-
-/* Lesson 087: the byte-level check on a table, before anything uses it —
-   every definition, carrying every field: the values its row states and
-   the format's defaults for the columns its file did not name. */
-static void PrintDefs(const char *path, const EntityTable &table)
-{
-    std::printf("engine: table %s: %d definition%s\n", path, table.count,
-                table.count == 1 ? "" : "s");
-    for (int i = 0; i < table.count; ++i) {
-        const EntityDef &def = table.rows[i];
-        std::printf("engine: def %s: x %d y %d facing %d speed %d health %d sprite %s accel %d damage %d rate %d fires %s range %d behavior %s wave %d count %d\n",
-                    def.name, def.x, def.y, def.facing, def.speed, def.health,
-                    def.sprite[0] ? def.sprite : "none", def.accel, def.damage,
-                    def.rate, def.fires[0] ? def.fires : "none", def.range,
-                    BehaviorName(def.behavior), def.wave, def.count);
-    }
-}
 
 int Run(void)
 {
@@ -187,255 +51,39 @@ int Run(void)
         return 1;
     }
 
-    /* The engine's memory: one arena over one reservation. Everything the
-       engine allocates lives in here and is released together. */
-    Arena arena;
-    ArenaInit(arena, 32 * 1024 * 1024);
-    Framebuffer *fb = GetFramebuffer(arena);
-
-    /* The world's assets, loaded whole at startup (lessons 044-053):
-       a font, a map, and the map's tile art — and, since lesson 073,
-       the art each definition names. Every load is a typed failure or a
-       complete asset — and a failure ends the run by name. */
-    FontResult font_loaded = LoadFont(arena, "assets/font.ppm");
-    if (font_loaded.error != FONT_OK) {
-        std::fprintf(stderr, "engine: assets/font.ppm: could not load\n");
-        platform::CloseWindow(opened.window);
-        ArenaRelease(arena);
-        return 1;
-    }
-    Font &font = font_loaded.font;
-
-    TileResult map_loaded = LoadTileMap(arena, "assets/map.txt");
-    if (map_loaded.error != TILE_OK) {
-        std::fprintf(stderr, "engine: assets/map.txt: could not load\n");
-        platform::CloseWindow(opened.window);
-        ArenaRelease(arena);
-        return 1;
-    }
-    TileMap &map = map_loaded.map;
-
-    TileSheetResult tiles_loaded = LoadTileSheet(arena, "assets/tiles.ppm",
-                                                 map.kind_count);
-    if (tiles_loaded.error != TILES_OK) {
-        std::fprintf(stderr, "engine: assets/tiles.ppm: could not load\n");
-        platform::CloseWindow(opened.window);
-        ArenaRelease(arena);
-        return 1;
-    }
-    TileSheet &sheet = tiles_loaded.sheet;
-
-    /* Lesson 071: the run's entities are data. A table file holds one
-       row per definition — its columns named by its header — and the load
-       either hands over every definition or names what went wrong, like
-       every asset above. Lesson 072: the rows are the arena's, and a
-       refused load keeps none of them. Lesson 087: the format grew by
-       named columns — and this file keeps loading byte-for-byte, its
-       seven columns exactly as lesson 071 wrote them, every field it
-       never named at the format's default. */
-    EntityTable table;
-    if (!LoadRunTable(arena, "assets/entities.txt", table)) {
-        platform::CloseWindow(opened.window);
-        ArenaRelease(arena);
-        return 1;
-    }
-
-    /* Lesson 087: the game's own data, in the grown format. The weapons
-       are rows that name the projectile kind they fire and carry their
-       rate and damage; the projectile kinds are rows a fired shot is an
-       entity of. Each file's header names the columns it uses — and only
-       those; what it leaves unnamed sits at the format's defaults.
-       Lesson 088: and the enemy roster — the three types and the boss,
-       every per-type fact its own row's value. Lesson 093: and the
-       toolkit's particle kinds — cosmetic entities from rows like every
-       other kind, the burst's art and settle in the table's columns. */
-    EntityTable weapons, shots, foes, particles;
-    if (!LoadRunTable(arena, "assets/weapons.txt", weapons) ||
-        !LoadRunTable(arena, "assets/projectiles.txt", shots) ||
-        !LoadRunTable(arena, "assets/enemies.txt", foes) ||
-        !LoadRunTable(arena, "assets/particles.txt", particles)) {
-        platform::CloseWindow(opened.window);
-        ArenaRelease(arena);
-        return 1;
-    }
-
-    /* The byte-level check, before anything uses the tables: every
-       definition of every table, carrying every field — the values its
-       row states and the format's defaults for the columns its file did
-       not name. */
-    std::printf("engine: table: unnamed fields at their defaults — accel %d, damage 0, rate 0, fires none, range 0, behavior none, wave 0, count 1\n",
-                TABLE_ACCEL_DEFAULT);
-    PrintDefs("assets/entities.txt", table);
-    PrintDefs("assets/weapons.txt", weapons);
-    PrintDefs("assets/projectiles.txt", shots);
-    PrintDefs("assets/enemies.txt", foes);
-    PrintDefs("assets/particles.txt", particles);
-
-    /* Lesson 073: the definitions' art, loaded at startup. A row that
-       names no sprite (a weapon row) has no art and needs none. */
-    if (!LoadRunArt(arena, table) || !LoadRunArt(arena, shots) ||
-        !LoadRunArt(arena, foes) || !LoadRunArt(arena, particles)) {
-        platform::CloseWindow(opened.window);
-        ArenaRelease(arena);
-        return 1;
-    }
-
-    /* Lesson 073: the game's first entity — created from the hero's
-       definition, carrying the values its row states in named fields the
-       game reads directly. Lesson 074: it lives in the store now, in a
-       slot of the capacity decided up front. */
-    DefResult hero_def = TableFind(table, "hero");
-    if (hero_def.error != DEF_OK) {
-        std::fprintf(stderr,
-                     "engine: assets/entities.txt: no definition named \"hero\"\n");
-        platform::CloseWindow(opened.window);
-        ArenaRelease(arena);
-        return 1;
-    }
-    EntityStore store = {};
-    EntityResult hero_made = EntityCreate(store, *hero_def.def);
-    if (hero_made.error != ENTITY_OK) {
-        std::fprintf(stderr, "engine: the store refused the hero\n");
-        platform::CloseWindow(opened.window);
-        ArenaRelease(arena);
-        return 1;
-    }
-    Entity &hero = *hero_made.entity;
-    std::printf("engine: entity %s: x %.0f y %.0f facing %d speed %d health %d sprite %dx%d\n",
-                hero.name, hero.x, hero.y, hero.facing, hero.speed, hero.health,
-                hero.sprite->width, hero.sprite->height);
-
-    /* Lesson 082: the game-state machine. The game is a state now, not a
-       loop with flags — it starts on the title screen, each state owns
-       its screen and its input, and the transitions are named conditions
-       (D7). The hero's starting health is the row's fact, handed to the
-       machine so a fresh game can restore it. */
+    /* The world, started whole (lesson 097): every asset loaded or a
+       named typed failure, every byte-level check printed, the hero
+       created, the game's machine started, the world's rows filled, the
+       sound started. A failure here has already said its name — the run
+       closes what it opened and ends. */
+    World world = {};
     Game game;
-    GameInit(game, hero.health);
-
-    /* Lesson 086: the feedback hooks — a screenshake and a hitstop, both
-       at rest. Lesson 092: the juice toolkit fires them from the game's
-       own events now — a hit lands, a death falls — in the event's own
-       frame (the walk's flight, in game.cpp/combat.cpp); the wall-time
-       demonstration that used to fire them here is gone. */
     Feedback feel;
-    FeelInit(feel);
-
-    /* Lesson 080: the vertical slice — the game's shape, and nothing
-       else. The hero is the row the game asks for by name (it is the
-       one the player controls); the world's other kinds come from the
-       same table, one entity per row. A new row is a new entity; the
-       run has no per-kind code to grow. */
-    int created = 1;
-    for (int i = 0; i < table.count; ++i) {
-        if (&table.rows[i] == hero_def.def)
-            continue;
-        EntityResult made = EntityCreate(store, table.rows[i]);
-        if (made.error != ENTITY_OK) {
-            std::fprintf(stderr, "engine: the store refused %s\n",
-                         table.rows[i].name);
-            platform::CloseWindow(opened.window);
-            ArenaRelease(arena);
-            return 1;
-        }
-        /* Lesson 084: a non-hero entity walked (down-right) here — a
-           stand-in for the AI. Lesson 089 replaced it: the behaviors
-           are real now, and the world's kinds move the ways their rows
-           say (the slime's row says `none`, so it stands). */
-        created += 1;
-    }
-    std::printf("engine: world: %d entities from the table's rows, live %d of %d\n",
-                created, store.live, ENTITY_CAP);
-
-    /* Lesson 091: the enemy roster is the waves' now — lesson 088's
-       standing spawn gave way to the wave fight (GameWaves), which
-       spawns the same rows wave by wave. A new row is still a new
-       enemy: no per-kind code has appeared since. */
-
-    /* Lesson 087: weapons are rows. The hero starts armed with the
-       weapons table's first row; the number keys arm the rest
-       (HeroFire). Lesson 090: the enemy-fire stand-in and its key are
-       gone — the enemy rows carry their own weapons and the walk's
-       attack fires them. */
-    if (weapons.count > 0)
-        CombatArm(hero, weapons.rows[0]);
-
-    /* Lesson 093: the burst kind — the particles table's first row. The
-       game bursts what the table puts first, the way the hero arms with
-       the weapons table's first row; a table with no particle kind is a
-       named failure, never a burst of assumed attributes. */
-    if (particles.count == 0) {
-        std::fprintf(stderr,
-                     "engine: assets/particles.txt: no particle kind\n");
+    if (!WorldStart(world, game, feel)) {
         platform::CloseWindow(opened.window);
-        ArenaRelease(arena);
+        ArenaRelease(world.arena);
         return 1;
     }
-    const EntityDef &spark = particles.rows[0];
-
-    /* The lookup's typed failure, checked on purpose: a definition the
-       table does not hold is a value — never an entity with assumed
-       attributes. */
-    DefResult unknown = TableFind(table, "dragon");
-    std::printf("engine: table: \"dragon\" -> %s\n",
-                unknown.error == DEF_OK ? "found" : "unknown");
-
-    /* Lesson 095: the game's sound — its music and one effect per
-       event, as files' bytes. Lesson 061's tone and lesson 066's
-       demonstration effect leave the run here (both stay on disk: the
-       files lessons 059-068 were built on); the game's own sounds are
-       these four. Each load either yields the complete sample or names
-       what went wrong, and a failure ends the run by name — like every
-       asset above. */
-    Sound sound = {};
-    if (!LoadRunSample(arena, "assets/music.wav", sound.music) ||
-        !LoadRunSample(arena, "assets/shot.wav", sound.shot) ||
-        !LoadRunSample(arena, "assets/hit.wav", sound.hit) ||
-        !LoadRunSample(arena, "assets/death.wav", sound.death)) {
-        platform::CloseWindow(opened.window);
-        ArenaRelease(arena);
-        return 1;
-    }
-
-    /* The byte-level check, before anything is played: each sound's
-       facts, its peak, and its first frames — the same check lesson 066
-       made on its two files, now on the game's four. */
-    PrintSample("music", sound.music);
-    PrintSample("shot", sound.shot);
-    PrintSample("hit", sound.hit);
-    PrintSample("death", sound.death);
-
-    /* Lesson 068: the music loops on the music channel and the effects
-       fire over it on the pool's channels, every one of them summed by
-       the same MixBuffer into the one stream. Lesson 095: what fires
-       them is the game now — the events of lesson 092's toolkit, each
-       with its own sound — and the demonstration rhythm that used to
-       fire them on a clock is gone. Nothing in the mix knows which
-       sound is which. */
-    SoundStart(sound);
-    int music_wraps = 0;
+    Entity &hero = *world.hero;
 
     double started = platform::Now();
     double last = started;
     GameTime game_time = { GAMETIME_FULL }; /* lesson 078: the scale — set by the state now */
-    bool was_blocked = false; /* lesson 077: the mover's state report */
-    int was_vx = 0, was_vy = 0; /* lesson 085: the hero's velocity, as it eases */
-    int was_frame = 0;          /* lesson 086: the hero's walk-cycle frame */
-    double seen_x[ENTITY_CAP] = {}, seen_y[ENTITY_CAP] = {}; /* lesson 089:
-                                  where each entity was last reported */
+    RunReport report = {};  /* lesson 097: the probes' bookkeeping, named */
+    long walk_visits = 0;   /* lesson 075: entities visited by the walk */
 
     /* The slice's identity: what the run is, named at once — L0*, the
        gate this part closes on. Every service it uses was finished
        before this lesson; the lesson is the fit. */
     std::printf("engine: part 4 done — the vertical slice: a hero walks the tilemap, the camera follows\n");
     std::printf("engine: world %dx%d cells (%dx%d px), %d kinds; %d glyphs; hero %dx%d\n",
-                map.width, map.height, map.width * TILE_SIZE,
-                map.height * TILE_SIZE, map.kind_count, FONT_COUNT,
+                world.map.width, world.map.height, world.map.width * TILE_SIZE,
+                world.map.height * TILE_SIZE, world.map.kind_count, FONT_COUNT,
                 hero.sprite->width, hero.sprite->height);
     std::printf("engine: sound %d-frame music looping on channel %d; effects of %d/%d/%d frames on the pool; one mixer of %d channels\n",
-                sound.music.frame_count, AUDIO_MUSIC_CHANNEL,
-                sound.shot.frame_count, sound.hit.frame_count,
-                sound.death.frame_count, AUDIO_MIXER_CHANNELS);
+                world.sound.music.frame_count, AUDIO_MUSIC_CHANNEL,
+                world.sound.shot.frame_count, world.sound.hit.frame_count,
+                world.sound.death.frame_count, AUDIO_MIXER_CHANNELS);
     std::printf("engine: arrows move the hero, 1 and 2 arm the weapons, space fires; close the window to stop\n");
     std::printf("engine: hero at %.0f,%.0f\n", hero.x, hero.y);
 
@@ -465,7 +113,7 @@ int Run(void)
        stream per mix — the horizon the paced wait keeps queued. The
        buffer's length in time is the sample's own rate answering. */
     std::printf("engine: stream: %d-frame buffers, horizon %.1f ms; the loop mixes one when it is due\n",
-                CHUNK_FRAMES, 1e3 * CHUNK_FRAMES / sound.music.rate);
+                CHUNK_FRAMES, 1e3 * CHUNK_FRAMES / world.sound.music.rate);
 
     /* The frame step: read news, update from polled state, feed the
        stream, draw, present — every phase measured, one record per
@@ -473,19 +121,9 @@ int Run(void)
     int exit_code = 0;
     long frame_number = 0;
     FrameStats stats = {};
+    Feed feed = { platform::Now(), 0, 0, false }; /* lesson 060: the
+                       feeding schedule; lesson 097: the sound's own */
 
-    /* Lesson 060: the run's own feeding schedule. The device consumes at
-       the engine's rate, so the next buffer is due one horizon from the
-       last one — and the loop knows that without asking the platform. */
-    double next_feed = platform::Now();
-
-    /* Lesson 068: the run's bookkeeping — how many buffers have been
-       handed to the device, which drives the rhythm above. The mix's own
-       account of what it carried is the frame record's audio phase now,
-       measured like every other phase of the frame. */
-    int feeds = 0;         /* buffers of stream mixed */
-    bool reported_effects = false; /* the stream's bytes with effects in */
-    long walk_visits = 0;  /* lesson 075: entities visited by the walk */
     while (!platform::CloseRequested(opened.window)) {
         platform::PumpEvents(opened.window);
         if (platform::CloseRequested(opened.window))
@@ -532,97 +170,49 @@ int Run(void)
            flight. */
         if (game.state == GAME_PLAY) {
             HeroMove(hero, opened.window, dt);
-            HeroFire(hero, opened.window, weapons, shots, store, dt,
-                     sound);
-
+            HeroFire(hero, opened.window, world.weapons, world.shots,
+                     world.store, dt, world.sound);
         }
 
-        /* Lesson 084: the game resolves its movement against its map —
-           the walk is the game's now (GameWalk, in game.cpp), turning
-           every live entity's request into motion through the mover (and
-           every projectile into its flight). The loop times it as the
-           frame record's entity sub-phase. */
         /* Lesson 091: the waves — the fight's shape. A fresh game
            clears the last fight; a wave spawns its composition from the
            table's rows; the next begins when the last enemy of the
            current one is retired; and the last wave's clear is the
            game's completion. */
         if (game.state == GAME_PLAY)
-            GameWaves(game, store, foes);
+            GameWaves(game, world.store, world.foes);
 
+        /* Lesson 084: the game resolves its movement against its map —
+           the walk is the game's now (GameWalk, in game.cpp), turning
+           every live entity's request into motion through the mover (and
+           every projectile into its flight). The loop times it as the
+           frame record's entity sub-phase. */
         double t_entities = platform::Now();
-        int visited = GameWalk(store, map, hero, shots, feel, spark, dt,
-                               sound);
+        int visited = GameWalk(world.store, world.map, hero, world.shots,
+                               feel, world.particles.rows[0], dt,
+                               world.sound);
         frame.entities = platform::Now() - t_entities;
         walk_visits += visited;
 
-        /* Lesson 089: the world's motion, as the behaviors produce it —
-           every non-hero entity reported as it travels about a tile, its
-           distance to the hero beside it (the number all three behaviors
-           are about: chase shrinks it, flee grows it, keep holds it). */
-        for (int i = 0; i < ENTITY_CAP; ++i) {
-            Entity &e = store.slots[i];
-            if (!e.live || &e == &hero)
-                continue;
-            double dx = e.x - seen_x[i], dy = e.y - seen_y[i];
-            if (dx * dx + dy * dy < 24.0 * 24.0)
-                continue;
-            seen_x[i] = e.x;
-            seen_y[i] = e.y;
-            double to_x = hero.x - e.x, to_y = hero.y - e.y;
-            std::printf("engine: %s at %d,%d — %d px of the hero (t=%.3f)\n",
-                        e.name, (int)e.x, (int)e.y,
-                        (int)std::sqrt(to_x * to_x + to_y * to_y),
-                        platform::Now() - started);
-        }
-
-        /* The score, and the hero's own report: where the entity the
+        /* The score, and the hero's own reports: where the entity the
            game moves has got to. Lesson 094: the score is the game's
            own state now — the HUD reads it where the states can. */
         game.score += (hero.x > was_x ? hero.x - was_x : was_x - hero.x) +
                       (hero.y > was_y ? hero.y - was_y : was_y - hero.y);
 
-        /* Lesson 077: the mover's state report, on transitions — the
-           hero moving, or pushed against something that will not move. */
-        bool blocked = (hero.move_x != 0.0 || hero.move_y != 0.0) &&
-                       hero.x == was_x && hero.y == was_y;
-        if (blocked != was_blocked) {
-            std::printf("engine: hero %s at %d,%d (t=%.3f)\n",
-                        blocked ? "blocked" : "unblocked", (int)hero.x,
-                        (int)hero.y, platform::Now() - started);
-            was_blocked = blocked;
-        }
-        if ((int)hero.x != (int)was_x || (int)hero.y != (int)was_y)
-            std::printf("engine: hero at %d,%d (t=%.3f)\n", (int)hero.x,
-                        (int)hero.y, platform::Now() - started);
-
-        /* Lesson 085: the hero's velocity, as it eases — the accel (the
-           speed rising over frames) and the decel (falling to rest) are
-           what the player feels, and this is the measurement of it. */
-        {
-            int vx = (int)(hero.move_x * hero.speed);
-            int vy = (int)(hero.move_y * hero.speed);
-            if (vx != was_vx || vy != was_vy) {
-                std::printf("engine: hero velocity %d,%d (t=%.3f)\n", vx, vy,
-                            platform::Now() - started);
-                was_vx = vx;
-                was_vy = vy;
-            }
-        }
-
-        /* Lesson 086: the walk cycle — the frame advances while the hero
-           steps, and this is the measurement of it advancing. */
-        if (hero.frame != was_frame) {
-            std::printf("engine: hero frame %d (t=%.3f)\n", hero.frame,
-                        platform::Now() - started);
-            was_frame = hero.frame;
-        }
+        /* Lesson 089/085/086/077: the run's probes — the world's travel,
+           the mover's state, the eased velocity, the walk cycle — each
+           reporting on change, each measured against the frame's start.
+           Lesson 097: their home is report.*, their bookkeeping one
+           named state; the loop calls them where it always printed
+           them. */
+        ReportFrame(report, world.store, hero, was_x, was_y, started);
 
         /* Lesson 083: the game's world-view — the camera's base follows
            the hero, clamped to the map's bounds, and its additive offset
            rests at exactly zero. The game owns the camera now (GameFollow,
            in game.cpp); the loop keeps no camera of its own. */
-        GameFollow(game, hero, map);
+        GameFollow(game, hero, world.map);
 
         /* Lesson 086: the feedback hooks run on their own wall-time —
            each fires, decays, and rests. Lesson 092 moved the run to
@@ -636,88 +226,13 @@ int Run(void)
         frame.update = platform::Now() - t0;
 
         /* Lesson 060: the audio step — the loop feeds the device the next
-           buffer of the stream, and only when the buffer is due. Input
-           news can wake a frame early; a frame woken early must not queue
-           extra audio, or the run would bury the device in buffers instead
-           of pacing them. The step is measured on every frame — it is ~0
-           where no buffer was due — so the phase accounts for all of the
-           frame's audio work.
-
-           Lesson 064: the stream is the mix. One buffer is every active
-           channel's next frames summed and clamped — silence where no
-           channel has anything to say. Lesson 066: frame_count is still
-           the fact that says where a sample ends; a channel that loops
-           wraps there instead of ending, and the mix does not know the
-           difference. */
+           buffer of the stream, and only when the buffer is due. The step
+           is measured on every frame — it is ~0 where no buffer was due —
+           so the phase accounts for all of the frame's audio work.
+           Lesson 097: the feed itself is the sound's own work now
+           (SoundFeed, in sound.cpp); the loop times the phase. */
         double t_audio = platform::Now();
-        if (t_audio >= next_feed) {
-            /* Lesson 095: the mix is the game's work; the device is the
-               seam's. The stream is mixed on the engine's rate whether
-               or not a device exists — with no output this machine runs
-               the whole mix in silence, and the reports still say what
-               the channels and the stream carried. */
-            int music_before =
-                sound.mixer.channels[AUDIO_MUSIC_CHANNEL].cursor;
-
-            MixBuffer(sound.mixer, stream, CHUNK_FRAMES);
-
-            if (feeds == 0) {
-                /* The stream's own bytes — the first buffer, the music
-                   alone at this point. */
-                std::printf("engine: mix: first frames (music alone):");
-                for (int i = 0; i < 8 && i < CHUNK_FRAMES; ++i)
-                    std::printf(" %d", (int)stream[i]);
-                std::printf("\n");
-            }
-
-            if (!reported_effects) {
-                /* And the stream with the game's sounds in it: the first
-                   buffer any fired effect reaches — every frame the sum
-                   of the music's next frame and the effects'. */
-                bool any = false;
-                for (int c = AUDIO_MUSIC_CHANNEL + 1;
-                     c < AUDIO_MIXER_CHANNELS && !any; ++c)
-                    any = sound.mixer.channels[c].active;
-                if (any) {
-                    std::printf("engine: mix: first frames with the effects in:");
-                    for (int i = 0; i < 8 && i < CHUNK_FRAMES; ++i)
-                        std::printf(" %d", (int)stream[i]);
-                    std::printf("\n");
-                    reported_effects = true;
-                }
-            }
-
-            if (sound.mixer.channels[AUDIO_MUSIC_CHANNEL].active &&
-                sound.mixer.channels[AUDIO_MUSIC_CHANNEL].cursor <
-                    music_before) {
-                /* The wrap: the cursor went backwards — the loop's own
-                   arithmetic, visible from outside the mixer. */
-                music_wraps += 1;
-                int cursor = sound.mixer.channels[AUDIO_MUSIC_CHANNEL].cursor;
-                std::printf("engine: loop: music wrapped on channel %d — wrap %d, %ld frames played, cursor %d of %d\n",
-                            AUDIO_MUSIC_CHANNEL, music_wraps,
-                            (long)music_wraps * sound.music.frame_count +
-                                cursor,
-                            cursor, sound.music.frame_count);
-            }
-
-            if (audio.output &&
-                !platform::SubmitSamples(audio.output, stream,
-                                         CHUNK_FRAMES)) {
-                /* A device that will not take the samples is named once,
-                   not once per frame: the run closes the output and carries
-                   on in silence — its wait unbounded again. */
-                std::fprintf(stderr,
-                             "engine: the output would not take the samples\n");
-                platform::CloseAudioOutput(audio.output);
-                audio.output = 0;
-            }
-            feeds += 1;
-            /* The schedule restarts from now, not from the missed slot: a
-               long frame is caught up by one buffer, never by a backlog. */
-            next_feed = platform::Now() +
-                        (double)CHUNK_FRAMES / (double)sound.music.rate;
-        }
+        SoundFeed(world.sound, feed, audio.output);
         frame.audio = platform::Now() - t_audio;
 
         double t1 = platform::Now();
@@ -727,14 +242,14 @@ int Run(void)
            play, the panel's darker blue on the panel screens — cleared
            once here, in the render phase, before the named sub-phases. */
         if (game.state == GAME_PLAY) {
-            ClearBuffer(*fb, 32, 32, 64);
+            ClearBuffer(*world.fb, 32, 32, 64);
         } else {
             /* Lesson 096: the screen's own backdrop, faded in from
                black by its ease — the clear stays the render phase's
                work, its color the screen's (GameScreenColor). */
             int screen_r, screen_g, screen_b;
             GameScreenColor(game, screen_r, screen_g, screen_b);
-            ClearBuffer(*fb, screen_r, screen_g, screen_b);
+            ClearBuffer(*world.fb, screen_r, screen_g, screen_b);
         }
         if (game.state == GAME_PLAY) {
             /* Lesson 083: the game draws its own world — the scrolling
@@ -742,31 +257,31 @@ int Run(void)
                loop times the two the way it always has, as the frame
                record's named sub-phases. */
             double t_tilemap = platform::Now();
-            GameDrawMap(game, *fb, map, sheet);
+            GameDrawMap(game, *world.fb, world.map, world.sheet);
             frame.tilemap = platform::Now() - t_tilemap;
             double t_sprites = platform::Now();
-            GameDrawSprites(game, *fb, store);
+            GameDrawSprites(game, *world.fb, world.store);
             frame.sprites = platform::Now() - t_sprites;
             /* Lesson 094: the play screen's readouts are the HUD's
                (HudDraw, in hud.cpp) — the game's own state in text,
                drawn over the world and never with the camera. */
             double t_text = platform::Now();
-            HudDraw(game, hero, *fb, font);
+            HudDraw(game, hero, *world.fb, world.font);
             frame.text = platform::Now() - t_text;
         } else {
             /* The state's own screen. The world is frozen outside play —
                the simulation stands still — and the panel is what the
                window shows. */
             double t_text = platform::Now();
-            GameDrawPanel(game, *fb, font);
+            GameDrawPanel(game, *world.fb, world.font);
             frame.text = platform::Now() - t_text;
         }
 
         frame.render = platform::Now() - t1;
         double t2 = platform::Now();
 
-        if (!platform::Present(opened.window, fb->pixels, fb->width,
-                               fb->height)) {
+        if (!platform::Present(opened.window, world.fb->pixels,
+                               world.fb->width, world.fb->height)) {
             /* A present can fail because the window died mid-copy — that
                is close news and the fold already said so. Anything else is
                a real failure and is reported as one. */
@@ -796,44 +311,19 @@ int Run(void)
                     frame.total * 1e3);
     }
 
-    /* The demo's account: what the run did — the world's frames and the
-       sound's buffers, together — before the cost's table below. */
-    std::printf("engine: sound: %ld frames measured, %d buffers of stream mixed (%d frames), %d effects fired, %d music wraps\n",
-                frame_number, feeds, feeds * CHUNK_FRAMES, sound.fired,
-                music_wraps);
-
-    /* Lesson 089: where the behaviors left the world — every live
-       entity's position and its distance to the hero, the number all
-       three behaviors are about (chase shrinks it, flee grows it, keep
-       holds it). The report above samples a moving world; this one
-       states where it ended. */
-    for (int i = 0; i < ENTITY_CAP; ++i) {
-        Entity &e = store.slots[i];
-        if (!e.live || &e == &hero)
-            continue;
-        double to_x = hero.x - e.x, to_y = hero.y - e.y;
-        std::printf("engine: world: %s ends at %d,%d — %d px of the hero\n",
-                    e.name, (int)e.x, (int)e.y,
-                    (int)std::sqrt(to_x * to_x + to_y * to_y));
-    }
-
-    /* Lesson 075: the walk's account — one visit per live entity per
-       frame, and nothing else. */
-    std::printf("engine: walk: %ld visits over %ld frames — one per live entity per frame\n",
-                walk_visits, frame_number);
-
-    /* The account as the frame-budget table (lesson 058): the frame
-       count, the average, the worst frame — and the render attributed to
-       its subsystems, the report Part 5's finale grows. */
+    /* The run's account (lesson 097: report.*), then the frame's cost
+       (the frame account's own table) and the arena's. */
+    ReportEnd(world.sound, feed, world.store, hero, walk_visits,
+              frame_number);
     PrintFrameBudget(stats);
-    std::printf("engine: arena: %zu of %zu bytes used\n", arena.used,
-                arena.memory.size);
+    std::printf("engine: arena: %zu of %zu bytes used\n", world.arena.used,
+                world.arena.memory.size);
 
     if (platform::CloseRequested(opened.window))
         std::printf("engine: close reported\n");
     platform::CloseAudioOutput(audio.output);
     platform::CloseWindow(opened.window);
-    ArenaRelease(arena);
+    ArenaRelease(world.arena);
     std::printf("engine: closed\n");
     return exit_code;
 }

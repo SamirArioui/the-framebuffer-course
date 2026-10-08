@@ -495,5 +495,5 @@ changed: what moved?
 
 **Part:** [Part 5 — the game](../../index.md) ·
 **Previous:** [Lesson 090 — the boss](lesson-090-boss.md) ·
-**Next:** [the course home](../../index.md) ·
+**Next:** [Lesson 092 — hitstop and screenshake](lesson-092-hitstop-shake.md) ·
 **Code tag:** [`lesson-091`](https://github.com/SamirArioui/the-framebuffer-course/tree/lesson-091)

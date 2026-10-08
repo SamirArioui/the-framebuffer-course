@@ -379,5 +379,5 @@ corners clamp on both axes, and which only on one?
 
 **Part:** [Part 5 — the game](../../index.md) ·
 **Previous:** [Lesson 082 — the game skeleton](lesson-082-skeleton.md) ·
-**Next:** [the course home](../../index.md) ·
+**Next:** [Lesson 084 — tile collision](lesson-084-collision.md) ·
 **Code tag:** [`lesson-083`](https://github.com/SamirArioui/the-framebuffer-course/tree/lesson-083)

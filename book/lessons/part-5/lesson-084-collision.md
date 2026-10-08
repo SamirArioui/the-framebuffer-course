@@ -247,5 +247,5 @@ the thin border wall — it should stop, not pass through.
 
 **Part:** [Part 5 — the game](../../index.md) ·
 **Previous:** [Lesson 083 — the tilemap and camera](lesson-083-tilemap-camera.md) ·
-**Next:** [the course home](../../index.md) ·
+**Next:** [Lesson 085 — hero movement](lesson-085-hero-movement.md) ·
 **Code tag:** [`lesson-084`](https://github.com/SamirArioui/the-framebuffer-course/tree/lesson-084)

@@ -12,8 +12,19 @@
 #define SOUND_H
 
 #include "audio.h"
+#include "platform.h"
 
 namespace engine {
+
+/* Lesson 060: one buffer of stream per feed — one sixtieth of a second,
+   the horizon the run keeps queued. Lesson 062: a feed is always
+   exactly this much stream — the sample's frames where the sample has
+   them, silence beyond its end — so the horizon arithmetic is untouched
+   whatever the sample's length is. The sample's own length is the file's
+   fact: playback stops where its frame_count says it stops, not where a
+   constant here would. Lesson 097: the constant is the sound's own now —
+   the stream's buffers are this module's business. */
+constexpr int CHUNK_FRAMES = AUDIO_RATE / 60;   /* 735 */
 
 /* The game's sounds: its music — looping on the music channel, under
    everything — and its effects, one per event, fired on the pool's
@@ -40,6 +51,27 @@ void SoundStart(Sound &sound);
 void SoundShot(Sound &sound);
 void SoundHit(Sound &sound);
 void SoundDeath(Sound &sound);
+
+/* Lesson 097: the run's feed — the schedule the loop used to keep in
+   its own locals (when the next buffer is due, how many have been
+   mixed, how often the music has wrapped, whether the stream's bytes
+   with effects in have been reported). The feed is the sound's book-
+   keeping now; the loop keeps the clock that paces it and nothing more. */
+struct Feed {
+    double next;   /* when the next buffer of stream is due */
+    int feeds;     /* buffers of stream mixed */
+    int wraps;     /* the music's wraps */
+    bool reported; /* the stream's bytes with effects in, reported */
+};
+
+/* One buffer of stream, when it is due — the loop's audio step. The
+   mix runs on the engine's rate whether or not a device exists (lesson
+   095): with no output the run mixes in silence and the reports still
+   say what the channels and the stream carried. The seam takes the
+   buffer — or, refusing it once, is closed and the run carries on in
+   silence. `output` is the seam's handle the run opened; the feed sets
+   it to null when the device is gone. */
+void SoundFeed(Sound &sound, Feed &feed, platform::AudioOutput *&output);
 
 } /* namespace engine */
 

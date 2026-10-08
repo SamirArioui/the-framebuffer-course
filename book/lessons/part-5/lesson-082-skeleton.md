@@ -719,5 +719,5 @@ lives?
 
 **Part:** [Part 5 — the game](../../index.md) ·
 **Previous:** [Lesson 081 — the slice's cost in the frame budget](../part-4/lesson-081-entities-row.md) ·
-**Next:** [the course home](../../index.md) ·
+**Next:** [Lesson 083 — the tilemap and camera](lesson-083-tilemap-camera.md) ·
 **Code tag:** [`lesson-082`](https://github.com/SamirArioui/the-framebuffer-course/tree/lesson-082)

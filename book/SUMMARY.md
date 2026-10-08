@@ -448,6 +448,10 @@
   - [Solution: ex1 — the pause over the frozen world](solutions/lesson-096/ex1.md)
   - [Solution: ex2 — the fade's clock](solutions/lesson-096/ex2.md)
 
+- [Lesson 097 — pay the debt](lessons/part-5/lesson-097-debt.md)
+  - [Solution: ex1 — the banners come in from the cold](solutions/lesson-097/ex1.md)
+  - [Solution: ex2 — the transcript's bill](solutions/lesson-097/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

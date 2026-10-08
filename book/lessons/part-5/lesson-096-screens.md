@@ -394,5 +394,5 @@ which of lesson 078's clocks is each one?
 
 **Part:** [Part 5 — the game](../../index.md) ·
 **Previous:** [Lesson 095 — audio integration](lesson-095-audio.md) ·
-**Next:** [the course home](../../index.md) ·
+**Next:** [Lesson 097 — pay the debt](lesson-097-debt.md) ·
 **Code tag:** [`lesson-096`](https://github.com/SamirArioui/the-framebuffer-course/tree/lesson-096)
