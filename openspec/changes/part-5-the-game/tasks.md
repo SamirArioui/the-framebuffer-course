@@ -27,7 +27,7 @@
 - [x] 4.2 Author lesson-093 (L12, particle bursts and easing: particles as entities and eased arrivals) with its exercises and diff solutions; verify a burst is bounded by the store's policy and its particles retire, a full store drops particles while gameplay spawns are kept, and eased values arrive exactly at their targets, as documented, the page renders, and the commit is tagged `lesson-093`.
 - [x] 4.3 Author lesson-094 (L13, the HUD: score, health, and timers) with its exercises and diff solutions; verify the readouts reflect the game's actual state in the same frame and the HUD stays in place over the world as the camera moves, as documented, the page renders, and the commit is tagged `lesson-094`.
 - [x] 4.4 Author lesson-095 (L14, audio integration: music and sfx routed through the mixer's channels) with its exercises and diff solutions; verify the music and effects reach the channels and the stream as documented, the page renders, and the commit is tagged `lesson-095`.
-- [ ] 4.5 Author lesson-096 (L15, screen polish: the title, pause, death, and victory screens in final form) with its exercises and diff solutions; verify each screen renders and its input acts as documented, the page renders, and the commit is tagged `lesson-096`.
+- [x] 4.5 Author lesson-096 (L15, screen polish: the title, pause, death, and victory screens in final form) with its exercises and diff solutions; verify each screen renders and its input acts as documented, the page renders, and the commit is tagged `lesson-096`.
 
 ## 5. Pay the debt (lesson-097)
 

@@ -1303,3 +1303,90 @@ tones); the demonstration files of lessons 061/066 (`tone.wav`,
   (1, 2, 3, 4, 5). The run matches exactly; the walkthrough ties the
   oldest-stealing pool to 074's never-stealing store as the deliberate
   contrast (a dropped sound is inaudible; a dropped enemy is a bug).
+
+## Lesson-096 — screen polish (L15): authoring record
+
+The assembly's last lesson: the four screens in final form. The title
+teaches the controls; the pause and the end screens carry the run's
+final numbers (the game's own score, play clock, and wave — the same
+values the HUD reads); every screen names the input it acts on. The
+toolkit's easing finds its application at last — the screens' fades
+(D8's example): the backdrop eases from black to the screen's own
+color (the death reddens at 56,16,16, the victory greens at 16,48,16)
+and arrives exactly.
+
+### The design decisions this lesson settled
+
+- **The screen reports what it draws.** A headless run cannot see a
+  layout; `GameDrawPanel` prints its content the first frame it draws
+  (`screen: death: "GAME OVER" / "SCORE 000424 …" / "ENTER: TITLE"`),
+  so "each screen renders" has a measurable meaning and the prompts'
+  documented inputs pair with the transition log's actions.
+- **The fade's clock is the presentation's (wall time)** — game time is
+  zero wherever a screen shows, so a fade on game time would never
+  leave its first frame. Lesson 078's split, now on the presentation's
+  side: the simulation on game time, the machinery and the screens on
+  the wall's. The arrival is reported with its exact color (`fade
+  arrived at 56,16,16 (its own color)`) — the eased value's contract
+  (093) verified on a new value.
+- **The screens' prompts document their inputs, and the inputs are
+  exactly what they document** — no input changed in this lesson; the
+  final form is the *communication* of the machine that already
+  existed (a design choice: screens describe behavior, they do not
+  grow it).
+
+### What the runs verified (headless, Xvfb `:99`, scripted input)
+
+- **Each screen renders and its input acts as documented** (run A, the
+  real roster — title → play → pause → play → death → title; run B, the
+  scratch fight — title → play → victory → title):
+  `screen: title … "ENTER: PLAY"` + `state title -> play (the player
+  started)`; `screen: pause … "ESCAPE: RESUME"` + `state pause -> play
+  (the player resumed)`; `screen: death: "GAME OVER" / "SCORE 000424
+  TIME 0:06 WAVE 1/3" / "ENTER: TITLE"` + `state death -> title (the
+  player returned to the title)`; `screen: victory: "VICTORY" / "SCORE
+  000000 TIME 0:01 WAVE 3/3" / "ENTER: TITLE"` after `the waves are
+  complete (t=1.023)`. Four screens, four prompts, four documented
+  actions — each pair in the same run.
+- **The fades arrive exactly at their targets** — `title fade arrived
+  at 24,24,40`, `pause fade arrived at 24,24,40`, `death fade arrived
+  at 56,16,16`, `victory fade arrived at 16,48,16 (its own color)` —
+  the eased value landing on the screen's own color, not a rounding
+  from it.
+- **Honest limit, stated in the prose**: the layout's beauty is
+  unverified (no screen to look at); the numbers and the content are
+  what a headless run can honestly measure.
+
+### Lesson-096 exercises
+
+- **ex1 (extend-the-code) — the pause over the frozen world.** The
+  framebuffer grows `ClearRect` (the clear clipped to a rectangle) and
+  the pause draws the world behind its panel. The frame record proves
+  it: the pause frames carry `tilemap 0.961, sprites 0.004` beside
+  `step 0.000` (the world drawn and frozen) where the other panels
+  carry `tilemap 0.000` — quoted from the run.
+- **ex2 (predict-the-output) — the fade's clock.** The prediction (the
+  step frozen at 0.000 while the fade climbs ~0.043 a paced frame to
+  its 0.30 s) against the probe's measured pair: `fade 0.043 — step
+  0.000 ms` … `fade 0.259` → `fade arrived` → `fade 0.302` (clamped).
+  The walkthrough gives the two clocks' rule of thumb: what must
+  happen while the world is frozen is wall time; what must wait for
+  the player is game time.
+
+### Batch 4 (lessons 092-096) — closing note
+
+All five lessons are authored, verified on real runs, co-committed, and
+tagged (`lesson-092`…`lesson-096`); each tag-to-tag `src/` diff equals
+that lesson's code step alone. The feel-and-polish batch completes the
+MVD's juice toolkit — hitstop, screenshake, particle bursts, easing,
+all four and no fifth (092 wires the hooks to the game's events and
+teaches "feedback starts with the event"; 093 brings the bursts and
+the easing under the store's cosmetic-share policy) — and the game's
+presentation (094's HUD reads the game state in the same frame and
+never scrolls; 095 routes the music and the events' sfx through the
+mixer's channels into one stream, verified byte-for-byte on a machine
+with no sound device; 096 puts the screens in final form with the
+fades on the presentation's clock). The frozen checklist's "juice
+toolkit" and "states" lines are now demonstrable end to end; the
+"audio" line is demonstrated to the byte, its audible half routed to
+the learner's machine.
