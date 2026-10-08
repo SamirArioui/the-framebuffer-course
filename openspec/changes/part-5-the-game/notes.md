@@ -1484,3 +1484,88 @@ The stale "Next:" footers — `lesson-082`…`lesson-086`, `lesson-091`,
 and `lesson-096` said "the course home" while a next lesson exists —
 now link forward (the task's grant named 086 and 091; 082-085 and 096
 were the same staleness and were fixed the same way).
+
+## Lesson-098 — pass 1: measure (L17): authoring record
+
+The measure pass on the frozen menu (D11): instrument, profile, name
+the top-2 hotspots with numbers from real frames. Instruments: the
+frame account + `gprof` via `-pg` (§1.1 — `perf`/`valgrind` are not on
+this machine). Machine: WSL2, Xvfb `:99`, no sound hardware (D12).
+
+### The design decisions this lesson settled
+
+- **The instrument's gap first.** The render's clear was the unnamed
+  remainder between the `render` row and its sub-phases' sum. The code
+  step names it: `FrameRecord`/`FrameStats` grow `clear`, the loop
+  times it, the log line and the table carry it. After this the
+  table's numbers add up (`clear + sprites + text + tilemap = render`).
+- **The play/panel mix is measured, not assumed.** The record's `step`
+  field classifies the frames (step > 0 = play): 1,415 play vs 136
+  panel frames in the measurement run. The whole-run average is the
+  mix (tilemap 0.895 = the weighted 0.981 and 0.000); the hotspots are
+  named from the play frames.
+- **Wall time vs CPU, named explicitly.** `present` is 0.444 ms/frame
+  of wall (23%) but 0.01 s of CPU across 2,583 frames (0.28%) — the
+  seam's wait on the X server, not process work. Both instruments are
+  quoted for every claim.
+
+### What the runs verified (headless, Xvfb `:99`, scripted input)
+
+Measurement scenario: `Return` into play, then legs of 10 s walking +
+firing (alternating directions), each leg followed by two `Return`s
+that restart after a death and do nothing in play (the keep-playing
+trick — the hero dies and a dead game is a title screen); paced ~25 fps
+by window-move jiggles.
+
+- **The instrumented run (1,551 frames, one death):** whole-run table
+  `avg 1.857 ms (update 0.013, entities 0.005, audio 0.032, render
+  1.370 — clear 0.458, sprites 0.006, text 0.012, tilemap 0.895,
+  present 0.442)`. Split by `step`: **play frames (1,415)** total
+  1.944 — clear 0.456, sprites 0.006, text 0.012, **tilemap 0.981**,
+  present 0.444; **panel frames (136)** total 0.961 — clear 0.473,
+  tilemap 0.000, present 0.427.
+- **The profiled run (2,583 frames, `-O0 -g -pg`, same scenario):**
+  frame account `avg 1.834 ms (tilemap 0.835, clear 0.443, present
+  0.433)` — the same run `gmon.out` was written on. `gprof` flat
+  profile, 3.53 s CPU in 353 samples: `BlitSprite` **59.77%** (2.11 s,
+  3,501,190 calls), `ClearBuffer` **37.68%** (1.33 s, 2,584 calls),
+  `DrawTileMap` 1.13% (0.04 s, 2,204 calls), `BlitSpriteFrame` 0.57%,
+  `ChannelFrame` 0.28%, `platform::Present` 0.28% (0.01 s),
+  `MixBuffer` 0.28%. Call arithmetic: `DrawTileMap`'s 2,204 draws ×
+  1,536 cells = 3,385,344 of `BlitSprite`'s calls (**96.7%**); the
+  remainder, 115,846, is exactly the `FontGlyph` call count (the
+  glyphs ride the same loop).
+- **The top-2 hotspots, named** (both instruments agree on names and
+  order):
+  - **#1 the map's draw** — `DrawTileMap`'s walk, `BlitSprite` per
+    cell: `tilemap 0.981 ms` of a play frame's `1.944 ms` (50%);
+    2.15 s of 3.53 s profiled CPU (60.9%).
+  - **#2 the frame's clear** — `ClearBuffer`: `clear 0.456 ms` (23% of
+    a play frame; 49% of a panel frame); 1.33 s (37.7%) of CPU.
+- **Named and recorded as future work (D11), not fixed:** the
+  presentation (`present` 0.444 ms wall / 0.004 ms CPU — the seam's
+  copy; a double-buffered/MIT-SHM present is a platform-layer change
+  the menu does not make); the audio mix at full load (audio 0.031 ms,
+  few effects firing); the update's per-entity work at a full 64-slot
+  store (entities 0.005 ms); the reports'/frame log's own `printf`
+  cost (inside update/text and outside the measured phases).
+- **Honest limits, stated in the prose:** all numbers are the course's
+  build (`-O0`; the profile's build adds `-pg`), not `-O3`'s; 353
+  samples put each line within a percent or two; the paced ~25 fps
+  headless run is a rig, not modest-hardware 60 fps evidence (that is
+  L20's claim to check).
+
+### Lesson-098 exercises
+
+- **ex1 (measure-the-performance) — what the profile cannot see.**
+  `ReportSeam` splits the frame's wall into engine work and seam wait.
+  Real run: `engine: seam: 777 frames — engine work 1.323 ms/frame,
+  seam wait 0.425 ms/frame` (1.323 + 0.425 = 1.748 = the table's
+  total). Answer: the profiler is blind to ~24% of the frame's wall;
+  the flat profile's shares are shares of the CPU.
+- **ex2 (port-to-your-own-machine) — the measure pass on your
+  machine.** `tools/profile-card.sh` prints one machine's card (top
+  flat lines + profiled CPU: `3.53 s in 353 samples`); the walkthrough
+  names what may legitimately differ (the present's CPU/wait split,
+  the device's feed, the build's flags) and demands the machine's name
+  beside every number (D12).
