@@ -868,3 +868,93 @@ gone.
   t=9.1` — the prediction matched, jittered by the frame each change
   lands in. The walkthrough also defends the elapsed-time schedule
   against the countdown bug the first implementation had.
+
+## Lesson-091 — waves (L10): authoring record
+
+New behavior (the `enemies` delta's waves). `GameWaves` (game.cpp) is
+the fight's shape: a fresh game's clear, the composition from the
+table's rows, the advance on the last retirement, and the completion
+that spends `waves_remaining`. Lesson 088's standing roster spawn
+gives way to the waves; the last stand-in (ENTER's completion key)
+dies; the hit rule grows one clause (a shot flies through its own
+kind).
+
+### The design decisions this lesson settled
+
+- **The wave composition is the rows' `wave`/`count`, and a kind joins
+  at its wave and every wave after it.** So each stage is thicker than
+  the last, and the final wave is the three types and the boss together
+  — the phrase the batch's plan used, realized literally. (The
+  alternative — a kind spawns in its one wave only — made the final
+  wave a solo boss, which is not what "bring together" means.)
+- **The wave's state is the store's**: the wave is being fought while
+  any fighter (behavior chase/keep/flee/boss) is live. No kill counter
+  to keep in step with the retirements; the store is the truth. The
+  hero (none), the scenery (none), and the shots (fly) are not
+  fighters, so a stray shot or the standing slime never advances a
+  wave.
+- **The copies stand in a line beside their row's spot** (`x + n ×
+  ANIM_FRAME_W`) — the simplest honest spread; a copy landing in a wall
+  is the mover's problem to solve when the wave fights, not the
+  spawn's.
+- **A shot flies through its own kind** (the hit rule's new clause):
+  without it the wave's copies shot each other down — the run that
+  found it printed `hit: bolt hits bat` from one bat to another. A
+  shot's targets are the other kinds (the hero's shots hit the enemies;
+  the enemies' shots hit the hero). Mixed-kind cross-fire remains
+  possible and is cosmetic; the owner-only exclusion is not enough for
+  a game that spawns copies.
+- **The fresh fight clears the store of fighters and shots** (behavior
+  not `none`): the hero is the game's actor and the scenery is the
+  world's; everything the last game brought is retired before wave 1
+  spawns again.
+- **The wave column's doc was extended** in this step ("the wave this
+  kind joins — it spawns in that wave and every wave after"), as
+  promised at the design when the column grew.
+
+### What the runs verified (headless, Xvfb `:99`, scripted input)
+
+- **A wave spawns its composition from the table's definitions** (the
+  real roster, the hero fighting it): `wave 1 begins — 2 enemies`
+  (bat ×2), and on its clear `wave 2 begins — 5 enemies` — bat ×2,
+  wisp ×1, spitter ×2, each spawn line naming the kind, its spot, and
+  the values its row carries. Every count is the rows' `count`; every
+  kind is the rows' `wave` answered.
+- **The next wave begins when the last entity of the current one is
+  retired** — `bat retired — zero health`, `bat retired — zero health`,
+  `wave 1 cleared — the next begins`, in that order and in the same
+  breath.
+- **The waves bring the three types and the boss together, and they
+  complete the game** (a scratch roster — the same waves with the
+  enemies slow, fragile, unarmed, and spawned at the hero's feet; the
+  wave mechanics without the hunt, stated as such in the lesson):
+  `wave 3 begins — 6 enemies` (bat ×2, wisp, spitter ×2, golem), six
+  `retired — zero health` lines, `the waves are complete (t=3.487)`,
+  `state play -> victory (the game's waves are complete)` — the named
+  condition's real trigger, and **no stand-ins remain** in the machine.
+
+### Lesson-091 exercises
+
+- **ex1 (extend-the-code) — the breath between waves.** A game-time
+  intermission (`wave_wait`, `WAVE_BREATH_S`, `GameWaves` gaining the
+  frame's dt). Real run: `wave 1 cleared — wave 2 incoming (t=0.333)`
+  → `wave 2 begins — 5 enemies (t=2.662)` — the two-second breath plus
+  the frame it lands in. The walkthrough defends game time against wall
+  time (a breath that waits while paused) and locates it beside
+  lesson 086's wall-time hooks.
+- **ex2 (predict-the-output) — the wave plan.** Predicted from the
+  rows' `wave`/`count` alone: wave 1 = 2, wave 2 = 5, wave 3 = 6 (the
+  three types + the boss). The probe prints the plan from the table
+  (`plan: wave 3 brings … golem x1 / wave 3 total 6`) and the runs
+  spawn exactly those; moving one row's `wave` value inverts the
+  contest — the composition is data.
+
+### Batch 3 (lessons 087-091) — closing note
+
+All five lessons are authored, verified on real runs, co-committed,
+and tagged (`lesson-087`…`lesson-091`); each tag-to-tag `src/` diff
+equals that lesson's code step alone. The combat/enemies batch lands
+the `combat` and `enemies` deltas of the audit (§1.2) on the grown
+table format (D3), with weapons as rows and projectiles as entities
+(D5) and the AI over the mover (D6) — and the state machine's five
+named conditions are now all driven by real gameplay (no stand-ins).
