@@ -654,3 +654,70 @@ scratch space, not in the repo.
   of the sprite's size. The fix refuses it typed at `EntityCreate`
   (`ENTITY_NO_ART`) and the run says `fire refused — the kind has no
   art`; the weapon rows (no art, never entities) are unaffected.
+
+## Lesson-088 — enemy archetype tables (L7): authoring record
+
+New data, and the smallest code step of the batch: `assets/enemies.txt`
+(four rows — bat, wisp, spitter, golem — the three types and the boss),
+four 16×16 magenta-keyed sprites, `Entity` carrying the row's last two
+facts (`wave`, `count`) like all the others, and `main.cpp` loading the
+roster's table and spawning one entity per row with a print that
+mirrors the definition's. Nothing else moves.
+
+### The design decisions this lesson settled
+
+- **The roster carries the facts the later lessons act on.** The rows
+  state `damage`/`rate`/`fires` (their attacks — lesson 090 fires
+  them) and `behavior` (lesson 089 acts on it) and `wave`/`count`
+  (lesson 091's waves) now, so "every enemy carries its row's values"
+  is literally true from this lesson on: the entity carries every value
+  its row states, and the run prints the definition and the entity in
+  the same words for an eye-checkable comparison.
+- **The wave column's semantics (settled here, spent in 091).** A
+  kind's `wave` is the wave it *joins* — it spawns in that wave and
+  every wave after it — so the final wave is where the three types and
+  the boss stand together (bat/wisp join at 1, spitter at 2, golem at
+  3). `count` is how many of the kind each of its waves spawns. 087's
+  column doc is one sentence short of this and 091's step extends the
+  comment.
+- **Enemy art is one colour and a pair of eyes per kind** (four small
+  PPMs) — enough for the roster to be told apart on screen without
+  turning the lesson into an art exercise. The kinds may also share art
+  (the exercise's swarmling wears the wisp's colours): art is a row's
+  value like any other.
+
+### What the runs verified (headless, Xvfb `:99`, scripted input)
+
+- **Every enemy carries its row's values.** Real output, definition
+  beside entity (the sprite prints as dimensions — the entity carries
+  the row's art *loaded*):
+  `def bat: x 560 y 72 facing 2 speed 160 health 2 sprite
+  assets/bat.ppm accel 120 damage 1 rate 60 fires bolt range 0 behavior
+  chase wave 1 count 2` / `entity bat: x 560 y 72 facing 2 speed 160
+  health 2 sprite 16x16 accel 120 damage 1 rate 60 fires bolt range 0
+  behavior chase wave 1 count 2` — and the same for wisp, spitter,
+  golem. `roster: 4 enemies from the table's rows, live 6 of 64`.
+- **No per-type copy of the attributes in code.** The spawn is one
+  loop over the table's rows; a scratch copy with a fifth row
+  (`swarmling …`) grows the roster to 5 and spawns it carrying its
+  values (`roster: 5 enemies … live 7 of 64`) with `git diff --stat
+  src/` empty. The only per-name lookups in the code are the game's
+  own asks (the hero's row; the weapons' rows) and the typed-failure
+  demonstration (`"dragon" -> unknown`).
+
+### Lesson-088 exercises
+
+- **ex1 (extend-the-code) — the kinds nobody made yet.** Three kinds as
+  rows only (a `count 6` swarm, a 240-speed one-health sprinter, a
+  12-health tank) with reused art: the run spawns all three carrying
+  their values and `git diff --stat src/` is empty. Real run quoted:
+  `entity swarm … count 6`, `entity sprinter … speed 240 health 1`,
+  `entity tank … health 12 damage 3`, `roster: 7 enemies … live 9 of
+  64`.
+- **ex2 (explain-in-prose) — why the boss does not deserve code.** A
+  probe prints the walk's per-entity visits (one shape, six kinds
+  through it: `walk visit: golem (behavior boss)`); the walkthrough
+  argues the 075 rule, the wave scale, and the data protection — and
+  steelmans the boss: what it needs that no row carries is a
+  *schedule*, which lesson 090 gives it without its own movement
+  machinery.
