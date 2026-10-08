@@ -1709,3 +1709,87 @@ Pass 2b on the frozen menu (D11): fix hotspot #2 — the frame's clear
   windows) made checkable: the probe prints `pixels aligned to 4: yes,
   row stride ok; cleared 1,2,3 reads 1,2,3 … raw bytes 3,2,1,0`, and
   the walkthrough says what to change where a claim fails.
+
+## Lesson-101 — pass 3: the frame-budget report (L20): authoring record
+
+The course's finale on the frozen menu (D11): the final frame-budget
+report, produced from `frame-accounting`'s account — measured, never
+modeled.
+
+### The design decisions this lesson settled
+
+- **The report's close, not a new instrument.** The attribution table
+  was the account's contract already; the finale grows its close: the
+  **by-state** split (play vs screen frames, classified by the
+  record's own `step` — lesson 098's mix lesson made permanent), the
+  **budget** line (the 60 fps frame, `FRAME_BUDGET_MS`, checked frame
+  by frame: the count that crosses it), and the **machine** line — the
+  `RUN_MACHINE` string printed with the numbers (D12: a performance
+  claim carries its machine; the report cannot lose it).
+- **The 60 fps claim is checked as far as honest and the rest is said
+  out loud.** The lesson's prose separates three things: what this
+  machine measured (0 of 2,583 frames over budget; worst 3.124 ms =
+  19% of it; even the worst frame ever seen here — 4.387 ms — is 26%,
+  at `-O0`), what this machine *is* (WSL2, Xvfb, no sound hardware,
+  an event-driven loop paced at ~25 fps — it cannot *demonstrate* 60
+  fps and says so), and what is left ("modest hardware" — routed to
+  the learner's machine, ex1, exactly as D12 prescribes).
+
+### What the runs verified (headless, Xvfb `:99`, scripted input)
+
+- **The report attributes per-frame time to each major subsystem from
+  real frames of the finished game** — the ten-leg run, 2,583 frames
+  (2,447 play / 136 screen):
+  `avg 1.283 ms (update 0.013, entities 0.005, audio 0.033, render
+  0.799 — clear 0.244, sprites 0.006, text 0.011, tilemap 0.538,
+  present 0.438)`; `by state 2447 play frames at 1.313 ms, 136 screen
+  frames at 0.749 ms`; `budget 60 fps is 16.667 ms a frame — 0 of 2583
+  frames over it, worst 3.124 ms (19% of it)`; `machine WSL2, Xvfb
+  :99, no sound hardware (the course's authoring machine)`.
+- **The two passes' story in the account's rows** (play frames):
+  tilemap 0.981 → 0.559 → 0.539 → 0.538; clear 0.456 → 0.449 → 0.239
+  → 0.244; total 1.944 → 1.505 → 1.269 → 1.313 (runs wobble ±3%; the
+  shapes are the claim). The two named rows fell 1.437 → 0.782 ms;
+  `present` (0.438, the seam's) is now the frame's largest row —
+  measured, named, on the future-work ledger, untouched (D11).
+- **The demonstrations re-run as documented** and the transcript shape
+  grows by exactly the three new report templates (`by state`,
+  `budget`, `machine`) — the instrument's growth and nothing else.
+- **Future work, on the record**: the presentation's copy (the seam's
+  wait); the tiles' pixel format (copy wider's layout change); the
+  audio mix at full load; the update at a full 64-slot store; the
+  reports' own printing inside the measured phases.
+
+### Lesson-101 exercises
+
+- **ex1 (port-to-your-own-machine) — the 60 fps line on your
+  machine.** The account grows a fixed histogram (65 longs, 0.25 ms
+  buckets, no allocation) and reports `p50 1.250 / p95 1.750 / p99
+  2.000 ms` — the tail, where a frame-rate claim lives. The port
+  routes the checklist's perf line to real hardware, with the rules a
+  card must carry (the machine's name, the run's shape, the budget
+  line beside the tail).
+- **ex2 (predict-the-output) — the worst frame, predicted.** The
+  account keeps the worst frame's whole record; the report attributes
+  it (`worst was 2.821 ms (frame 519): update 0.110 (entities 0.092),
+  audio 0.000, render 1.852 (clear 0.575, sprites 0.010, text 0.014,
+  tilemap 1.253), present 0.858`). The prediction (render-dominant,
+  present doubled, a wave-spawn update) matched; the counterfactual —
+  a seam-owned worst frame would be the platform layer's to fix — is
+  answered in the walkthrough.
+
+### Batch 5 (lessons 097-101) — closing note
+
+The debt lesson paid four debts (the five-job `Run()`, the tangle of
+probes, the mixer wiring in the loop, the stale names) and its bill
+was measured to zero (report shapes identical, arena bytes identical,
+frame account within noise); the three-pass menu then ran exactly as
+frozen: measure named the map's draw and the clear with numbers from
+real frames; the fixes took them 43% and 47% down with the deep
+dives' levers (cache layout, copy less/wider — the census read at
+`-O3`), and nothing else was touched; the finale's report attributes
+the finished game's frames and checks the 60 fps line as far as this
+machine honestly measures, the rest said out loud and routed to the
+learner's hardware (D12). Every optimization change names its
+hotspot; everything the passes did not name is on the future-work
+ledger (D11); every number in the batch carries its machine.

@@ -38,7 +38,7 @@
 - [x] 6.1 Author lesson-098 (L17, pass 1 — measure: instrument, profile the game, and name the top-2 hotspots) with its exercises and diff solutions; verify the profile names the top-2 hotspots with numbers measured from real frames, the page renders, and the commit is tagged `lesson-098`.
 - [x] 6.2 Author lesson-099 (L18, pass 2a — fix hotspot #1 with the deep dives' techniques) with its exercises and diff solutions; verify the change addresses the named hotspot and the measured cost falls as documented, with the game's behavior unchanged, the page renders, and the commit is tagged `lesson-099`.
 - [x] 6.3 Author lesson-100 (L19, pass 2b — fix hotspot #2 the same way) with its exercises and diff solutions; verify the change addresses the named hotspot and the measured cost falls as documented, with the game's behavior unchanged, the page renders, and the commit is tagged `lesson-100`.
-- [ ] 6.4 Author lesson-101 (L20, pass 3 — the final frame-budget report: the course finale) with its exercises and diff solutions; verify the report attributes per-frame time to each major subsystem from real frames of the finished game and that the 60 fps line is checked as far as this machine honestly measures, the page renders, and the commit is tagged `lesson-101`.
+- [x] 6.4 Author lesson-101 (L20, pass 3 — the final frame-budget report: the course finale) with its exercises and diff solutions; verify the report attributes per-frame time to each major subsystem from real frames of the finished game and that the 60 fps line is checked as far as this machine honestly measures, the page renders, and the commit is tagged `lesson-101`.
 
 ## 7. Closing (lesson-102…103)
 
