@@ -1868,3 +1868,102 @@ Both are Part 5's density shape (fewer, larger — 2), both lean the
 closing archetypes as planned, and both solutions are walkthroughs
 with empty patches, stated as such — a no-code exercise may carry an
 empty patch, and these do, on the record.
+
+## Lesson-103 — now make YOUR game (L22): authoring record
+
+The hand-over lesson: the finished engine and toolkit turned toward a
+game of the learner's own — what to keep (the services hold still),
+what to change (the game layer's files and `assets/`), where the seams
+are (the platform layer, the table format, the game layer's files,
+where to measure), the extras/idea discipline (record, don't add — the
+MVD's rule, now the learner's), and where to measure (the account, the
+profiler, the transcript discipline, the three-pass menu).
+
+### The design decisions this lesson settled
+
+- **The hand-over artifact lives in code.** The code step is a real,
+  minimal artifact: a hand-over header at the top of `src/game.h` (the
+  game layer's entry file) naming the four seams and the extras
+  discipline. It is comment-only — no behavior — which is the honest
+  shape of a hand-over: a map, at the top of the file the next person
+  opens. The lesson says so; nothing pretends to be mechanism.
+- **The keep/change line is the services vs. the game layer.** "Keep
+  until measurement says otherwise" (the lesson-087/097 style rule,
+  generalized): the services Parts 1-4 built are consumed as they are;
+  the game-layer pairs' *insides* are the learner's to rewrite, their
+  *edges* are the seams. A service change is a design decision, made
+  on purpose, named.
+- **The discipline that outlives the course is the MVD's own rule.**
+  Scope is a promise; the checklist decides; ideas are recorded as
+  extras and never added. The lesson hands the learner the *process*
+  too: write the game's frozen checklist before its first lesson (the
+  `plan/target-game-mvd.md` shape), and every idea gets one of two
+  honest answers.
+
+### What the runs verified (headless, Xvfb `:99`, scripted input)
+
+- **The code step builds and audits clean**: `./build.sh` warning-free
+  (27 sources), `./tools/check-boundary.sh` clean — the hand-over
+  comment names OSs and files and trips neither the OS-header nor the
+  OS-call scan (checked against the tool's actual patterns).
+- **The exercise solutions apply at the lesson's end state** — both
+  patches `git apply --check` clean at `lesson-103`, and ex1's patch
+  was additionally applied, built warning-free, and **run** before
+  publication (the walkthrough's transcript is from that run).
+- **ex1's demonstration, real run**: `wave 1: spawns hound at
+  448,232 — speed 192, health 2, chase` (a kind defined only by its
+  row), `hit: bolt hits hound — damage 1, health 2 -> 1`, `hound
+  retired — zero health`, `hud: score 000100 …` — each kill a jump of
+  exactly 100 (hero stationary), `wave 1 cleared — the next begins`
+  after the last. The `git diff --stat` proof: 6 files, every one a
+  game-layer pair, the loop's composition root (`main.cpp`, one token:
+  the call site passes `game.score`), or `assets/` — no service file
+  touched.
+- **ex2's minimal patch** is the machine-name edit (`RUN_MACHINE` in
+  `main.cpp`) — the smallest confirming change the card needs (D12),
+  with the card's four parts in the walkthrough (the report, the
+  row-shape differences a real machine introduces, the extras ledger's
+  first entry, what the card asks first).
+
+### Lesson-103 exercises
+
+- **ex1 (extend-the-code) — your game's first change.** A data change
+  (a new kind as a row — the hound, reusing course art honestly) and a
+  rule change (a kill is worth 100), through the seams, with the
+  transcript and the `git diff --stat` as the two proofs. The
+  walkthrough records the deliberate plainness of the rule (a per-kind
+  bounty is the table seam's named-column growth — named as the
+  extension), what the rule's threading through `GameWalk`/`CombatFly`
+  tells you about where rules live, and the keep-the-demonstration
+  habit.
+- **ex2 (port-to-your-own-machine) — your machine's hand-over card.**
+  The course's last port routes to the learner's real hardware: the
+  report with their machine's name (the minimal patch), the row-shape
+  differences against our rig named and explained (present's CPU/wait
+  split, the audio feed's pacing vs our jiggles), the extras ledger's
+  first entry recorded-not-added, and the card's verdict read off
+  their own rows through the three-pass menu. The walkthrough's
+  caution — compare shapes, never raw milliseconds — is D12 handed
+  over working.
+
+### Batch 6 (lessons 102-103) — closing note
+
+The closing batch did what the design's open question deferred and the
+Non-Goals required: the retrospective compared our engine against real
+ones like-with-like (every number its machine; the verdict — scale
+traded for legibility — said with what each side buys), the epilogue
+map (GPU port, Windows module) was scoped and marked **post-course
+material rather than scope**, and the extras ledger was printed in
+full as the record of recorded-not-added. The hand-over then gave the
+engine away with a map in code: the four seams in `src/game.h`'s
+header, the keep/change line at the services' edge, and the MVD's
+discipline as the learner's own. The batch's code steps are the
+course's most honest pair — 102's is **empty** (a retrospective adds
+no behavior; the page says so and the tag diff is empty), 103's is a
+**comment** (a map is not a mechanism) — and both tags carry their
+discipline: `lesson-101..lesson-102 -- src/` is empty exactly,
+`lesson-102..lesson-103 -- src/` is the header exactly. Two lessons,
+four exercises (two prose deliverables with empty patches, said so on
+the record; one extend-the-code with a demonstrated patch; one port
+with the machine-name edit), and the course's 103 tags stand
+consecutive.
