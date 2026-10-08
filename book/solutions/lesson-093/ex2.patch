@@ -1,0 +1,15 @@
+diff --git a/src/feel.cpp b/src/feel.cpp
+index 5d769d8..0e6a4cb 100644
+--- a/src/feel.cpp
++++ b/src/feel.cpp
+@@ -150,6 +150,10 @@ void FeelParticle(EntityStore &store, Entity &e, double dt)
+        the burst point every frame, never accumulated step by step, so
+        the arrival is the target and not a rounding of it. */
+     e.traveled = (double)e.range * EaseOutQuad(t);
++    /* Exercise 2: the probe — the eased value, every frame, at the
++       precision the arrival's exactness is judged at. */
++    std::printf("engine: probe: %s traveled %.17g at t %.3f\n", e.name,
++                e.traveled, t);
+     e.x = e.from_x + e.move_x * e.traveled;
+     e.y = e.from_y + e.move_y * e.traveled;
+ 

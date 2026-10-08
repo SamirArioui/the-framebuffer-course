@@ -59,9 +59,12 @@ bool CombatFire(EntityStore &store, const EntityTable &shots,
    defeat condition (the state machine reads it, the game's actor is not
    retired out from under the game). Lesson 092: the hit and the death
    are the toolkit's events — the feedback hooks fire here, in the
-   event's own frame, through `feel`. */
+   event's own frame, through `feel`. Lesson 093: they burst particles
+   of `spark` too — the cosmetic kind the game names, spawned in the
+   same frame from the same event. */
 void CombatFly(const TileMap &map, EntityStore &store, const Entity &hero,
-               Entity &shot, Feedback &feel, double dt);
+               Entity &shot, Feedback &feel, const EntityDef &spark,
+               double dt);
 
 /* Lesson 090: the enemy attack, once per frame of game time. An armed
    entity — one whose row names a projectile kind — fires it at the

@@ -62,6 +62,11 @@ struct Entity {
                                   thing a row cannot carry */
     double phase_t;            /* and how long this phase has run */
     double cooldown;           /* seconds until it may fire again */
+    double life_t;             /* lesson 093: how long a particle has
+                                  run — its eased settle's clock */
+    double from_x, from_y;     /* and the burst point it eases out
+                                  from — its position is measured from
+                                  here, never accumulated */
 };
 
 /* An entity created from a definition: every attribute its row states,

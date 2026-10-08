@@ -432,6 +432,10 @@
   - [Solution: ex1 — the shake that settles](solutions/lesson-092/ex1.md)
   - [Solution: ex2 — the pause that meets the hitstop](solutions/lesson-092/ex2.md)
 
+- [Lesson 093 — particle bursts and easing](lessons/part-5/lesson-093-bursts-easing.md)
+  - [Solution: ex1 — the sparks inherit the blow](solutions/lesson-093/ex1.md)
+  - [Solution: ex2 — the curve, predicted](solutions/lesson-093/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

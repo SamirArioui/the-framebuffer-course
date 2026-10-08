@@ -1,0 +1,2 @@
+name sprite accel range behavior
+spark assets/spark.ppm 400 64 settle

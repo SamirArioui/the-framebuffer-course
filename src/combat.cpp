@@ -8,6 +8,9 @@
 //
 // Lesson 092: the hit and the death are the juice toolkit's events, and
 // the feedback hooks fire at the lines where they happen.
+//
+// Lesson 093: the same events burst particles — cosmetic entities of
+// the kind the game names, bounded by the store's policy.
 
 #include "combat.h"
 
@@ -116,7 +119,8 @@ bool CombatFire(EntityStore &store, const EntityTable &shots,
 }
 
 void CombatFly(const TileMap &map, EntityStore &store, const Entity &hero,
-               Entity &shot, Feedback &feel, double dt)
+               Entity &shot, Feedback &feel, const EntityDef &spark,
+               double dt)
 {
     /* The flight, in game time: the shot's speed over dt, sub-stepped
        through the mover so each sub-step is small. What is checked at
@@ -137,6 +141,9 @@ void CombatFly(const TileMap &map, EntityStore &store, const Entity &hero,
                 continue;
             if (e.behavior == BEHAVIOR_FLY)
                 continue;
+            if (e.behavior == BEHAVIOR_SETTLE)
+                continue; /* a spark is cosmetic — a shot flies through
+                            it, the way it flies through other shots */
             if (shot.owner && SameName(e.name, shot.owner->name))
                 continue;
             if (Overlaps(shot, e))
@@ -161,6 +168,10 @@ void CombatFly(const TileMap &map, EntityStore &store, const Entity &hero,
             FeelHitstop(feel, 0.25, 0.15);
             FeelShake(feel, 5.0, 0.25);
 
+            /* Lesson 093: and the impact scatters sparks — a burst of
+               particles from the same event's own frame. */
+            FeelBurst(store, spark, shot.x, shot.y, 4);
+
             std::printf("engine: shot %s retired — hit %s\n", shot.name,
                         target->name);
             EntityRetire(store, shot);
@@ -180,6 +191,12 @@ void CombatFly(const TileMap &map, EntityStore &store, const Entity &hero,
                    as both, and the death's weights win. */
                 FeelHitstop(feel, 0.25, 0.30);
                 FeelShake(feel, 10.0, 0.50);
+
+                /* Lesson 093: and the death bursts harder — the thing
+                   that fell scatters its sparks from its own centre. */
+                FeelBurst(store, spark,
+                          target->x + ANIM_FRAME_W / 2.0,
+                          target->y + target->sprite->height / 2.0, 8);
             }
             return;
         }

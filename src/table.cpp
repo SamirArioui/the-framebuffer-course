@@ -133,7 +133,7 @@ const char *const COLUMN_NAMES[COL_COUNT] = {
 
 /* Lesson 087: the behavior column's spellings, the format's own. */
 const char *const BEHAVIOR_NAMES[BEHAVIOR_COUNT] = {
-    "none", "fly", "chase", "keep", "flee", "boss"
+    "none", "fly", "chase", "keep", "flee", "boss", "settle"
 };
 
 /* Lesson 087: one row at the format's defaults, before the named fields

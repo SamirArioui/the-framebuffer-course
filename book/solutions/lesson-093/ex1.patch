@@ -1,0 +1,104 @@
+diff --git a/src/combat.cpp b/src/combat.cpp
+index e040bb5..24b0e0f 100644
+--- a/src/combat.cpp
++++ b/src/combat.cpp
+@@ -169,8 +169,10 @@ void CombatFly(const TileMap &map, EntityStore &store, const Entity &hero,
+             FeelShake(feel, 5.0, 0.25);
+ 
+             /* Lesson 093: and the impact scatters sparks — a burst of
+-               particles from the same event's own frame. */
+-            FeelBurst(store, spark, shot.x, shot.y, 4);
++               particles from the same event's own frame. Exercise 1:
++               the spray carries the shot's own direction. */
++            FeelBurst(store, spark, shot.x, shot.y, 4, shot.move_x,
++                      shot.move_y);
+ 
+             std::printf("engine: shot %s retired — hit %s\n", shot.name,
+                         target->name);
+@@ -193,10 +195,12 @@ void CombatFly(const TileMap &map, EntityStore &store, const Entity &hero,
+                 FeelShake(feel, 10.0, 0.50);
+ 
+                 /* Lesson 093: and the death bursts harder — the thing
+-                   that fell scatters its sparks from its own centre. */
++                   that fell scatters its sparks from its own centre,
++                   in every direction (exercise 1's radial burst). */
+                 FeelBurst(store, spark,
+                           target->x + ANIM_FRAME_W / 2.0,
+-                          target->y + target->sprite->height / 2.0, 8);
++                          target->y + target->sprite->height / 2.0, 8, 0.0,
++                          0.0);
+             }
+             return;
+         }
+diff --git a/src/feel.cpp b/src/feel.cpp
+index 5d769d8..afa5291 100644
+--- a/src/feel.cpp
++++ b/src/feel.cpp
+@@ -92,7 +92,7 @@ const double LANE_Y[8] = { 0.0, BURST_DIAG, 1.0, BURST_DIAG, 0.0,
+                            -BURST_DIAG, -1.0, -BURST_DIAG };
+ 
+ int FeelBurst(EntityStore &store, const EntityDef &kind, double x, double y,
+-              int count)
++              int count, double dir_x, double dir_y)
+ {
+     /* The cosmetic share, counted before the burst asks: the toolkit's
+        particles may hold FEEL_COSMETIC_SLOTS of the store's slots and
+@@ -103,6 +103,8 @@ int FeelBurst(EntityStore &store, const EntityDef &kind, double x, double y,
+             cosmetic += 1;
+ 
+     int made = 0, dropped = 0;
++    bool used[8] = { false, false, false, false,
++                     false, false, false, false };
+     for (int i = 0; i < count; ++i) {
+         /* A burst that finds no slot drops its particle — cosmetic work
+            may be dropped (counted, and invisible); gameplay work may
+@@ -117,7 +119,28 @@ int FeelBurst(EntityStore &store, const EntityDef &kind, double x, double y,
+             continue;
+         }
+         Entity &e = *result.entity;
+-        int lane = count < 8 ? (i * 8) / count : i % 8;
++        /* Exercise 1: the lanes the blow faces. A directional burst
++           takes the lanes whose dot with the blow's direction is
++           highest — the spray carries the shot's way; a radial burst
++           (0, 0) spreads evenly, one lane per particle. */
++        int lane = 0;
++        if (dir_x == 0.0 && dir_y == 0.0) {
++            lane = count < 8 ? (i * 8) / count : i % 8;
++        } else {
++            int best = -1;
++            double best_dot = -2.0;
++            for (int l = 0; l < 8; ++l) {
++                if (used[l])
++                    continue;
++                double dot = LANE_X[l] * dir_x + LANE_Y[l] * dir_y;
++                if (dot > best_dot) {
++                    best_dot = dot;
++                    best = l;
++                }
++            }
++            lane = best >= 0 ? best : i % 8;
++            used[lane] = true;
++        }
+         e.x = x;
+         e.y = y;
+         e.from_x = x;
+diff --git a/src/feel.h b/src/feel.h
+index d4f1909..d85c6a7 100644
+--- a/src/feel.h
++++ b/src/feel.h
+@@ -73,9 +73,13 @@ double EaseInOutQuad(double t);  /* both */
+    `count` particles of `kind` take the store's cosmetic slots and ease
+    out from (x, y) along the burst's lanes; whatever finds no slot is
+    dropped and counted — cosmetic work may be dropped, gameplay work may
+-   not. Answers how many were made. */
++   not. Answers how many were made.
++
++   Exercise 1: the burst may carry a direction — the way the blow was
++   travelling. The sparks take the lanes that face it; (0, 0) is the
++   radial burst. */
+ int FeelBurst(EntityStore &store, const EntityDef &kind, double x, double y,
+-              int count);
++              int count, double dir_x, double dir_y);
+ 
+ /* One particle's settle, once a frame of game time: its eased travel
+    out from its burst point — following the ease's curve and arriving

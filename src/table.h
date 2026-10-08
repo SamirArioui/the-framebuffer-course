@@ -46,7 +46,9 @@ constexpr int TABLE_PATH_MAX = 64;
    frame, the fact its row carries. The format defines the spellings,
    like it defines facing's four numbers: `none` stands still, `fly` is a
    projectile in flight, and chase / keep / flee / boss are the enemy
-   behaviors (lessons 089-090) — the boss's value names its pattern. */
+   behaviors (lessons 089-090) — the boss's value names its pattern.
+   Lesson 093: `settle` is a burst's particle — eased travel out from
+   its burst point, retiring where it settles. */
 enum BehaviorKind {
     BEHAVIOR_NONE = 0,
     BEHAVIOR_FLY,
@@ -54,6 +56,7 @@ enum BehaviorKind {
     BEHAVIOR_KEEP,
     BEHAVIOR_FLEE,
     BEHAVIOR_BOSS,
+    BEHAVIOR_SETTLE,
     BEHAVIOR_COUNT
 };
 
@@ -78,13 +81,16 @@ struct EntityDef {
        its default when a file's header does not name it — the defaults
        are the format's contract, not a gap in it. */
     int accel;                   /* ms: the eased-move time constant —
-                                    the feel (the hero's weight) */
+                                    the feel (the hero's weight; a
+                                    particle's settle takes this long,
+                                    lesson 093) */
     int damage;                  /* points a hit removes — a weapon
                                     row's damage, carried by its shots */
     int rate;                    /* rounds per minute; 0 = never fires */
     char fires[TABLE_NAME_MAX];  /* the projectile kind this row fires */
     int range;                   /* world pixels: a projectile's flight
-                                    budget — its life */
+                                    budget — its life (a particle's
+                                    settle distance, lesson 093) */
     int behavior;                /* BehaviorKind, its row's */
     int wave;                    /* the wave this kind joins — it spawns
                                     in that wave and every wave after

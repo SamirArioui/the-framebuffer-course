@@ -114,10 +114,13 @@ void GameDrawSprites(const Game &game, Framebuffer &fb,
    the way the player's input writes the hero's, and an armed entity
    attacks at its row's rate. Lesson 092: the combat's events (a hit, a
    death) fire the feedback hooks through `feel`, in their own frame.
-   The hero is handed along for the combat's rules to know the game's
-   actor by. Returns the visit count. */
+   Lesson 093: the toolkit's particles settle here (FeelParticle) and
+   burst of `spark` — the cosmetic kind the game names. The hero is
+   handed along for the combat's rules to know the game's actor by.
+   Returns the visit count. */
 int GameWalk(EntityStore &store, const TileMap &map, const Entity &hero,
-             const EntityTable &shots, Feedback &feel, double dt);
+             const EntityTable &shots, Feedback &feel, const EntityDef &spark,
+             double dt);
 
 /* Lesson 091: the waves, once per frame of play. A fresh fight clears
    the last one from the store; a wave spawns its composition from the

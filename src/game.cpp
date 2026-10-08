@@ -218,7 +218,8 @@ void GameDrawSprites(const Game &game, Framebuffer &fb,
 }
 
 int GameWalk(EntityStore &store, const TileMap &map, const Entity &hero,
-             const EntityTable &shots, Feedback &feel, double dt)
+             const EntityTable &shots, Feedback &feel, const EntityDef &spark,
+             double dt)
 {
     /* Lesson 084: the walk — every live entity, once per frame, in slot
        order, its movement resolved against the tilemap. The per-entity
@@ -250,8 +251,12 @@ int GameWalk(EntityStore &store, const TileMap &map, const Entity &hero,
         Entity &e = store.slots[i];
         switch (e.behavior) {
         case BEHAVIOR_FLY:
-            CombatFly(map, store, hero, e, feel, dt);
+            CombatFly(map, store, hero, e, feel, spark, dt);
             continue; /* the flight moves itself, through the mover */
+        case BEHAVIOR_SETTLE:
+            FeelParticle(store, e, dt);
+            continue; /* the settle moves itself — eased travel, no
+                        collision: sparks fly over the scene */
         case BEHAVIOR_CHASE:
             AiChase(e, hero);
             break;
@@ -300,16 +305,19 @@ static bool IsFighter(const Entity &e)
 
 void GameWaves(Game &game, EntityStore &store, const EntityTable &foes)
 {
-    /* A fresh fight: the last game's fighters and shots leave the store
-       — the hero is the game's actor and the `none` kinds are the
-       world's scenery, and both stay. */
+    /* A fresh fight: the last game's fighters, shots, and debris leave
+       the store — the hero is the game's actor and the `none` kinds are
+       the world's scenery, and both stay. The debris goes too (lesson
+       093): a spark settles in game time, and a frozen one — from the
+       blow that ended the last game — would hang there forever. */
     if (game.wave == 0) {
         int cleared = 0;
         for (int i = 0; i < ENTITY_CAP; ++i) {
             Entity &e = store.slots[i];
             if (!e.live)
                 continue;
-            if (IsFighter(e) || e.behavior == BEHAVIOR_FLY) {
+            if (IsFighter(e) || e.behavior == BEHAVIOR_FLY ||
+                e.behavior == BEHAVIOR_SETTLE) {
                 EntityRetire(store, e);
                 cleared += 1;
             }

@@ -245,11 +245,14 @@ int Run(void)
        entity of. Each file's header names the columns it uses — and only
        those; what it leaves unnamed sits at the format's defaults.
        Lesson 088: and the enemy roster — the three types and the boss,
-       every per-type fact its own row's value. */
-    EntityTable weapons, shots, foes;
+       every per-type fact its own row's value. Lesson 093: and the
+       toolkit's particle kinds — cosmetic entities from rows like every
+       other kind, the burst's art and settle in the table's columns. */
+    EntityTable weapons, shots, foes, particles;
     if (!LoadRunTable(arena, "assets/weapons.txt", weapons) ||
         !LoadRunTable(arena, "assets/projectiles.txt", shots) ||
-        !LoadRunTable(arena, "assets/enemies.txt", foes)) {
+        !LoadRunTable(arena, "assets/enemies.txt", foes) ||
+        !LoadRunTable(arena, "assets/particles.txt", particles)) {
         platform::CloseWindow(opened.window);
         ArenaRelease(arena);
         return 1;
@@ -265,11 +268,12 @@ int Run(void)
     PrintDefs("assets/weapons.txt", weapons);
     PrintDefs("assets/projectiles.txt", shots);
     PrintDefs("assets/enemies.txt", foes);
+    PrintDefs("assets/particles.txt", particles);
 
     /* Lesson 073: the definitions' art, loaded at startup. A row that
        names no sprite (a weapon row) has no art and needs none. */
     if (!LoadRunArt(arena, table) || !LoadRunArt(arena, shots) ||
-        !LoadRunArt(arena, foes)) {
+        !LoadRunArt(arena, foes) || !LoadRunArt(arena, particles)) {
         platform::CloseWindow(opened.window);
         ArenaRelease(arena);
         return 1;
@@ -354,6 +358,19 @@ int Run(void)
        attack fires them. */
     if (weapons.count > 0)
         CombatArm(hero, weapons.rows[0]);
+
+    /* Lesson 093: the burst kind — the particles table's first row. The
+       game bursts what the table puts first, the way the hero arms with
+       the weapons table's first row; a table with no particle kind is a
+       named failure, never a burst of assumed attributes. */
+    if (particles.count == 0) {
+        std::fprintf(stderr,
+                     "engine: assets/particles.txt: no particle kind\n");
+        platform::CloseWindow(opened.window);
+        ArenaRelease(arena);
+        return 1;
+    }
+    const EntityDef &spark = particles.rows[0];
 
     /* The lookup's typed failure, checked on purpose: a definition the
        table does not hold is a value — never an entity with assumed
@@ -533,7 +550,7 @@ int Run(void)
             GameWaves(game, store, foes);
 
         double t_entities = platform::Now();
-        int visited = GameWalk(store, map, hero, shots, feel, dt);
+        int visited = GameWalk(store, map, hero, shots, feel, spark, dt);
         frame.entities = platform::Now() - t_entities;
         walk_visits += visited;
 
