@@ -1793,3 +1793,78 @@ machine honestly measures, the rest said out loud and routed to the
 learner's hardware (D12). Every optimization change names its
 hotspot; everything the passes did not name is on the future-work
 ledger (D11); every number in the batch carries its machine.
+
+## Lesson-102 — the retrospective: our engine against real ones (L21): authoring record
+
+The first closing lesson, and the design's one deferred content
+question settled: the retrospective's exact comparisons (our engine
+against real ones, subsystem by subsystem) and the epilogue map (the
+GPU port, the Windows platform module) are lesson content — and both
+pieces of the map are recorded as **post-course material rather than
+scope**, exactly as the Non-Goals require ("ideas are recorded as
+extras, never added"). The page keeps that rule visibly: the extras
+ledger is printed in full (the future-work ledger from the passes, and
+the design non-goals' ideas), and every line of it is a recorded
+decision to *not* build.
+
+### The design decisions this lesson settled
+
+- **The comparison is like with like, with named numbers.** Every
+  comparison row quotes a measured number with its machine (D12) and
+  refuses the raw "our milliseconds vs their milliseconds" shape: a
+  production frame is a different job (GPU work the CPU never does),
+  and the retrospective's honest verdict — this engine trades scale
+  for legibility — says what the gap buys them *and* what ours buys
+  instead. The `-O0`/WSL2 caveat is printed with the numbers.
+- **The epilogue map's two pieces are scoped, not promised.** The GPU
+  port (what dies, what survives, its measurement-gated first
+  milestone) and the Windows module (`platform.h`'s contract in Win32
+  terms, two files, no engine file changes — lesson 042's promise)
+  are named as work that has not been attempted; the page's "what
+  this page did not verify" says so out loud.
+
+### The code step: empty, stated honestly
+
+No new behavior exists to implement in a retrospective, so the code
+step is **empty on purpose** — `git diff lesson-101 lesson-102 --
+src/` is empty, the page says so in its own words, and the template's
+diff block is replaced by an explicit statement rather than an empty
+fence. This is the course's first empty code step; inventing a token
+edit to justify the tag would have been the dishonesty. The tag
+discipline holds (an empty `src/` diff is an empty code step), and
+prose+code co-commit as always.
+
+### What the page verified (a prose lesson — no run to verify with)
+
+- **The page renders** (`mdbook build`; the generated page carries the
+  empty-step statement and the post-course recording).
+- **Every number quoted is an earlier lesson's measurement**, each
+  traceable to its run and its machine: the finale's report (101's
+  ten-leg run, 2,583 frames), the seam's CPU/wait split (098's
+  exercise 1), the two passes' rows (099-100). This page measured
+  nothing and claims nothing new — the tag diff being empty is the
+  proof.
+- What it did **not** verify: any of the epilogue map. Scoped work,
+  never attempted, said so.
+
+### Lesson-102 exercises
+
+- **ex1 (explain-in-prose) — our engine, honestly compared.** A prose
+  deliverable: one subsystem, three claims with measured numbers and
+  their machines, three facts from production engines, one judgment.
+  The patch is **empty on purpose** (no code to write) and the
+  walkthrough says so before giving a model one-pager (the pixels) and
+  the three demands a submission must meet.
+- **ex2 (port-to-your-own-machine) — the epilogue map on your
+  machine.** A prose deliverable: run the finished engine on the
+  learner's machine and re-order the map for their desk, scoping the
+  first milestone in their OS's/hardware's terms. The patch is **empty
+  on purpose**; the walkthrough works the degenerate case (the
+  authoring rig — a machine measurement does not demand either piece
+  on) and then scopes both milestones concretely (Win32 API terms for
+  the module; the report rows for the port).
+
+Both are Part 5's density shape (fewer, larger — 2), both lean the
+closing archetypes as planned, and both solutions are walkthroughs
+with empty patches, stated as such — a no-code exercise may carry an
+empty patch, and these do, on the record.

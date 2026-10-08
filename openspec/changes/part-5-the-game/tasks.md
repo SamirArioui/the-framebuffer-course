@@ -42,7 +42,7 @@
 
 ## 7. Closing (lesson-102…103)
 
-- [ ] 7.1 Author lesson-102 (L21, the retrospective: our engine against real ones, and the epilogue map) with its exercises and diff solutions; verify the page renders and records what is post-course material rather than scope, and the commit is tagged `lesson-102`.
+- [x] 7.1 Author lesson-102 (L21, the retrospective: our engine against real ones, and the epilogue map) with its exercises and diff solutions; verify the page renders and records what is post-course material rather than scope, and the commit is tagged `lesson-102`.
 - [ ] 7.2 Author lesson-103 (L22, now make YOUR game: the finished engine and toolkit turned toward a game of the learner's own) with its exercises and diff solutions; verify the lesson hands the engine over as documented and the page renders, and the commit is tagged `lesson-103`.
 
 ## 8. Part 5 boundary review and integration checks
