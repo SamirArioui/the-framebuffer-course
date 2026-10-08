@@ -1169,3 +1169,70 @@ new `behavior` spelling (`settle`).
   1.000` — the last frame lands *on* the target. The walkthrough
   separates the two vocabularies the engine now names: eases that
   arrive, and the exponential approach that never does (weight).
+
+## Lesson-094 — the HUD (L13): authoring record
+
+New behavior (the `hud` delta, design D9) and the game layer's next
+file pair: `hud.h`/`hud.cpp` — one function, `HudDraw`, reading the
+game's own state and drawing the four readouts (`SCORE`/`HEALTH` left,
+`WAVE`/`TIME` right) at screen coordinates. The score (the ground the
+hero has walked) moves from the loop's local into `Game`, where the HUD
+and the states can both read it; `main.cpp`'s play render draws through
+the HUD and drops its inline text.
+
+### The design decisions this lesson settled
+
+- **The HUD reports what it read and where it drew it, on change.** A
+  headless run cannot see pixels; the verification surface is the draw
+  itself: `HudDraw` prints its four values and its anchor beside the
+  camera's base whenever anything changes — so a state change and the
+  readout showing it are provably in the same frame's account, and the
+  anchor is provably constant while the camera moves. (A probe in
+  exercise 2 adds the counterfactual coordinates.)
+- **The score's meaning is the game's; its home is `Game`.** The
+  shipped score is the ground the hero has covered (the value the
+  slice's line has counted since lesson 080). The kill score — the
+  thing lesson 091's page pointed at ("that is the HUD's lesson") —
+  wants a `points` column, and the 087 design decision says the format
+  grows ONCE ("the later lessons grow files, not formats"). Resolved:
+  the main line keeps the format frozen and the kill score is exercise
+  1 — the learner grows the column the lesson-087 way, with the
+  compatibility rule re-verified. If the human review prefers the kill
+  score in the main line, it is one column and one addition away.
+- **The timer is the play clock as it is** — `play_clock` counts the
+  wall seconds spent in play (it freezes with the pause and is not
+  slowed by a hitstop). Whether a game's readout *should* slow with
+  slow-motion is a design question, deliberately left open; the readout
+  reflects the game's actual state either way.
+
+### What the runs verified (headless, Xvfb `:99`, scripted input)
+
+- **The readouts reflect the game's actual state in the same frame**
+  (run A, the real roster — the bats' volleys): `hit: bolt hits hero —
+  damage 1, health 3 -> 2` → `hud: score 000000, health 2/3, …` — both
+  before that frame's `frame 102` line; `health 2 -> 1` → `health 1/3`
+  before frame 103 (whose `step 10.972 ms` is lesson 092's hitstop,
+  answering the same frame's hit). The wave readout moves in the wave's
+  own frame (`wave 1 begins — 2 enemies` → `hud: … wave 1/3 …` before
+  frame 2). The restore: `health 0/3` in the frame the hero fell,
+  `health 3/3` in the frame the fresh game restored him — the spec's
+  "falls or is restored" scenario end to end.
+- **The HUD stays in place over the world as the camera moves** (run B,
+  the map walked end to end): the camera travels `8,0 → 13,0 → 20,0 →
+  28,0 → 37,0 → 47,0 → … → 128,0` (its full range) while every line
+  reads `at 8,8` — and the score ticks beside it (`000000 → 000328`),
+  each tick in the frame the hero moved.
+- **The exercises' runs**: ex1's kill score moves in the kill's own
+  frame (`bag retired — zero health` → `hud: score 000500 …`) with
+  `assets/entities.txt` byte-for-byte unchanged (its rows load `points
+  0`, the default); ex2's probe measures the counterfactual — `camera
+  128,0 would make them -120,8` — the readout's pixels past the frame's
+  left edge if the HUD were scene.
+
+### Note: one harness bug found and fixed (recorded)
+
+A jiggle that moves the window to the *same* coordinates generates no
+ConfigureNotify — the loop sleeps through it and the run degrades to a
+few frames with giant steps (`step 11971 ms` in the first attempt).
+Frame pacing must alternate positions (as `hold.sh` does). The runs
+above are paced at ~25 fps with the fixed jiggle.
