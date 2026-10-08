@@ -54,6 +54,9 @@ struct Game {
     int waves_remaining;  /* the named condition for victory */
     int hero_health_full; /* the health a fresh game starts the hero at */
     double play_clock;    /* wall seconds spent in play this game */
+    double score;         /* lesson 094: the game's score — the ground
+                            the hero has walked, the value the HUD
+                            reads and the states' reports carry */
     int wave;             /* lesson 091: the wave being fought (0 = the
                             fight has not started) */
     Camera camera;        /* lesson 083: the game's world-view — one

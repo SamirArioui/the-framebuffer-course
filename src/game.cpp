@@ -57,6 +57,7 @@ void GameInit(Game &game, int hero_health_full)
     game.waves_remaining = GAME_WAVES;
     game.hero_health_full = hero_health_full;
     game.play_clock = 0.0;
+    game.score = 0.0;
     game.wave = 0;
     game.camera = { 0, 0, 0, 0 };
     std::printf("engine: game: %d state%s, starting on %s\n", 5, "s",
@@ -77,6 +78,7 @@ void GameInput(Game &game, platform::Window *window, Entity &hero,
             game.waves_remaining = GAME_WAVES;
             game.wave = 0; /* lesson 091: the fight starts over */
             game.play_clock = 0.0;
+            game.score = 0.0; /* lesson 094: a fresh game's score */
             hero.move_x = 0.0;
             hero.move_y = 0.0;
             Transition(game, GAME_PLAY, "the player started");

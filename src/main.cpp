@@ -24,6 +24,7 @@
 #include "game.h"
 #include "gametime.h"
 #include "hero.h"
+#include "hud.h"
 #include "platform.h"
 #include "sprite.h"
 #include "table.h"
@@ -418,7 +419,6 @@ int Run(void)
 
     double started = platform::Now();
     double last = started;
-    double distance = 0.0; /* the score: the world the hero has walked */
     GameTime game_time = { GAMETIME_FULL }; /* lesson 078: the scale — set by the state now */
     bool was_blocked = false; /* lesson 077: the mover's state report */
     int was_vx = 0, was_vy = 0; /* lesson 085: the hero's velocity, as it eases */
@@ -575,9 +575,10 @@ int Run(void)
         }
 
         /* The score, and the hero's own report: where the entity the
-           game moves has got to. */
-        distance += (hero.x > was_x ? hero.x - was_x : was_x - hero.x) +
-                    (hero.y > was_y ? hero.y - was_y : was_y - hero.y);
+           game moves has got to. Lesson 094: the score is the game's
+           own state now — the HUD reads it where the states can. */
+        game.score += (hero.x > was_x ? hero.x - was_x : was_x - hero.x) +
+                      (hero.y > was_y ? hero.y - was_y : was_y - hero.y);
 
         /* Lesson 077: the mover's state report, on transitions — the
            hero moving, or pushed against something that will not move. */
@@ -728,15 +729,11 @@ int Run(void)
             double t_sprites = platform::Now();
             GameDrawSprites(game, *fb, store);
             frame.sprites = platform::Now() - t_sprites;
+            /* Lesson 094: the play screen's readouts are the HUD's
+               (HudDraw, in hud.cpp) — the game's own state in text,
+               drawn over the world and never with the camera. */
             double t_text = platform::Now();
-            char score_line[32];
-            std::snprintf(score_line, sizeof score_line, "SCORE %06d",
-                          (int)distance);
-            DrawText(*fb, font, score_line, 8, 8);
-            char pos_line[32];
-            std::snprintf(pos_line, sizeof pos_line, "X %3d Y %3d",
-                          (int)hero.x, (int)hero.y);
-            DrawText(*fb, font, pos_line, 8, 8 + FONT_CELL + 4);
+            HudDraw(game, hero, *fb, font);
             frame.text = platform::Now() - t_text;
         } else {
             /* The state's own screen. The world is frozen outside play —

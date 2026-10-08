@@ -1,0 +1,28 @@
+diff --git a/src/hud.cpp b/src/hud.cpp
+index 9c8a304..c63ee5d 100644
+--- a/src/hud.cpp
++++ b/src/hud.cpp
+@@ -46,6 +46,23 @@ void HudDraw(const Game &game, const Entity &hero, Framebuffer &fb,
+     DrawText(fb, font, time_line, FRAME_WIDTH - HUD_X - TextWidth(time_line),
+              HUD_Y + FONT_CELL + 4);
+ 
++    /* Exercise 2: the probe — where the readouts drew, and where the
++       camera would have put them if the HUD were scene. The counterfactual
++       is the argument's evidence: at the map's full scroll the readouts
++       would sit off the frame's left edge. */
++    static int probe_x = -99999, probe_y = -99999;
++    if (game.camera.base_x != probe_x || game.camera.base_y != probe_y) {
++        probe_x = game.camera.base_x;
++        probe_y = game.camera.base_y;
++        std::printf("engine: probe: hud columns at %d,%d and %d,%d — camera %d,%d would make them %d,%d and %d,%d\n",
++                    HUD_X, HUD_Y, FRAME_WIDTH - HUD_X - TextWidth(wave_line),
++                    HUD_Y, game.camera.base_x, game.camera.base_y,
++                    HUD_X - game.camera.base_x, HUD_Y,
++                    FRAME_WIDTH - HUD_X - TextWidth(wave_line) -
++                        game.camera.base_x,
++                    HUD_Y);
++    }
++
+     /* The run's report — what the HUD read and where it drew it,
+        whenever anything changed: the values (so a change of the game's
+        state is in the same frame's account as the readout showing it)

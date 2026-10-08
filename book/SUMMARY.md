@@ -436,6 +436,10 @@
   - [Solution: ex1 — the sparks inherit the blow](solutions/lesson-093/ex1.md)
   - [Solution: ex2 — the curve, predicted](solutions/lesson-093/ex2.md)
 
+- [Lesson 094 — the HUD](lessons/part-5/lesson-094-hud.md)
+  - [Solution: ex1 — the score for the kills](solutions/lesson-094/ex1.md)
+  - [Solution: ex2 — why the HUD never scrolls](solutions/lesson-094/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

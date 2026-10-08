@@ -1,0 +1,200 @@
+diff --git a/assets/enemies.txt b/assets/enemies.txt
+index 7bf2e74..d1d01fe 100644
+--- a/assets/enemies.txt
++++ b/assets/enemies.txt
+@@ -1,5 +1,5 @@
+-name x y facing speed health sprite damage rate fires behavior wave count
+-bat 560 72 2 160 2 assets/bat.ppm 1 20 bolt chase 1 2
+-wisp 640 336 2 120 1 assets/wisp.ppm 1 20 bolt flee 2 1
+-spitter 120 400 0 96 3 assets/spitter.ppm 1 30 shell keep 2 2
+-golem 384 96 1 72 8 assets/golem.ppm 2 20 shell boss 3 1
++name x y facing speed health sprite damage rate fires behavior wave count points
++bat 560 72 2 160 2 assets/bat.ppm 1 20 bolt chase 1 2 100
++wisp 640 336 2 120 1 assets/wisp.ppm 1 20 bolt flee 2 1 150
++spitter 120 400 0 96 3 assets/spitter.ppm 1 30 shell keep 2 2 250
++golem 384 96 1 72 8 assets/golem.ppm 2 20 shell boss 3 1 1000
+diff --git a/src/combat.cpp b/src/combat.cpp
+index e040bb5..cc2d94c 100644
+--- a/src/combat.cpp
++++ b/src/combat.cpp
+@@ -120,7 +120,7 @@ bool CombatFire(EntityStore &store, const EntityTable &shots,
+ 
+ void CombatFly(const TileMap &map, EntityStore &store, const Entity &hero,
+                Entity &shot, Feedback &feel, const EntityDef &spark,
+-               double dt)
++               double dt, double &score)
+ {
+     /* The flight, in game time: the shot's speed over dt, sub-stepped
+        through the mover so each sub-step is small. What is checked at
+@@ -185,6 +185,10 @@ void CombatFly(const TileMap &map, EntityStore &store, const Entity &hero,
+                 EntityRetire(store, *target);
+             }
+             if (target->health == 0) {
++                /* Exercise 1: the kill earns its row's points — the
++                   value its kind is priced at, carried like every row
++                   value. */
++                score += target->points;
+                 /* Lesson 092: a death is the toolkit's heavier event —
+                    the same two hooks, weighted for it, fired in the same
+                    frame as the hit that made it. A killing blow answers
+diff --git a/src/combat.h b/src/combat.h
+index abb52c9..698ba34 100644
+--- a/src/combat.h
++++ b/src/combat.h
+@@ -64,7 +64,7 @@ bool CombatFire(EntityStore &store, const EntityTable &shots,
+    same frame from the same event. */
+ void CombatFly(const TileMap &map, EntityStore &store, const Entity &hero,
+                Entity &shot, Feedback &feel, const EntityDef &spark,
+-               double dt);
++               double dt, double &score);
+ 
+ /* Lesson 090: the enemy attack, once per frame of game time. An armed
+    entity — one whose row names a projectile kind — fires it at the
+diff --git a/src/entity.cpp b/src/entity.cpp
+index 98511cc..c07cec5 100644
+--- a/src/entity.cpp
++++ b/src/entity.cpp
+@@ -29,6 +29,7 @@ Entity EntityFromDef(const EntityDef &def)
+     entity.behavior = def.behavior;
+     entity.wave = def.wave;
+     entity.count = def.count;
++    entity.points = def.points;
+     return entity;
+ }
+ 
+diff --git a/src/entity.h b/src/entity.h
+index 85d0d37..0320870 100644
+--- a/src/entity.h
++++ b/src/entity.h
+@@ -62,6 +62,8 @@ struct Entity {
+                                   thing a row cannot carry */
+     double phase_t;            /* and how long this phase has run */
+     double cooldown;           /* seconds until it may fire again */
++    int points;                /* exercise 1: what a kill of this kind
++                                  is worth to the score */
+     double life_t;             /* lesson 093: how long a particle has
+                                   run — its eased settle's clock */
+     double from_x, from_y;     /* and the burst point it eases out
+diff --git a/src/game.cpp b/src/game.cpp
+index e9ce2f0..6796514 100644
+--- a/src/game.cpp
++++ b/src/game.cpp
+@@ -221,7 +221,7 @@ void GameDrawSprites(const Game &game, Framebuffer &fb,
+ 
+ int GameWalk(EntityStore &store, const TileMap &map, const Entity &hero,
+              const EntityTable &shots, Feedback &feel, const EntityDef &spark,
+-             double dt)
++             double dt, double &score)
+ {
+     /* Lesson 084: the walk — every live entity, once per frame, in slot
+        order, its movement resolved against the tilemap. The per-entity
+@@ -253,7 +253,7 @@ int GameWalk(EntityStore &store, const TileMap &map, const Entity &hero,
+         Entity &e = store.slots[i];
+         switch (e.behavior) {
+         case BEHAVIOR_FLY:
+-            CombatFly(map, store, hero, e, feel, spark, dt);
++            CombatFly(map, store, hero, e, feel, spark, dt, score);
+             continue; /* the flight moves itself, through the mover */
+         case BEHAVIOR_SETTLE:
+             FeelParticle(store, e, dt);
+diff --git a/src/game.h b/src/game.h
+index 4a6642e..2e8fec4 100644
+--- a/src/game.h
++++ b/src/game.h
+@@ -123,7 +123,7 @@ void GameDrawSprites(const Game &game, Framebuffer &fb,
+    Returns the visit count. */
+ int GameWalk(EntityStore &store, const TileMap &map, const Entity &hero,
+              const EntityTable &shots, Feedback &feel, const EntityDef &spark,
+-             double dt);
++             double dt, double &score);
+ 
+ /* Lesson 091: the waves, once per frame of play. A fresh fight clears
+    the last one from the store; a wave spawns its composition from the
+diff --git a/src/main.cpp b/src/main.cpp
+index 72f0aec..0ea7420 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -157,11 +157,12 @@ static void PrintDefs(const char *path, const EntityTable &table)
+                 table.count == 1 ? "" : "s");
+     for (int i = 0; i < table.count; ++i) {
+         const EntityDef &def = table.rows[i];
+-        std::printf("engine: def %s: x %d y %d facing %d speed %d health %d sprite %s accel %d damage %d rate %d fires %s range %d behavior %s wave %d count %d\n",
++        std::printf("engine: def %s: x %d y %d facing %d speed %d health %d sprite %s accel %d damage %d rate %d fires %s range %d behavior %s wave %d count %d points %d\n",
+                     def.name, def.x, def.y, def.facing, def.speed, def.health,
+                     def.sprite[0] ? def.sprite : "none", def.accel, def.damage,
+                     def.rate, def.fires[0] ? def.fires : "none", def.range,
+-                    BehaviorName(def.behavior), def.wave, def.count);
++                    BehaviorName(def.behavior), def.wave, def.count,
++                    def.points);
+     }
+ }
+ 
+@@ -550,7 +551,8 @@ int Run(void)
+             GameWaves(game, store, foes);
+ 
+         double t_entities = platform::Now();
+-        int visited = GameWalk(store, map, hero, shots, feel, spark, dt);
++        int visited = GameWalk(store, map, hero, shots, feel, spark, dt,
++                               game.score);
+         frame.entities = platform::Now() - t_entities;
+         walk_visits += visited;
+ 
+diff --git a/src/table.cpp b/src/table.cpp
+index 0b07d3e..551e2dc 100644
+--- a/src/table.cpp
++++ b/src/table.cpp
+@@ -122,13 +122,14 @@ enum Column {
+     COL_BEHAVIOR,
+     COL_WAVE,
+     COL_SPAWN_COUNT,
++    COL_POINTS,
+     COL_COUNT /* how many columns the format knows, not a column */
+ };
+ 
+ const char *const COLUMN_NAMES[COL_COUNT] = {
+     "name", "x", "y", "facing", "speed", "health", "sprite",
+     "accel", "damage", "rate", "fires", "range", "behavior", "wave",
+-    "count"
++    "count", "points"
+ };
+ 
+ /* Lesson 087: the behavior column's spellings, the format's own. */
+@@ -160,6 +161,7 @@ void DefaultRow(EntityDef &def)
+     def.behavior = BEHAVIOR_NONE;
+     def.wave = 0;
+     def.count = 1;
++    def.points = TABLE_POINTS_DEFAULT;
+ }
+ 
+ bool TokenIs(const unsigned char *token, int token_len, const char *name)
+@@ -358,6 +360,9 @@ TableResult LoadTable(Arena &arena, const char *path)
+             case COL_SPAWN_COUNT:
+                 ok = ReadInt(line, len, at, def.count);
+                 break;
++            case COL_POINTS:
++                ok = ReadInt(line, len, at, def.points);
++                break;
+             default:
+                 ok = false;
+                 break;
+diff --git a/src/table.h b/src/table.h
+index 9fb504e..1168fe9 100644
+--- a/src/table.h
++++ b/src/table.h
+@@ -96,6 +96,8 @@ struct EntityDef {
+                                     in that wave and every wave after
+                                     (lesson 091); 0 = never by wave */
+     int count;                   /* how many of this kind join the wave */
++    int points;                  /* exercise 1: what a kill of this kind
++                                    is worth to the score */
+ };
+ 
+ /* Lesson 087: the defaults the format defines. A file may omit any
+@@ -104,6 +106,7 @@ struct EntityDef {
+    the column and keeps loading byte-for-byte, and its weight is exactly
+    this. */
+ constexpr int TABLE_ACCEL_DEFAULT = 120; /* ms */
++constexpr int TABLE_POINTS_DEFAULT = 0; /* a kill nobody priced is 0 */
+ 
+ /* A behavior value's spelling (and back), for the format's own reports. */
+ const char *BehaviorName(int behavior);
