@@ -535,3 +535,122 @@ engine: hero frame 0 (t=7.863)
   on the wall clock: on game time a hitstop would be slowed by its own
   factor (and frozen forever under a pause, scale 0). The probe prints
   the wall seconds left beside the scale factor.
+
+## Lesson-087 — projectiles and two weapons (L6): authoring record
+
+New behavior (the `combat` delta) and the format growth (D3). The code
+step grows the table format by **eight named columns in one step**
+(`accel`, `damage`, `rate`, `fires`, `range`, `behavior`, `wave`,
+`count`), stands combat up in its own file pair (`combat.*`, design
+D2), and puts weapons on rows and projectiles in the store exactly as
+D5 prescribes. `assets/entities.txt` is not touched.
+
+### The design decisions this lesson settled
+
+- **The format grows once, by every column the batch needs.** D3's
+  "the lesson that grows the format" is this one: `behavior` is used
+  here (`fly`) and by 088-090's enemy rows; `wave`/`count` are carried
+  by 088's rows and read by 091's waves. Growing them now keeps one
+  growth, one loader, one defaults contract — the later lessons grow
+  files, not formats.
+- **`rate` is rounds per minute** (an int, like every number the
+  format reads): shots-per-second could not express a slow weapon at
+  all (the smallest non-zero rate would be one shot a second), and RPM
+  is what a weapon's rate means anyway — the blaster's `300` is a shot
+  every fifth of a second, the cannon's `60` one a second.
+- **A weapon row carries `damage` and `rate` and names `fires`** (D5
+  verbatim); a projectile row carries `range` — its life, in world
+  pixels (D5's "its range's end"). The fired projectile carries the
+  shooter's damage into the hit: "a hit reduces the target's health by
+  the row's damage" is the firing row's damage, measured.
+- **The hero's feel is data via the default.** `hero.h` promised the
+  feel becomes data when the format grows named columns; the hero's row
+  predates the column and keeps loading byte-for-byte, so its `accel`
+  is the format's default — 120 ms, exactly lesson 085's constant. A
+  row that wants another weight names it.
+- **The aim is the eight compass points of the hero's motion** (its
+  facing at rest) — no square root runs at run time: the diagonal is
+  `AIM_DIAG`, the same precomputed 1/√2 lesson 085 uses. The
+  consequence is honest and was seen in the runs: a shot flies one of
+  eight lanes, and a shot fired point-blank lands — which is why the
+  flight's hit check runs at the position the shot is *fired* at, not
+  only after its first step.
+- **The hit rule: a shot hits any live actor except its owner — and
+  flies through other shots.** The owner exclusion is by pointer into
+  the store's fixed slots (slots never move, so the identity is safe
+  and cheap). The "flies through other shots" clause was added after
+  the scatter exercise's run showed sibling pellets destroying each
+  other (`hit: bolt hits bolt`): crossing fire must not cancel in
+  mid-air, and a projectile has no health to spend.
+- **A zero-health entity is retired — the hero excepted.** The hero's
+  zero health is the game's defeat condition (the state machine reads
+  it); retiring the game's actor would leave a fresh game with no hero
+  to move. Verified by hitting the hero after a restart: `health 3 ->
+  1` — it is still live (the hit check only sees live entities).
+- **`ENTITY_NO_ART` (exercise 2's fix surfaced the hole).** A
+  definition with no image became an entity with `sprite = 0` and the
+  flight's first read of the sprite's size segfaulted. The exercise
+  fixes it typed at `EntityCreate`; it is not folded into the main line
+  (it is the exercise's work), and the hole is real and reproducible at
+  the lesson's end state.
+
+### What the runs verified (headless, Xvfb `:99`, scripted input)
+
+- **`assets/entities.txt` loads byte-for-byte.** This lesson does not
+  touch the file (`git diff lesson-086 lesson-087 -- assets/entities.txt`
+  is empty) and the run prints its two rows as lesson 071 wrote them,
+  the unnamed fields at the defaults:
+  `def hero: x 312 y 232 facing 0 speed 240 health 3 sprite
+  assets/hero.ppm accel 120 damage 0 rate 0 fires none range 0 behavior
+  none wave 0 count 1`.
+- **The refusal edge, one notch relaxed** (a scratch copy of the run):
+  a header naming `sprit` → `could not load (malformed)`; a header
+  naming only `name x y speed health sprite` → loads, `facing 0`,
+  `accel 120`, `behavior none` in the printed row; a row one value
+  short → `could not load (malformed)`.
+- **Each weapon fires its row's projectile kind** (real output):
+  `arm: hero arms blaster (damage 1, rate 300, fires bolt)` →
+  `fire: hero -> bolt (damage 1, range 160)`; `arm: hero arms cannon
+  (damage 2, rate 60, fires shell)` → `fire: hero -> shell (damage 2,
+  range 400)`.
+- **The three retirements** (real output): `shot bolt retired — wall`
+  (a pillar met mid-flight), `shot bolt retired — range` (its 160 px
+  spent over open ground), `shot bolt retired — hit slime` and `shot
+  shell retired — hit hero`.
+- **A hit reduces health by the row's damage** (real output): the
+  blaster's `damage 1` took the slime `health 1 -> 0`; the cannon's
+  `damage 2` took the hero `health 3 -> 1` and `1 -> 0` → `state play
+  -> death (the hero's health reached zero)`, then `state death ->
+  title`, `state title -> play`, and `hit: shell hits hero — damage 2,
+  health 3 -> 1` again — the fresh game restored the hero and it is
+  still live. `slime retired — zero health` shows the retirement rule.
+
+### Note: the verification method on this machine (updated)
+
+`xset` is no longer installed on this machine (the notes' earlier
+"turn auto-repeat off" step is unavailable). The runs instead rely on
+the platform layer's own detectable auto-repeat (`XkbSetDetectable
+AutoRepeat`, lesson 032's code) so a held key stays held, and they
+pace frames by sending window-move events (`xdotool windowmove`) at
+about 25 a second — the loop wakes on news, and a window move is news.
+That gives `dt ≈ 40 ms` per frame in the scripted runs (much closer to
+a real frame than the ~1 s steps of the earlier sessions) and it is
+what the numbers above were measured at. A small one-off X tool
+(`XAutoRepeatOff/On`) and the frame-pacing helper live in the author's
+scratch space, not in the repo.
+
+### Lesson-087 exercises
+
+- **ex1 (extend-the-code) — the scatter shot.** A third weapon row
+  firing a three-shot spread (`scatter 1 120 bolt 3`) via a new named
+  column `burst` (default 1) grown exactly the lesson's way; the spread
+  is the aim plus the aim turned ±45° — a turn of a unit direction
+  preserves its length, so every pellet flies at the shot's own speed.
+  Real run: one pull, three `fire` lines, and three different fates
+  (`wall`, `wall`, `range` — the fan is real).
+- **ex2 (fix-the-crash) — the projectile with no art.** A projectile
+  file naming no `sprite` column loads, and firing its kind segfaults
+  (real: `Segmentation fault (core dumped)`) at the flight's first read
+  of the sprite's size. The fix refuses it typed at `EntityCreate`
+  (`ENTITY_NO_ART`) and the run says `fire refused — the kind has no
+  art`; the weapon rows (no art, never entities) are unaffected.
