@@ -1643,3 +1643,69 @@ Every change names that hotspot.
   the clamped base). The walkthrough decomposes the fix into the two
   levers' numbers and footnotes why a probe must not inflate the phase
   it measures (lesson 079's rule).
+
+## Lesson-100 — pass 2b: fix the clear (L19): authoring record
+
+Pass 2b on the frozen menu (D11): fix hotspot #2 — the frame's clear
+(`ClearBuffer`) — and nothing else. The deep dives' third lever,
+"copy wider".
+
+### The design decisions this lesson settled
+
+- **One word per pixel, the word composed from the engine's own
+  bytes.** `ClearBuffer` writes `unsigned int` per pixel; the word is
+  assembled by `memcpy` from `{b, g, r, 0}` — so the byte order is
+  the machine's and the pixels are the engine's on any machine (the
+  portable shape of "copy wider"; the alternative — a hand-composed
+  `r<<16|g<<8|b` word — would assume little-endian and lie on others).
+- **The compiler's widening is read, not assumed** (049's lens): the
+  census at `-O3` moves `ClearBuffer` from 0 to **5 vector
+  instructions**; the listing shows `pshufd` splatting the color and a
+  wide loop moving 32 bytes (8 pixels) a turn with guard and tails —
+  quoted in the lesson. At the course's `-O0` the win is the store
+  count (4 stores → 1), measured.
+
+### What the runs verified (headless, Xvfb `:99`, scripted input)
+
+- **The measured cost falls** (same measurement scenario, `step`
+  split, 1,551 frames / 1,415 play): play `clear 0.449 → 0.239 ms`
+  (−47%); panel `clear 0.446 → 0.246 ms`; play `total 1.505 → 1.269
+  ms`. Profiled run (2,583 frames): `ClearBuffer` self `1.05 s →
+  0.70 s`; run CPU `2.28 s → 1.98 s`. The two named hotspots together:
+  `1.437 → 0.778 ms` of a play frame; the frame fell 1.944 → 1.269 ms
+  across the two passes (−35%).
+- **Behavior unchanged, two ways**: (1) byte-level — a scratch harness
+  ran 400 clears (random colors, random sizes incl. odd widths)
+  through the old and new loops: **0 differing bytes**; (2)
+  report-level — the scripted run's transcript set is identical to
+  lesson-099's (same md5 over the 106 normalized templates; one probe
+  line's ordering jitter — the 097 noise floor class).
+- **The percentage trap lesson**: with the clear falling, the profile
+  shares move again; the lesson keeps quoting milliseconds beside
+  every percent.
+
+### Per-pixel decomposition (exercise 1's bench, same instrument at both tags)
+
+- `lesson-099` (byte stores): **1.2 / 1.2 / 1.3 ns/pixel** at
+  640x480 / 320x240 / 160x120;
+- `lesson-100` (word fill): **0.5 / 0.5 / 0.5 ns/pixel** — a 2.4×
+  fall, matching the instruction-count prediction (4 stores + address
+  math → 1 store; the residual is `-O0` loop bookkeeping).
+- Bench hot-cache vs the frame's cold-ish buffer: 0.5 vs 0.78 ns/pixel
+  implied by the `clear` row (and 1.2 vs 1.48 before) — both honest,
+  named apart in the walkthrough.
+
+### Lesson-100 exercises
+
+- **ex1 (measure-the-performance) — the price of a pixel.** The bench
+  patch applies at `lesson-099` and `lesson-100` alike (the files it
+  touches are untouched by the step), so the before/after is measured
+  with one instrument. The walkthrough decomposes the 2.4× into the
+  store count and the `-O0` bookkeeping and names the hot/cold nuance.
+- **ex2 (explain-in-prose) — what the word knows.** The word fill's
+  three claims (alignment — the arena's 4096 alignment and the
+  width×4 stride; byte order — the `memcpy` composition, portable by
+  construction; aliasing — allocated memory read back through both
+  windows) made checkable: the probe prints `pixels aligned to 4: yes,
+  row stride ok; cleared 1,2,3 reads 1,2,3 … raw bytes 3,2,1,0`, and
+  the walkthrough says what to change where a claim fails.
