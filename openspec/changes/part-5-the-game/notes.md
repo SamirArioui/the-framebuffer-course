@@ -1063,3 +1063,109 @@ line-buffered through the pipe).
   0.000` frames, resume at the paced `43 ms` with nothing hanging over.
   The walkthrough defends the product over an if-else: zero times
   anything settles every edge for free.
+
+## Lesson-093 — particle bursts and easing (L12): authoring record
+
+The toolkit's last two effects (the `game-feel` delta's second half) and
+the completion of the bounded four. Particles are entities from a table
+kind (`assets/particles.txt`, one row: `spark … accel 400 range 64
+settle`, art `assets/spark.ppm`); the burst fires from the hit and the
+death in their own frame (like every feel effect); the settle is one
+eased value per particle that arrives exactly at its row's range and
+retires there. `feel.*` grows the ease set (`EaseInQuad`,
+`EaseOutQuad`, `EaseInOutQuad`), `FeelBurst`, and `FeelParticle`; the
+format does **not** grow — the spark rides the existing `accel` (the
+settle's length in ms) and `range` (the travel budget) columns and one
+new `behavior` spelling (`settle`).
+
+### The design decisions this lesson settled
+
+- **The cosmetic share is the policy that makes the task's acceptance
+  sentence true.** Task 4.2 asks: "a full store drops particles while
+  gameplay spawns are kept." With drop-on-full alone, a store full of
+  sparks would refuse gameplay spawns too — the sentence would be
+  false. So the store documents a **cosmetic share**
+  (`FEEL_COSMETIC_SLOTS = ENTITY_CAP / 2` in `feel.h`): particles take
+  those slots and no others, a burst that finds no cosmetic slot drops
+  its particle (counted, reported), and the game's spawns are kept —
+  they cannot be starved by cosmetics. 074's store is untouched: the
+  store still never steals, and a gameplay spawn that meets a literally
+  full store (cosmetics + gameplay to 64) is still the loud typed
+  refusal — "gameplay work may not be dropped" means that refusal is a
+  named bug-level event, never a silent loss. Rejected alternatives:
+  the gameplay-yield (the game drops the oldest spark to serve a shot —
+  viable, but it makes the yield a hidden eviction policy rather than a
+  documented bound) and D8's already-rejected second narrow burst store.
+- **The particle's life is the ease's duration.** "Move, settle, and
+  retire": the distance out follows the ease and lands exactly on the
+  row's `range` at `accel` ms — the life ends where it settles. No
+  format growth (the 087 decision — "the later lessons grow files, not
+  formats" — held).
+- **The position is measured from the burst point, never accumulated.**
+  The first implementation advanced `x += dir × Δtraveled` per frame;
+  the accumulated rounding landed one landing a pixel short (`279,240`
+  where the lane says `280`) beside an `(exact)` value line — measured,
+  then fixed: the particle carries `from_x/from_y` and computes
+  `from + dir × traveled` every frame, so the arrival is the target's
+  own value and not a rounding of it. The eased value (`traveled`) was
+  exact in both; the fix makes the position honest too.
+- **Sparks are not targets.** The hit rule grows one skip: a shot flies
+  through the cosmetic, exactly as it flies through other shots —
+  without it, sparks would eat the player's fire.
+- **The debris is cleared with the last fight.** A spark settles in
+  game time; the burst that fires as the game *ends* would hang frozen
+  over the end screens forever (the pause's freeze, pointed at the
+  toolkit). The fresh-fight clear sweeps particles with the fighters and
+  shots.
+- **The eight lanes are data-free and reproducible.** The burst's
+  spread is the world's compass points (a diagonal at 1/√2, the same
+  lanes the aim and the movement use) — a burst is identical on every
+  machine and every run, which is what makes the runs quotable.
+
+### What the runs verified (headless, Xvfb `:99`, scripted input)
+
+- **A burst is bounded by the store's policy and its particles retire**
+  (run A, the scratch killing blow): `burst: spark x4 at 320,232 — 4
+  made, 0 dropped` (the hit) and `burst: spark x8 at 344,240 — 8 made,
+  0 dropped` (the death), then twelve `spark settled at … — 64 px out,
+  its row's range 64 (exact)` lines — move, settle, retire. The
+  landings map the lanes exactly: the hit's four at `384,232` /
+  `320,296` / `256,232` / `320,168` (the cardinals, 64 px out), the
+  death's eight around the compass with the diagonals at `±45` px.
+- **A full store drops particles while gameplay spawns are kept** (run
+  C, a flood probe of 24 sparks a frame, stated as such): the share
+  fills `24 + 8 = 32` and the report goes `8 made, 16 dropped` → `0
+  made, 24 dropped` — while `fire: hero -> bolt` and `wave 2: spawns
+  bag at 336,232` keep landing through the drops. Three gameplay spawns
+  and three hero fires succeeded while bursts dropped everything; the
+  drops are sparks only, counted per burst.
+- **Eased values arrive exactly at their targets** (run B, a scratch
+  probe at 17 digits): `ease at 0: 0/0/0`, `ease at 0.5: in 0.25, out
+  0.75, inout 0.5`, `ease at 1: in 1, out 1, inout 1` — the set's ends
+  clamped to exactness; and one spark's value `63.695704497446457 at t
+  0.931` → `64 at t 1.000` (printed as `64`, not `63.99999999999999`),
+  the run's own arrival line agreeing: `64 px out, its row's range 64
+  (exact)`.
+- **One data bug caught by the runs** (recorded because it is the
+  method working): the burst lane table's north/south vectors were
+  `0.707` instead of `1.0`, and a spark settled at `320,277` where the
+  lane says `320,296` — a45-px cardinal in a 64-px lane. Fixed before
+  the step shipped; the corrected run lands every cardinal at ±64 and
+  every diagonal at ±45.
+
+### Lesson-093 exercises
+
+- **ex1 (extend-the-code) — the sparks inherit the blow.** `FeelBurst`
+  gains the blow's direction; the lanes are picked by dot product (the
+  spray carries the shot's way) while the death's `(0, 0)` stays
+  radial. Real run (the shot flying east): the hit's four settle at
+  `384,232` (east), `365,277` (south-east), `365,186` (north-east),
+  `320,296` (the north/south tie) — three of four forward of the
+  impact; the death's eight stay the full compass.
+- **ex2 (predict-the-output) — the curve, predicted.** The prediction
+  (0.75 of the travel at half the time → 48 px of 64; exactly 64 at the
+  end) against the probe's curve: `48.857177534509155 at t 0.514`
+  (the frame past halfway), `63.999110491731322 at t 0.996`, `64 at t
+  1.000` — the last frame lands *on* the target. The walkthrough
+  separates the two vocabularies the engine now names: eases that
+  arrive, and the exponential approach that never does (weight).
