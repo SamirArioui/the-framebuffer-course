@@ -240,7 +240,10 @@ int Run(void)
         /* Render: the current state's screen, and only that one (lesson
            082). The backdrop is the state's own — the world's blue in
            play, the panel's darker blue on the panel screens — cleared
-           once here, in the render phase, before the named sub-phases. */
+           once here, in the render phase, before the named sub-phases.
+           Lesson 098: the clear is a named sub-phase now — the measure
+           pass's instrument, and the account's row. */
+        double t_clear = platform::Now();
         if (game.state == GAME_PLAY) {
             ClearBuffer(*world.fb, 32, 32, 64);
         } else {
@@ -251,6 +254,7 @@ int Run(void)
             GameScreenColor(game, screen_r, screen_g, screen_b);
             ClearBuffer(*world.fb, screen_r, screen_g, screen_b);
         }
+        frame.clear = platform::Now() - t_clear;
         if (game.state == GAME_PLAY) {
             /* Lesson 083: the game draws its own world — the scrolling
                map and the live entities, through the game's camera. The
@@ -300,12 +304,14 @@ int Run(void)
            fields, one per subsystem, as the parts name them. The audio
            phase (lesson 060) joins in the record's own order, and
            lesson 079's step leads it: the game's advance beside the
-           machine's durations. */
-        std::printf("frame %ld: step %.3f ms, update %.3f ms (entities %.3f), audio %.3f ms, render %.3f ms (sprites %.3f, text %.3f, tilemap %.3f), present %.3f ms, total %.3f ms\n",
+           machine's durations. Lesson 098: the clear's field joins the
+           render's list, first — where it happens in the frame. */
+        std::printf("frame %ld: step %.3f ms, update %.3f ms (entities %.3f), audio %.3f ms, render %.3f ms (clear %.3f, sprites %.3f, text %.3f, tilemap %.3f), present %.3f ms, total %.3f ms\n",
                     frame.number, frame.step * 1e3, frame.update * 1e3,
                     frame.entities * 1e3,
                     frame.audio * 1e3,
                     frame.render * 1e3,
+                    frame.clear * 1e3,
                     frame.sprites * 1e3, frame.text * 1e3,
                     frame.tilemap * 1e3, frame.present * 1e3,
                     frame.total * 1e3);

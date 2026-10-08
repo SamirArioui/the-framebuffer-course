@@ -1,0 +1,66 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index 112049a..b16037a 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -321,6 +321,8 @@ int Run(void)
+        (the frame account's own table) and the arena's. */
+     ReportEnd(world.sound, feed, world.store, hero, walk_visits,
+               frame_number);
++    /* Exercise 1: the frame's wall time, engine work beside seam wait. */
++    ReportSeam(stats);
+     PrintFrameBudget(stats);
+     std::printf("engine: arena: %zu of %zu bytes used\n", world.arena.used,
+                 world.arena.memory.size);
+diff --git a/src/report.cpp b/src/report.cpp
+index 425fe4d..38fbe6d 100644
+--- a/src/report.cpp
++++ b/src/report.cpp
+@@ -104,4 +104,22 @@ void ReportEnd(const Sound &sound, const Feed &feed,
+                 walk_visits, frames);
+ }
+ 
++void ReportSeam(const FrameStats &stats)
++{
++    /* Exercise 1: the frame's wall time in two buckets. The engine's
++       work is what the process computed — the phases the flat profile
++       samples. The seam's wait is the present: the wall time between
++       handing the display our pixels and being handed back, which is
++       the display's time, not ours. A profile that samples the process
++       cannot see it; this line can. */
++    if (!stats.frames)
++        return;
++    double n = (double)stats.frames;
++    double engine_ms =
++        (stats.update_sum + stats.audio_sum + stats.render_sum) / n * 1e3;
++    double seam_ms = stats.present_sum / n * 1e3;
++    std::printf("engine: seam: %ld frames — engine work %.3f ms/frame (update+audio+render), seam wait %.3f ms/frame (present) — the flat profile sees the first, not the second\n",
++                stats.frames, engine_ms, seam_ms);
++}
++
+ } /* namespace engine */
+diff --git a/src/report.h b/src/report.h
+index df85698..a357ce0 100644
+--- a/src/report.h
++++ b/src/report.h
+@@ -16,6 +16,7 @@
+ #define REPORT_H
+ 
+ #include "entity.h"
++#include "frame.h"
+ #include "sound.h"
+ 
+ namespace engine {
+@@ -52,6 +53,13 @@ void ReportEnd(const Sound &sound, const Feed &feed,
+                const EntityStore &store, const Entity &hero,
+                long walk_visits, long frames);
+ 
++/* Exercise 1: the frame's wall time in two buckets — the engine's work
++   (update, audio, render: what the process computed) and the seam's
++   wait (present: what the process spent waiting for the display to
++   take its pixels). The flat profile samples the first and not the
++   second; this line is where the difference becomes measurable. */
++void ReportSeam(const FrameStats &stats);
++
+ } /* namespace engine */
+ 
+ #endif

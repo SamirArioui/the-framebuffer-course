@@ -1,0 +1,48 @@
+diff --git a/tools/profile-card.sh b/tools/profile-card.sh
+new file mode 100755
+index 0000000..2776075
+--- /dev/null
++++ b/tools/profile-card.sh
+@@ -0,0 +1,42 @@
++#!/usr/bin/env bash
++#
++# profile-card.sh <game binary> <gmon.out> [lines] — the measure pass's
++# card: one machine's flat profile, top lines first, in a block you can
++# set beside another machine's.
++#
++# Lesson 098's exercise 2: the measure pass names hotspots from a
++# profile, and a profile only means something beside its machine (design
++# D12). This prints the card — the top lines of gprof's flat profile,
++# with the profiled CPU summed from the self-seconds column — so two
++# machines' answers to "what is hot" compare line for line.
++#
++# Usage:
++#   tools/profile-card.sh build-pg/game gmon.out      # top 8
++#   tools/profile-card.sh build-pg/game gmon.out 12   # top 12
++#
++# Exits 0; gprof's own failure is gprof's to report.
++
++set -euo pipefail
++
++BIN="$1"
++GMON="$2"
++N="${3:-8}"
++
++gprof "$BIN" "$GMON" | awk -v n="$N" '
++    /^  % *cumulative/ { show = 1; next }
++    show {
++        if ($0 ~ /^[ ]*[0-9]/) {
++            total += $3
++            if (count < n) {
++                print
++                count++
++            }
++        } else if (count > 0) {
++            show = 0 # the flat table ends; the call graph below is not it
++        }
++    }
++    END {
++        printf "profiled CPU: %.2f s in %d samples of 0.01 s\n",
++               total, int(total / 0.01 + 0.5)
++    }
++'

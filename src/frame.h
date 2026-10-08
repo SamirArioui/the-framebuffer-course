@@ -25,7 +25,11 @@ struct FrameRecord {
        (lesson 058) grows from. The named times are inside render, never
        instead of it: render stays the phase, these say where it went.
        Lesson 081: update grows the same kind of name — the entity work
-       the walk does, attributed inside the phase it lives in. */
+       the walk does, attributed inside the phase it lives in.
+       Lesson 098: the measure pass names the one piece of the frame no
+       row carried — the clear, the render's first work, until now the
+       unnamed remainder of the render row. */
+    double clear;    /* the framebuffer's clear — one color, every pixel */
     double sprites; /* sprite draws through the blit */
     double text;    /* lesson 051: text drawing — glyphs through the blit */
     double tilemap; /* lesson 053: the map's walk — tiles through the blit */
@@ -51,6 +55,7 @@ struct FrameStats {
     double sprites_sum; /* lesson 046's named sub-phase, summed like the rest */
     double text_sum;
     double tilemap_sum;
+    double clear_sum; /* lesson 098: the clear's row, summed like the rest */
     double entities_sum; /* lesson 081: the update's entity work, summed */
     double worst;      /* the longest frame so far */
     long worst_number; /* and which one it was */

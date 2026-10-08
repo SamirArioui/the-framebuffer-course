@@ -19,6 +19,7 @@ void AccountFrame(FrameStats &stats, const FrameRecord &frame)
     stats.sprites_sum += frame.sprites;
     stats.text_sum += frame.text;
     stats.tilemap_sum += frame.tilemap;
+    stats.clear_sum += frame.clear;
     stats.entities_sum += frame.entities;
     if (frame.total > stats.worst) {
         stats.worst = frame.total;
@@ -47,6 +48,7 @@ void PrintFrameBudget(const FrameStats &stats)
     double update = stats.update_sum / n * 1e3;
     double audio = stats.audio_sum / n * 1e3;
     double render = stats.render_sum / n * 1e3;
+    double clear = stats.clear_sum / n * 1e3;
     double sprites = stats.sprites_sum / n * 1e3;
     double text = stats.text_sum / n * 1e3;
     double tilemap = stats.tilemap_sum / n * 1e3;
@@ -63,6 +65,11 @@ void PrintFrameBudget(const FrameStats &stats)
                 100.0 * audio / (avg * 1e3));
     std::printf("engine:   render      %6.3f      %2.0f%%\n", render,
                 100.0 * render / (avg * 1e3));
+    /* Lesson 098: the measure pass's instrument — the clear, named at
+       last. It was always inside render; until now it was the unnamed
+       remainder between render's row and its named sub-phases' sum. */
+    std::printf("engine:     clear     %6.3f      %2.0f%%\n", clear,
+                100.0 * clear / (avg * 1e3));
     std::printf("engine:     sprites   %6.3f      %2.0f%%\n", sprites,
                 100.0 * sprites / (avg * 1e3));
     std::printf("engine:     text      %6.3f      %2.0f%%\n", text,

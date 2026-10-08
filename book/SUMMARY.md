@@ -452,6 +452,10 @@
   - [Solution: ex1 — the banners come in from the cold](solutions/lesson-097/ex1.md)
   - [Solution: ex2 — the transcript's bill](solutions/lesson-097/ex2.md)
 
+- [Lesson 098 — pass 1: measure](lessons/part-5/lesson-098-measure.md)
+  - [Solution: ex1 — what the profile cannot see](solutions/lesson-098/ex1.md)
+  - [Solution: ex2 — the measure pass on your machine](solutions/lesson-098/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)
