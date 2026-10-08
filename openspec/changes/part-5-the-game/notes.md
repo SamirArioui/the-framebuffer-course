@@ -721,3 +721,78 @@ mirrors the definition's. Nothing else moves.
   steelmans the boss: what it needs that no row carries is a
   *schedule*, which lesson 090 gives it without its own movement
   machinery.
+
+## Lesson-089 — enemy AI (L8): authoring record
+
+New behavior (the `enemies` delta's AI, design D6): `ai.h`/`ai.cpp`
+with three small functions writing an entity's movement request, the
+walk's one switch on the row's behavior, lesson 084's stand-in walk
+gone, and the run reporting the world's motion (each entity as it
+travels a tile, its distance to the hero beside it) and where it ended.
+
+### The design decisions this lesson settled
+
+- **A behavior writes a compass point, not an arbitrary vector** — D6's
+  "the way the player's input writes the hero's" taken literally: the
+  hero's intent is one of eight directions and so is every request the
+  AI writes. No square root runs in the behaviors (the distances are
+  compared squared); `CombatAim`'s compass point is shared by the aim
+  and the movement — the world moves in eight lanes.
+- **`AI_KEEP` is the behavior's fact, not any kind's** — every keeper
+  keeps 160 px, and the band (±8) keeps a keeper at its distance from
+  twitching across the line. (Exercise 1 makes it a row's fact; the
+  main line keeps the constant so the lesson's step stays about the
+  behaviors.)
+- **The behaviors write requests and nothing else** — no firing, no
+  health, no knowledge of rows or the store. The enemy rows' weapons
+  stay carried until lesson 090 fires them.
+- **Lesson 084's stand-in walk is removed here** (the comment always
+  said it stood in for this lesson's AI). The slime's row says
+  `behavior none`, so it stands; the `G` spit stand-in is unaffected.
+- **Two honest quirks were measured and recorded, not hidden.** (1) The
+  alignment wobble: when a delta component is near zero its sign flips
+  between frames and the compass point flips with it — the chaser
+  zigzags down its last leg. (2) The wedge: a compass-point chaser can
+  trap itself at a wall corner (the run's bat held at a pillar's top,
+  its y refused and its x oscillating inside the pillar's column). Both
+  are the eight-lane model's honest limits; no pathfinding is in scope.
+
+### What the runs verified (headless, Xvfb `:99`, scripted input)
+
+One scripted run (the hero standing still) moves all three kinds at
+once (real output):
+
+- **Chase shrinks the distance:** the bat `177 → 149 → 126 → 101 → 77
+  → 55 px of the hero`, closing down its diagonal lane.
+- **Flee grows it:** the wisp `401 → 426 → 447 → 469 → 491 px` — and
+  its `y` pinned at `479` while its `x` slides right (`659 → 685 → 710
+  → 736`): the mover's slide rule, resolved against the bottom wall.
+- **Keep holds it:** the spitter settles at `154 px` of the hero —
+  inside the band (152-168) its behavior keeps — and stays there. (It
+  opened at 111 px, too close, and backed off first: the behavior's
+  correction visible in its first two reports.)
+- **Through the mover:** every request is resolved by `MoveEntity` —
+  the flee's wall slide above, and the chase's bat wedged at
+  `311,176` against the pillar below the hero (its y step refused).
+- **Per-entity work expressed once:** the walk's one switch on the
+  row's behavior; the closing account names the five kinds and none of
+  them appear in the code (`slime ends at 400,320` — `none`; `golem
+  ends at 384,96` — `boss`, standing until lesson 090).
+
+### Lesson-089 exercises
+
+- **ex1 (extend-the-code) — the keeper's distance is data.** The `keep`
+  named column (default `TABLE_KEEP_DEFAULT` = 160), carried like every
+  value, `AiKeep` reading the entity's own number. Real run: `def hero:
+  … keep 160 …` (entities.txt silent, the default), `spitter … keep
+  120`, `warden … keep 240`; the closing account: `spitter ends at
+  221,298 — 112 px`, `warden ends at 156,403 — 232 px` — two keepers at
+  two distances.
+- **ex2 (predict-the-output) — the chaser's staircase.** The prediction
+  (one diagonal from (560,72), turning at (400,232) into a straight
+  88-px leg) against the measured reality: the probe prints the turns
+  and they are a frame-by-frame wobble at the alignment (`ai: bat
+  steers -0.707,0.707 / ai: bat steers 0.707,0.707 / …`), the map
+  bends the path (the mover resolves x first, the slide follows), and
+  the bat ends wedged at the pillar — the eight-lane model's honest
+  limit.
