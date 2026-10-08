@@ -428,6 +428,10 @@
   - [Solution: ex1 — the breath between waves](solutions/lesson-091/ex1.md)
   - [Solution: ex2 — the wave plan](solutions/lesson-091/ex2.md)
 
+- [Lesson 092 — hitstop and screenshake](lessons/part-5/lesson-092-hitstop-shake.md)
+  - [Solution: ex1 — the shake that settles](solutions/lesson-092/ex1.md)
+  - [Solution: ex2 — the pause that meets the hitstop](solutions/lesson-092/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

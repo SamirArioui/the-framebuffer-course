@@ -5,6 +5,9 @@
 // row names; the flight is the projectile's speed over game time; the
 // life is its row's range. Nothing here knows which weapon or which
 // projectile exists — the tables know that.
+//
+// Lesson 092: the hit and the death are the juice toolkit's events, and
+// the feedback hooks fire at the lines where they happen.
 
 #include "combat.h"
 
@@ -113,7 +116,7 @@ bool CombatFire(EntityStore &store, const EntityTable &shots,
 }
 
 void CombatFly(const TileMap &map, EntityStore &store, const Entity &hero,
-               Entity &shot, double dt)
+               Entity &shot, Feedback &feel, double dt)
 {
     /* The flight, in game time: the shot's speed over dt, sub-stepped
        through the mover so each sub-step is small. What is checked at
@@ -149,6 +152,15 @@ void CombatFly(const TileMap &map, EntityStore &store, const Entity &hero,
             std::printf("engine: hit: %s hits %s — damage %d, health %d -> %d\n",
                         shot.name, target->name, shot.damage, was,
                         target->health);
+
+            /* Lesson 092: feedback starts with the event. The hit is one
+               of the toolkit's triggers, and the toolkit answers here —
+               in the hit's own frame, on this very line of the flight —
+               a short hitstop and a small shake. Not on a clock, not a
+               frame later: the hit and its weight are one moment. */
+            FeelHitstop(feel, 0.25, 0.15);
+            FeelShake(feel, 5.0, 0.25);
+
             std::printf("engine: shot %s retired — hit %s\n", shot.name,
                         target->name);
             EntityRetire(store, shot);
@@ -160,6 +172,14 @@ void CombatFly(const TileMap &map, EntityStore &store, const Entity &hero,
                 std::printf("engine: %s retired — zero health\n",
                             target->name);
                 EntityRetire(store, *target);
+            }
+            if (target->health == 0) {
+                /* Lesson 092: a death is the toolkit's heavier event —
+                   the same two hooks, weighted for it, fired in the same
+                   frame as the hit that made it. A killing blow answers
+                   as both, and the death's weights win. */
+                FeelHitstop(feel, 0.25, 0.30);
+                FeelShake(feel, 10.0, 0.50);
             }
             return;
         }

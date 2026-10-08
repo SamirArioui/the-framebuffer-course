@@ -1,8 +1,10 @@
 // feel.cpp — the feedback hooks: fire, decay, rest.
 //
 // Lesson 086: each hook fires, runs down its own wall-time, and returns
-// exactly to rest. Nothing here decides *when* to fire — that is the
-// juice toolkit's job (lessons 092-093), reading the game's events.
+// exactly to rest. Lesson 092: the game's own events fire them — a hit
+// lands, a death falls — in the event's own frame, and each hook says
+// when it fires beside the event's own line. The weights are the
+// event's, passed in from where the event happens.
 
 #include "feel.h"
 
@@ -22,12 +24,16 @@ void FeelShake(Feedback &feel, double magnitude, double seconds)
 {
     feel.shake = seconds;
     feel.shake_mag = magnitude;
+    std::printf("engine: feel: shake fired (%.0f px, %.2fs)\n", magnitude,
+                seconds);
 }
 
 void FeelHitstop(Feedback &feel, double fraction, double seconds)
 {
     feel.hitstop = seconds;
     feel.hitstop_k = fraction;
+    std::printf("engine: feel: hitstop fired (%.2fx, %.2fs)\n", fraction,
+                seconds);
 }
 
 double FeelTimeScale(const Feedback &feel)

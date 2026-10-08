@@ -1,10 +1,12 @@
-// feel.h — the feedback hooks the juice toolkit will drive.
+// feel.h — the feedback hooks the juice toolkit drives.
 //
 // Lesson 086: two hooks — a screenshake and a hitstop — each a thing
-// that fires and then rests. These are the hooks the juice toolkit
-// (lessons 092-093) will drive from the game's events: here they are the
-// mechanisms, each with its own fire-and-rest life, and nothing yet says
-// when to fire them. A hook at rest costs nothing and changes nothing.
+// that fires and then rests. Lesson 092: the toolkit fires them from the
+// game's own events — a hit lands, a death falls — in the event's own
+// frame, so the player reads cause and effect as one moment. The hooks
+// are the mechanisms, each with its own fire-and-rest life; the events
+// decide when and how heavily. A hook at rest costs nothing and changes
+// nothing.
 #ifndef FEEL_H
 #define FEEL_H
 

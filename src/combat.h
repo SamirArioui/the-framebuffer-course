@@ -16,6 +16,7 @@
 #define COMBAT_H
 
 #include "entity.h"
+#include "feel.h"
 #include "table.h"
 
 namespace engine {
@@ -56,9 +57,11 @@ bool CombatFire(EntityStore &store, const EntityTable &shots,
    health by the shot's damage and retires the shot; a zero-health target
    is retired too — the hero excepted, whose zero health is the game's
    defeat condition (the state machine reads it, the game's actor is not
-   retired out from under the game). */
+   retired out from under the game). Lesson 092: the hit and the death
+   are the toolkit's events — the feedback hooks fire here, in the
+   event's own frame, through `feel`. */
 void CombatFly(const TileMap &map, EntityStore &store, const Entity &hero,
-               Entity &shot, double dt);
+               Entity &shot, Feedback &feel, double dt);
 
 /* Lesson 090: the enemy attack, once per frame of game time. An armed
    entity — one whose row names a projectile kind — fires it at the

@@ -1,0 +1,54 @@
+diff --git a/src/feel.cpp b/src/feel.cpp
+index 76eb89a..5203a33 100644
+--- a/src/feel.cpp
++++ b/src/feel.cpp
+@@ -16,6 +16,7 @@ void FeelInit(Feedback &feel)
+ {
+     feel.shake = 0.0;
+     feel.shake_mag = 0.0;
++    feel.shake_total = 0.0;
+     feel.hitstop = 0.0;
+     feel.hitstop_k = 0.0;
+ }
+@@ -24,6 +25,7 @@ void FeelShake(Feedback &feel, double magnitude, double seconds)
+ {
+     feel.shake = seconds;
+     feel.shake_mag = magnitude;
++    feel.shake_total = seconds;
+     std::printf("engine: feel: shake fired (%.0f px, %.2fs)\n", magnitude,
+                 seconds);
+ }
+@@ -67,9 +69,18 @@ void FeelUpdate(Feedback &feel, double wall_dt, Camera &camera)
+             std::printf("engine: feel: shake rested at %d,%d\n", camera.add_x,
+                         camera.add_y);
+         } else {
+-            camera.add_x = ((int)(feel.shake * 40.0) & 1) ? (int)feel.shake_mag
+-                                                          : -(int)feel.shake_mag;
++            /* The settle: the offset's magnitude scales by what is left
++               of the shake's life, so the camera eases back to rest
++               instead of snapping off at full swing. The rest is still
++               exactly zero. */
++            double left =
++                feel.shake_total > 0.0 ? feel.shake / feel.shake_total : 0.0;
++            double mag = feel.shake_mag * left;
++            camera.add_x = ((int)(feel.shake * 40.0) & 1) ? (int)mag : -(int)mag;
+             camera.add_y = 0;
++            /* The probe: the offset, while it settles. */
++            std::printf("engine: probe: camera add %d,%d (shake %.3fs left)\n",
++                        camera.add_x, camera.add_y, feel.shake);
+         }
+     }
+ }
+diff --git a/src/feel.h b/src/feel.h
+index 5827080..d3f5a97 100644
+--- a/src/feel.h
++++ b/src/feel.h
+@@ -20,6 +20,8 @@ namespace engine {
+ struct Feedback {
+     double shake;     /* seconds of screenshake left; 0 = at rest */
+     double shake_mag; /* the shake's offset while it lasts, pixels */
++    double shake_total; /* the shake's whole life, seconds — the settle
++                          scales the offset by what is left of it */
+     double hitstop;   /* seconds of hitstop left; 0 = full speed */
+     double hitstop_k; /* the fraction of game time during the hitstop */
+ };

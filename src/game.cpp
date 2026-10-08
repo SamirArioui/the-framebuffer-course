@@ -218,7 +218,7 @@ void GameDrawSprites(const Game &game, Framebuffer &fb,
 }
 
 int GameWalk(EntityStore &store, const TileMap &map, const Entity &hero,
-             const EntityTable &shots, double dt)
+             const EntityTable &shots, Feedback &feel, double dt)
 {
     /* Lesson 084: the walk — every live entity, once per frame, in slot
        order, its movement resolved against the tilemap. The per-entity
@@ -237,7 +237,11 @@ int GameWalk(EntityStore &store, const TileMap &map, const Entity &hero,
        entity's movement request the way the player's input writes the
        hero's. One branch on the behavior, per-entity work expressed
        once: the boss (lesson 090) is one more value here, not one more
-       shape. */
+       shape.
+
+       Lesson 092: the flight's events — a hit lands, a death falls —
+       fire the feedback hooks in their own frame (the toolkit is handed
+       along through `feel`). */
     int visited = 0;
     for (int i = 0; i < ENTITY_CAP; ++i) {
         if (!store.slots[i].live)
@@ -246,7 +250,7 @@ int GameWalk(EntityStore &store, const TileMap &map, const Entity &hero,
         Entity &e = store.slots[i];
         switch (e.behavior) {
         case BEHAVIOR_FLY:
-            CombatFly(map, store, hero, e, dt);
+            CombatFly(map, store, hero, e, feel, dt);
             continue; /* the flight moves itself, through the mover */
         case BEHAVIOR_CHASE:
             AiChase(e, hero);

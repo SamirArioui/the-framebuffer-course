@@ -22,6 +22,7 @@
 
 #include "camera.h"
 #include "entity.h"
+#include "feel.h"
 #include "font.h"
 #include "framebuffer.h"
 #include "gametime.h"
@@ -111,10 +112,12 @@ void GameDrawSprites(const Game &game, Framebuffer &fb,
    walls, at its range, at what it hits) instead of the request. Lesson
    089-090: the enemy behaviors and the boss's pattern write the request
    the way the player's input writes the hero's, and an armed entity
-   attacks at its row's rate. The hero is handed along for the combat's
-   rules to know the game's actor by. Returns the visit count. */
+   attacks at its row's rate. Lesson 092: the combat's events (a hit, a
+   death) fire the feedback hooks through `feel`, in their own frame.
+   The hero is handed along for the combat's rules to know the game's
+   actor by. Returns the visit count. */
 int GameWalk(EntityStore &store, const TileMap &map, const Entity &hero,
-             const EntityTable &shots, double dt);
+             const EntityTable &shots, Feedback &feel, double dt);
 
 /* Lesson 091: the waves, once per frame of play. A fresh fight clears
    the last one from the store; a wave spawns its composition from the

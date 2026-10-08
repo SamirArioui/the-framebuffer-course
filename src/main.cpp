@@ -309,12 +309,12 @@ int Run(void)
     GameInit(game, hero.health);
 
     /* Lesson 086: the feedback hooks — a screenshake and a hitstop, both
-       at rest. The juice toolkit (lessons 092-093) will fire these from
-       the game's events; here a demonstration fires both once so their
-       fire-and-rest life is visible. */
+       at rest. Lesson 092: the juice toolkit fires them from the game's
+       own events now — a hit lands, a death falls — in the event's own
+       frame (the walk's flight, in game.cpp/combat.cpp); the wall-time
+       demonstration that used to fire them here is gone. */
     Feedback feel;
     FeelInit(feel);
-    bool feel_demo = false;
 
     /* Lesson 080: the vertical slice — the game's shape, and nothing
        else. The hero is the row the game asks for by name (it is the
@@ -492,20 +492,6 @@ int Run(void)
            arrows) and left at rest in every other state. */
         GameInput(game, opened.window, hero, wall_dt);
 
-        /* Lesson 086: the feedback hooks run on their own wall-time —
-           each fires, decays, and rests. The demonstration fires both
-           once, in play, so their fire-and-rest life is visible; the
-           juice toolkit (lessons 092-093) will fire them from the game's
-           events instead of this script. */
-        if (!feel_demo && game.state == GAME_PLAY &&
-            platform::Now() - started >= 3.0) {
-            feel_demo = true;
-            FeelShake(feel, 6.0, 0.5);
-            FeelHitstop(feel, 0.25, 0.4);
-            std::printf("engine: feel: shake fired (6 px, 0.5s), hitstop fired (0.25x, 0.4s)\n");
-        }
-        FeelUpdate(feel, wall_dt, game.camera);
-
         /* The game-time scale is the state's (play runs, the rest hold)
            times the hitstop's factor (a fraction during a hitstop, full
            at rest) — one knob, two drivers, multiplied. */
@@ -547,7 +533,7 @@ int Run(void)
             GameWaves(game, store, foes);
 
         double t_entities = platform::Now();
-        int visited = GameWalk(store, map, hero, shots, dt);
+        int visited = GameWalk(store, map, hero, shots, feel, dt);
         frame.entities = platform::Now() - t_entities;
         walk_visits += visited;
 
@@ -617,6 +603,15 @@ int Run(void)
            rests at exactly zero. The game owns the camera now (GameFollow,
            in game.cpp); the loop keeps no camera of its own. */
         GameFollow(game, hero, map);
+
+        /* Lesson 086: the feedback hooks run on their own wall-time —
+           each fires, decays, and rests. Lesson 092 moved the run to
+           here, after the frame's events and before the frame is drawn:
+           the toolkit settles whatever the walk fired this frame, so a
+           hit's shake is already in the hit's own frame's picture. Each
+           hook returns to rest on its own — the hitstop to full speed,
+           the shake's additive offset to exactly zero. */
+        FeelUpdate(feel, wall_dt, game.camera);
 
         frame.update = platform::Now() - t0;
 
