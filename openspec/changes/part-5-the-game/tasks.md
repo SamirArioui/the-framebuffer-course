@@ -47,5 +47,5 @@
 
 ## 8. Part 5 boundary review and integration checks
 
-- [ ] 8.1 Write `plan/part5-review.md` recording authoring velocity against the 10-20 h/week review budget from `plan/part0-review.md`, exercise counts per lesson against the conventions density table (Part 5: fewer, larger — at most 2), the toolchain versions used, the measured claims re-verified, and the MVD's frozen checklist completed line by line with its definition of done; verify every Part 5 lesson is counted and every checklist line is checked.
-- [ ] 8.2 From a clean checkout following only `README.md`: run `./build.sh`, run `mdbook build`, run `openspec validate`, and run the finished game headlessly; verify all succeed and `git tag` shows consecutive `lesson-082`…`lesson-103` where each consecutive tag diff equals that lesson's code step.
+- [x] 8.1 Write `plan/part5-review.md` recording authoring velocity against the 10-20 h/week review budget from `plan/part0-review.md`, exercise counts per lesson against the conventions density table (Part 5: fewer, larger — at most 2), the toolchain versions used, the measured claims re-verified, and the MVD's frozen checklist completed line by line with its definition of done; verify every Part 5 lesson is counted and every checklist line is checked.
+- [x] 8.2 From a clean checkout following only `README.md`: run `./build.sh`, run `mdbook build`, run `openspec validate`, and run the finished game headlessly; verify all succeed and `git tag` shows consecutive `lesson-082`…`lesson-103` where each consecutive tag diff equals that lesson's code step.

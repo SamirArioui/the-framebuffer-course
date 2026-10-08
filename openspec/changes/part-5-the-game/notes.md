@@ -1967,3 +1967,45 @@ four exercises (two prose deliverables with empty patches, said so on
 the record; one extend-the-code with a demonstrated patch; one port
 with the machine-name edit), and the course's 103 tags stand
 consecutive.
+
+## Task 8.2 — the clean-checkout integration checks
+
+From a fresh `git clone` of the repository to a throwaway directory,
+following only `README.md` (prerequisites → `./build.sh` → `mdbook
+build` → `openspec validate --all`), plus the finished game run
+headlessly as the task demands:
+
+| Check | Result |
+| ----- | ------ |
+| `./build.sh` | `build: OK (27 source(s) compiled -> build/game)` — warning-free |
+| `mdbook build` | `HTML book written to site` (the pre-existing `WARN search index is very large`, 100+ lessons — harmless) |
+| `openspec validate --all` | `Totals: 16 passed, 0 failed (16 items)` |
+| the finished game, headlessly (DISPLAY=:99, xdotool, window-move jiggle) | runs the scripted scenario, reports the missing sound device (`engine: no audio output on this machine` / `engine: continuing without sound`) and continues, prints the final frame-budget report (513 frames, `avg 1.254 ms`, `0 of 513` over budget, the machine line), closes cleanly (`engine: close reported` / `engine: closed`) |
+
+Tags: `git tag` shows **consecutive `lesson-082`…`lesson-103`** (22 of
+22, nothing past 103), and **every consecutive pair's diff equals
+that lesson's code step**, checked two ways for all 22 pairs:
+
+1. exactly one commit in each range touches `src/`+`assets/` (zero for
+   lesson-102's empty code step — the class-2 revision at 082's range
+   notwithstanding, its range still carries exactly one lesson commit
+   on `src/`);
+2. the `diff` block embedded in each lesson page equals the
+   tag-to-tag `src/`+`assets/` diff **minus binary-file entries and
+   index/hunk metadata** — byte-identical text for all 22 pairs. The
+   only content the blocks cannot carry is the lessons' binary assets
+   (sprites `.ppm`, sounds `.wav`) that arrive with 086/087/088/093/
+   095 — binary diffs are un-embeddable by construction; each asset is
+   named in its lesson's prose. Six pairs (083, 086-088, 093, 095)
+   additionally differ in `index`/`@@` metadata alone (083 from the
+   class-2 retag of 082 shifting blob hashes and line offsets; the
+   rest from the same construction as their blocks).
+
+Both spot-cases were verified explicitly: `lesson-101..lesson-102 --
+src/` is empty (the empty step, stated in the page), and
+`lesson-102..lesson-103 -- src/` is exactly the 26-line hand-over
+header in `src/game.h`. The throwaway checkout and the `lesson-098`
+measurement worktree were removed after the checks; the main tree is
+clean.
+
+*(The review's integration section records the same table.)*
