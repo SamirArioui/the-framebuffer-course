@@ -796,3 +796,75 @@ once (real output):
   bends the path (the mover resolves x first, the slide follows), and
   the bat ends wedged at the pillar — the eight-lane model's honest
   limit.
+
+## Lesson-090 — the boss (L9): authoring record
+
+New behavior (the `enemies` delta's boss, design D6) and the enemy
+attacks. `AiBoss` is a schedule — per-entity state (`phase`,
+`phase_t`) and timing — composing `AiChase`/`AiKeep`/`AiFlee`; the
+walk's per-entity work gains the `boss` case and the attack line
+(`CombatAttack`); lesson 087's enemy-fire stand-in and its `G` key are
+gone.
+
+### The design decisions this lesson settled
+
+- **The pattern is state and timing, and nothing else.** The boss's
+  own machinery is a phase index and an elapsed-time counter; every
+  step it takes is a shared behavior's request through the same
+  `MoveEntity`. This is the answer to lesson 088's steelman: the one
+  thing a row cannot carry is a schedule, and the schedule costs two
+  fields and a timer.
+- **The schedule counts elapsed phase time, not a countdown.** The
+  first implementation counted down from zero and advanced on
+  `<= 0` — which made the pattern churn during the freeze (dt = 0) and
+  skip its first phase. Counting *up* to the phase's length makes the
+  schedule a function of game time alone: the freeze freezes it, and a
+  new pattern starts on its first phase naturally.
+- **The attack is one line of the per-entity work** — an armed entity
+  (its row names a projectile kind) fires at the hero at its row's
+  rate, while the hero is within its shot's reach (the projectile
+  kind's `range` — the shot's own fact bounds the threat). The hero is
+  exempt (its trigger is the player's); the slime's row names no weapon
+  and it never fires.
+- **The G stand-in died here, as its comment promised.** `KEY_G` left
+  the seam (`platform.h`, `platform_x11.cpp`) and the slime's
+  demonstration arming with it. "Combat reduces the hero's health" is
+  now the enemy rows' own work.
+- **The golem's rate was tuned to the fight this lesson demonstrates**
+  (a shell every 3 s instead of 2) so one full pattern cycle is
+  observable before the hero falls — an asset edit in the lesson's
+  step, the data's job.
+
+### What the runs verified (headless, Xvfb `:99`, scripted input)
+
+- **The boss composes the behaviors plus its pattern** (a scratch
+  roster holding only the golem's row — the boss alone on the map,
+  stated as such). Real output: `boss: golem's pattern -> keep (2 s)`
+  while the distance backs off `48 → 71 → 95 → 119 → 144` (AiKeep to
+  its 160), `-> flee (1 s)` while it grows `168 → 193 → 218` (AiFlee),
+  `-> chase (3 s)` while it falls `193 → … → 26` (AiChase), then
+  `-> keep` again — the cycle exact.
+- **No separate movement machinery.** `AiBoss` contains a timer, a
+  counter, and three calls to the shared behaviors — no movement math.
+  The measured phases are those behaviors' own signatures (the keep's
+  band, the flee's growth, the chase's close).
+- **The enemy attacks are real** (the stand-in's replacement): `hit:
+  shell hits hero — damage 2, health 3 -> 1`, `hit: shell hits hero —
+  damage 2, health 1 -> 0`, `state play -> death (the hero's health
+  reached zero)` — the golem's row's damage, from the boss's own fire,
+  with no key held down.
+
+### Lesson-090 exercises
+
+- **ex1 (extend-the-code) — the pattern owns its attacks.** The walk's
+  generic attack line skips bosses; `AiBoss` fires in its `keep` phase
+  only. Real run: every `fire` line falls inside a `keep` phase and
+  nowhere else (`keep (2 s) → fire → hit … damage 2, health 3 -> 1`,
+  `chase`/`flee` silent, `keep (2 s) → fire → hit … health 1 -> 0`).
+- **ex2 (predict-the-output) — the schedule's timeline.** The 3/2/1 s
+  cycle predicted as a table (keep at t≈3, flee at t≈5, chase at t≈6,
+  keep at t≈9 …) against the probe's game-clock stamps: `keep (2 s) at
+  t=3.0`, `flee (1 s) at t=5.0`, `chase (3 s) at t=6.1`, `keep (2 s) at
+  t=9.1` — the prediction matched, jittered by the frame each change
+  lands in. The walkthrough also defends the elapsed-time schedule
+  against the countdown bug the first implementation had.
