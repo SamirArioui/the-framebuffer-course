@@ -1236,3 +1236,70 @@ ConfigureNotify — the loop sleeps through it and the run degrades to a
 few frames with giant steps (`step 11971 ms` in the first attempt).
 Frame pacing must alternate positions (as `hold.sh` does). The runs
 above are paced at ~25 fps with the fixed jiggle.
+
+## Lesson-095 — audio integration (L14): authoring record
+
+The game's sound as the game has it: `sound.h`/`sound.cpp` — the game
+layer's use of the finished mixer (audio.* untouched) — the music
+looping on the music channel and one effect per event fired on the
+pool, from the same event lines the feel toolkit fires from. Three new
+sfx assets (`shot.wav`, `hit.wav`, `death.wav` — small synthesized
+tones); the demonstration files of lessons 061/066 (`tone.wav`,
+`effect.wav`) stay on disk and leave the run, as 066 did the tone.
+
+### The design decisions this lesson settled
+
+- **The mix is the game's work; the device is the seam's.** The old
+  loop mixed only inside `if (audio.output && …)` — on this machine the
+  mix never ran at all. Now the stream is mixed on the engine's rate
+  whether or not a device exists and only `SubmitSamples` is gated on
+  one: a machine with no output runs the game's whole sound in silence
+  and the reports still say what the channels and the stream carried.
+  That is exactly what task 4.4's verification can measure here.
+- **The events fire the sounds at their own lines** (shot in
+  `CombatFire`, hit and death in `CombatFly`) — the same event sites as
+  the feel toolkit, same frame. The demonstration rhythm (a timed
+  effect every second) died here, completing the stand-in removals.
+- **The volumes are the sounds' own** (shot quarter, hit and death
+  half) so the sum stays inside the format while the fight gets loud —
+  068's demo rule, now data of the sound module.
+
+### What the runs verified (headless, Xvfb `:99`, scripted input)
+
+- **The effects reach the channels** (run A, the scratch killing blow):
+  `fire: hero -> bolt` → `sound: shot -> channel 1 (volume 64 of 256)`;
+  `hit: bolt hits bag` → `sound: hit -> channel 2` and `bag retired` →
+  `sound: death -> channel 3` — all inside the event's frame, on the
+  pool's channels 1–15, channel 0 the music's and never touched.
+- **The music reaches the channel and the stream, byte for byte**: the
+  music file's first frames (`0 277 554 831 1107 1381 1655 1927`) and
+  the first mixed buffer's frames are the *same eight numbers*; the
+  wrap report closes it (`music wrapped on channel 0 — wrap 1, 133035
+  frames played, cursor 735 of 132300`).
+- **The effects reach the stream, accounted for**: the first buffer
+  carrying an effect reads `-8810 -8634 -8456 …` and every frame is the
+  music's frame at that cursor (`-8810 -8889 -8961 …`) plus the shot's
+  (`0 255 505 …`) at its quarter volume — verified arithmetically
+  against the files (music cursor 735 = buffer 1).
+- **The counts close the account**: `304 frames measured, 302 buffers
+  of stream mixed (221970 frames), 12 effects fired, 1 music wraps` —
+  all with `no audio output on this machine / continuing without sound`
+  printed at startup. The frame record's `audio` phase now carries real
+  work (0.03 ms, ~3% of the frame).
+- **Honest limit, stated in the prose**: nothing audible is verified —
+  this machine has no speakers; the stream's bytes say what the sound
+  is, not how it sounds.
+
+### Lesson-095 exercises
+
+- **ex1 (extend-the-code) — the volume follows the distance.** A
+  quadratic falloff in the squared distance (no square root per sound),
+  the events carrying their offset from the hero. Real run (two armed
+  scratch bags at 24 px and 150 px): `shot -> channel 1 (volume 63)` /
+  `shot -> channel 2 (volume 42)` / the hero's own `volume 64` — the
+  formula's numbers exactly (`64 × (1 − (150/256)²) = 42.0`).
+- **ex2 (predict-the-output) — the pool under fire.** Predicted the
+  twenty-sound frame: channels 1–15, then the stealing from the oldest
+  (1, 2, 3, 4, 5). The run matches exactly; the walkthrough ties the
+  oldest-stealing pool to 074's never-stealing store as the deliberate
+  contrast (a dropped sound is inaudible; a dropped enemy is a bug).
