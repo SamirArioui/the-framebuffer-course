@@ -1,0 +1,15 @@
+diff --git a/src/game.cpp b/src/game.cpp
+index 33101e3..66bf0df 100644
+--- a/src/game.cpp
++++ b/src/game.cpp
+@@ -247,6 +247,10 @@ int GameWalk(EntityStore &store, const TileMap &map, const Entity &hero,
+             continue;
+         visited += 1;
+         Entity &e = store.slots[i];
++        /* Exercise 2: the walk's shape, made visible — one visit per
++           live entity, one work shape, every kind through it. */
++        std::printf("walk visit: %s (behavior %s)\n", e.name,
++                    BehaviorName(e.behavior));
+         if (e.behavior == BEHAVIOR_FLY) {
+             CombatFly(map, store, hero, e, dt);
+             continue;

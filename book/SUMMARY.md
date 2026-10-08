@@ -412,6 +412,10 @@
   - [Solution: ex1 — the scatter shot](solutions/lesson-087/ex1.md)
   - [Solution: ex2 — the projectile with no art](solutions/lesson-087/ex2.md)
 
+- [Lesson 088 — enemy archetype tables](lessons/part-5/lesson-088-enemy-tables.md)
+  - [Solution: ex1 — the kinds nobody made yet](solutions/lesson-088/ex1.md)
+  - [Solution: ex2 — why the boss does not deserve code](solutions/lesson-088/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

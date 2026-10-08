@@ -54,6 +54,9 @@ struct Entity {
                                   never hits its owner */
     int behavior;              /* BehaviorKind, its row's: what this
                                   entity does each frame */
+    int wave;                  /* lesson 088: which wave spawns this
+                                  kind — carried like every row value */
+    int count;                 /* and how many join that wave */
     double cooldown;           /* seconds until it may fire again */
 };
 

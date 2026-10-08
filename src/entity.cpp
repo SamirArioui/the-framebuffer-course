@@ -27,6 +27,8 @@ Entity EntityFromDef(const EntityDef &def)
     entity.rate = def.rate;
     entity.range = def.range;
     entity.behavior = def.behavior;
+    entity.wave = def.wave;
+    entity.count = def.count;
     return entity;
 }
 
