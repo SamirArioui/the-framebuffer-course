@@ -325,5 +325,5 @@ who owns the fix?
 
 **Part:** [Part 5 — the game](../../index.md) ·
 **Previous:** [Lesson 100 — pass 2b: fix the clear](lesson-100-clear.md) ·
-**Next:** [the course home](../../index.md) ·
+**Next:** [Lesson 102 — the retrospective: our engine against real ones](lesson-102-retrospective.md) ·
 **Code tag:** [`lesson-101`](https://github.com/SamirArioui/the-framebuffer-course/tree/lesson-101)

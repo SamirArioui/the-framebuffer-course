@@ -468,6 +468,10 @@
   - [Solution: ex1 — the 60 fps line on your machine](solutions/lesson-101/ex1.md)
   - [Solution: ex2 — the worst frame, predicted](solutions/lesson-101/ex2.md)
 
+- [Lesson 102 — the retrospective: our engine against real ones](lessons/part-5/lesson-102-retrospective.md)
+  - [Solution: ex1 — our engine, honestly compared](solutions/lesson-102/ex1.md)
+  - [Solution: ex2 — the epilogue map on your machine](solutions/lesson-102/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)
