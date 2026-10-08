@@ -33,6 +33,9 @@ static void Transition(Game &game, GameState to, const char *why)
     std::printf("engine: state %s -> %s (%s)\n", GameStateName(game.state),
                 GameStateName(to), why);
     game.state = to;
+    /* Lesson 096: the new screen fades in from black — the fade's
+       clock starts with the screen. */
+    game.fade = 0.0;
 }
 
 const char *GameStateName(GameState state)
@@ -58,6 +61,7 @@ void GameInit(Game &game, int hero_health_full)
     game.hero_health_full = hero_health_full;
     game.play_clock = 0.0;
     game.score = 0.0;
+    game.fade = 0.0;
     game.wave = 0;
     game.camera = { 0, 0, 0, 0 };
     std::printf("engine: game: %d state%s, starting on %s\n", 5, "s",
@@ -67,6 +71,25 @@ void GameInit(Game &game, int hero_health_full)
 void GameInput(Game &game, platform::Window *window, Entity &hero,
                double wall_dt)
 {
+    /* Lesson 096: the screen's fade runs on wall time — the
+       presentation's clock. Game time is zero wherever a screen shows
+       (the world stands still behind the panel), so a fade on game
+       time would never arrive; this is lesson 078's split again, on
+       the other side of it. */
+    if (game.fade < GAME_FADE_S) {
+        game.fade += wall_dt;
+        if (game.fade >= GAME_FADE_S && game.state != GAME_PLAY) {
+            /* The fade arrives exactly at the screen's color — the
+               eased value's contract (lesson 093), measured on the
+               screen's own backdrop. Play's screen is the world and
+               fades nothing. */
+            int r, g, b;
+            GameScreenColor(game, r, g, b);
+            std::printf("engine: screen: %s fade arrived at %d,%d,%d (its own color)\n",
+                        GameStateName(game.state), r, g, b);
+        }
+    }
+
     switch (game.state) {
     case GAME_TITLE:
         /* The title screen accepts one thing: the start key. */
@@ -139,35 +162,102 @@ double GameScale(const Game &game)
     return game.state == GAME_PLAY ? GAMETIME_FULL : 0.0;
 }
 
-/* One panel screen: a title line and a hint, centred. The screen is the
-   state's — the world is not drawn behind it. The backdrop is cleared by
-   the frame's render phase before this runs, so the panel's own time is
-   the text it draws and nothing else. */
-static void Panel(Framebuffer &fb, const Font &font, const char *title,
-                  const char *hint)
+/* Lesson 096: one centered line of a screen. */
+static void Line(Framebuffer &fb, const Font &font, const char *text, int y)
 {
-    int title_x = (FRAME_WIDTH - TextWidth(title)) / 2;
-    int hint_x = (FRAME_WIDTH - TextWidth(hint)) / 2;
-    DrawText(fb, font, title, title_x, FRAME_HEIGHT / 2 - FONT_CELL);
-    DrawText(fb, font, hint, hint_x, FRAME_HEIGHT / 2 + FONT_CELL);
+    DrawText(fb, font, text, (FRAME_WIDTH - TextWidth(text)) / 2, y);
+}
+
+/* The run's final numbers, the same values the HUD reads — the score,
+   the play clock as minutes and seconds, and the wave the game ended
+   on. The end screens show them; the game's state is the game's story. */
+static void Numbers(const Game &game, char *line, int size)
+{
+    int secs = (int)game.play_clock;
+    std::snprintf(line, size, "SCORE %06d   TIME %d:%02d   WAVE %d/%d",
+                  (int)game.score, secs / 60, secs % 60, game.wave,
+                  GAME_WAVES);
+}
+
+/* Lesson 096: the screens in final form. Each state's screen is its
+   own — the world is not drawn behind it — and each names the input it
+   acts on, so the screen documents the very input the machine listens
+   for. The report below prints the screen's content the first frame it
+   draws: a run shows every screen it staged. */
+static void Report(const Game &game, const char *title, const char *body,
+                   const char *prompt)
+{
+    static GameState was = GAME_TITLE;
+    static bool first = true;
+    if (!first && was == game.state)
+        return;
+    first = false;
+    was = game.state;
+    std::printf("engine: screen: %s: \"%s\" / \"%s\" / \"%s\"\n",
+                GameStateName(game.state), title, body, prompt);
 }
 
 void GameDrawPanel(const Game &game, Framebuffer &fb, const Font &font)
 {
+    char body[64];
     switch (game.state) {
     case GAME_TITLE:
-        Panel(fb, font, "THE FRAMEBUFFER GAME", "ENTER: PLAY");
+        Line(fb, font, "THE FRAMEBUFFER GAME", 140);
+        Line(fb, font, "ARROWS  MOVE      SPACE  FIRE", 196);
+        Line(fb, font, "1 / 2   WEAPONS   ESCAPE  PAUSE", 212);
+        Line(fb, font, "ENTER: PLAY", 268);
+        Report(game, "THE FRAMEBUFFER GAME",
+               "ARROWS MOVE ... ESCAPE PAUSE", "ENTER: PLAY");
         break;
+
     case GAME_PAUSE:
-        Panel(fb, font, "PAUSED", "ESCAPE: RESUME");
+        Numbers(game, body, sizeof body);
+        Line(fb, font, "PAUSED", 180);
+        Line(fb, font, body, 228);
+        Line(fb, font, "ESCAPE: RESUME", 268);
+        Report(game, "PAUSED", body, "ESCAPE: RESUME");
         break;
+
     case GAME_DEATH:
-        Panel(fb, font, "GAME OVER", "ENTER: TITLE");
+        Numbers(game, body, sizeof body);
+        Line(fb, font, "GAME OVER", 180);
+        Line(fb, font, body, 228);
+        Line(fb, font, "ENTER: TITLE", 268);
+        Report(game, "GAME OVER", body, "ENTER: TITLE");
         break;
+
     default:
-        Panel(fb, font, "VICTORY", "ENTER: TITLE");
+        Numbers(game, body, sizeof body);
+        Line(fb, font, "VICTORY", 180);
+        Line(fb, font, body, 228);
+        Line(fb, font, "ENTER: TITLE", 268);
+        Report(game, "VICTORY", body, "ENTER: TITLE");
         break;
     }
+}
+
+void GameScreenColor(const Game &game, int &r, int &g, int &b)
+{
+    /* The screen's own backdrop, faded in from black by the ease — the
+       toolkit's easing (lesson 093) applied to a screen's fade, the
+       value arriving exactly at the screen's color. The end screens
+       carry their own tint: the death screen reddens, the victory
+       screen greens. */
+    int tr = 24, tg = 24, tb = 40;
+    if (game.state == GAME_DEATH) {
+        tr = 56;
+        tg = 16;
+        tb = 16;
+    } else if (game.state == GAME_VICTORY) {
+        tr = 16;
+        tg = 48;
+        tb = 16;
+    }
+    double t = game.fade < GAME_FADE_S ? game.fade / GAME_FADE_S : 1.0;
+    double k = EaseInOutQuad(t);
+    r = (int)(tr * k);
+    g = (int)(tg * k);
+    b = (int)(tb * k);
 }
 
 void GameFollow(Game &game, const Entity &hero, const TileMap &map)

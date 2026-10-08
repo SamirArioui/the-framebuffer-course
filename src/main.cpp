@@ -726,10 +726,16 @@ int Run(void)
            082). The backdrop is the state's own — the world's blue in
            play, the panel's darker blue on the panel screens — cleared
            once here, in the render phase, before the named sub-phases. */
-        if (game.state == GAME_PLAY)
+        if (game.state == GAME_PLAY) {
             ClearBuffer(*fb, 32, 32, 64);
-        else
-            ClearBuffer(*fb, 24, 24, 40);
+        } else {
+            /* Lesson 096: the screen's own backdrop, faded in from
+               black by its ease — the clear stays the render phase's
+               work, its color the screen's (GameScreenColor). */
+            int screen_r, screen_g, screen_b;
+            GameScreenColor(game, screen_r, screen_g, screen_b);
+            ClearBuffer(*fb, screen_r, screen_g, screen_b);
+        }
         if (game.state == GAME_PLAY) {
             /* Lesson 083: the game draws its own world — the scrolling
                map and the live entities, through the game's camera. The

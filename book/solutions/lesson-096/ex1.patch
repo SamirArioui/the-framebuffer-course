@@ -1,0 +1,103 @@
+diff --git a/src/framebuffer.cpp b/src/framebuffer.cpp
+index 88080d5..b3762d3 100644
+--- a/src/framebuffer.cpp
++++ b/src/framebuffer.cpp
+@@ -35,6 +35,20 @@ void ClearBuffer(Framebuffer &fb, unsigned char r, unsigned char g,
+     }
+ }
+ 
++/* Exercise 1: ClearBuffer's clipped rectangle — the same one color,
++   the same fold, one region. */
++void ClearRect(Framebuffer &fb, int x, int y, int w, int h,
++               unsigned char r, unsigned char g, unsigned char b)
++{
++    int left = x < 0 ? 0 : x;
++    int top = y < 0 ? 0 : y;
++    int right = x + w < fb.width ? x + w : fb.width;
++    int bottom = y + h < fb.height ? y + h : fb.height;
++    for (int j = top; j < bottom; ++j)
++        for (int i = left; i < right; ++i)
++            PutPixel(fb, i, j, r, g, b);
++}
++
+ void PutPixel(Framebuffer &fb, int x, int y, unsigned char r,
+               unsigned char g, unsigned char b)
+ {
+diff --git a/src/framebuffer.h b/src/framebuffer.h
+index dd09e45..07c1b1a 100644
+--- a/src/framebuffer.h
++++ b/src/framebuffer.h
+@@ -34,6 +34,13 @@ Framebuffer *GetFramebuffer(Arena &arena);
+ void ClearBuffer(Framebuffer &fb, unsigned char r, unsigned char g,
+                  unsigned char b);
+ 
++/* Exercise 1: the clear, clipped to a rectangle — one color written
++   into the frame's (x, y, w, h), the part of the rectangle outside the
++   frame dropped like every draw. The panel over the world is a
++   rectangle of panel color. */
++void ClearRect(Framebuffer &fb, int x, int y, int w, int h,
++               unsigned char r, unsigned char g, unsigned char b);
++
+ /* Writes one pixel. Out-of-bounds writes are dropped — the fold of
+    lesson 015, never a wrap into someone else's memory. */
+ void PutPixel(Framebuffer &fb, int x, int y, unsigned char r,
+diff --git a/src/game.cpp b/src/game.cpp
+index f88c950..91406b5 100644
+--- a/src/game.cpp
++++ b/src/game.cpp
+@@ -211,6 +211,15 @@ void GameDrawPanel(const Game &game, Framebuffer &fb, const Font &font)
+         break;
+ 
+     case GAME_PAUSE:
++        /* Exercise 1: the panel over the world — a rectangle of panel
++           color (faded in with the screen) behind the lines, so the
++           frozen scene stays visible around it. */
++        {
++            int r, g, b;
++            GameScreenColor(game, r, g, b);
++            ClearRect(fb, 160, 156, 320, 140, (unsigned char)r,
++                      (unsigned char)g, (unsigned char)b);
++        }
+         Numbers(game, body, sizeof body);
+         Line(fb, font, "PAUSED", 180);
+         Line(fb, font, body, 228);
+diff --git a/src/main.cpp b/src/main.cpp
+index f85e2f2..4730cb9 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -726,7 +726,7 @@ int Run(void)
+            082). The backdrop is the state's own — the world's blue in
+            play, the panel's darker blue on the panel screens — cleared
+            once here, in the render phase, before the named sub-phases. */
+-        if (game.state == GAME_PLAY) {
++        if (game.state == GAME_PLAY || game.state == GAME_PAUSE) {
+             ClearBuffer(*fb, 32, 32, 64);
+         } else {
+             /* Lesson 096: the screen's own backdrop, faded in from
+@@ -736,11 +736,12 @@ int Run(void)
+             GameScreenColor(game, screen_r, screen_g, screen_b);
+             ClearBuffer(*fb, screen_r, screen_g, screen_b);
+         }
+-        if (game.state == GAME_PLAY) {
++        if (game.state == GAME_PLAY || game.state == GAME_PAUSE) {
+             /* Lesson 083: the game draws its own world — the scrolling
+                map and the live entities, through the game's camera. The
+                loop times the two the way it always has, as the frame
+-               record's named sub-phases. */
++               record's named sub-phases. Exercise 1: the pause draws
++               the world too — frozen behind its panel. */
+             double t_tilemap = platform::Now();
+             GameDrawMap(game, *fb, map, sheet);
+             frame.tilemap = platform::Now() - t_tilemap;
+@@ -751,7 +752,10 @@ int Run(void)
+                (HudDraw, in hud.cpp) — the game's own state in text,
+                drawn over the world and never with the camera. */
+             double t_text = platform::Now();
+-            HudDraw(game, hero, *fb, font);
++            if (game.state == GAME_PLAY)
++                HudDraw(game, hero, *fb, font);
++            else
++                GameDrawPanel(game, *fb, font);
+             frame.text = platform::Now() - t_text;
+         } else {
+             /* The state's own screen. The world is frozen outside play —

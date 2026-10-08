@@ -444,6 +444,10 @@
   - [Solution: ex1 — the volume follows the distance](solutions/lesson-095/ex1.md)
   - [Solution: ex2 — the pool under fire](solutions/lesson-095/ex2.md)
 
+- [Lesson 096 — screen polish](lessons/part-5/lesson-096-screens.md)
+  - [Solution: ex1 — the pause over the frozen world](solutions/lesson-096/ex1.md)
+  - [Solution: ex2 — the fade's clock](solutions/lesson-096/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)

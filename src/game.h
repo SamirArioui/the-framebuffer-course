@@ -48,6 +48,10 @@ enum GameState {
    the next begins when the last enemy of the current one is retired. */
 constexpr int GAME_WAVES = 3;
 
+/* Lesson 096: the screen's fade — how long a screen takes to fade in
+   from black, on the presentation's (wall) clock. */
+constexpr double GAME_FADE_S = 0.30;
+
 /* The game's own state: which state it is in, and the facts the named
    transitions read. Nothing here is a service's — it is the game's. */
 struct Game {
@@ -58,6 +62,9 @@ struct Game {
     double score;         /* lesson 094: the game's score — the ground
                             the hero has walked, the value the HUD
                             reads and the states' reports carry */
+    double fade;          /* lesson 096: how long the screen on show
+                            has been fading in — the presentation's
+                            own clock, like the feel hooks' */
     int wave;             /* lesson 091: the wave being fought (0 = the
                             fight has not started) */
     Camera camera;        /* lesson 083: the game's world-view — one
@@ -88,10 +95,17 @@ void GameInput(Game &game, platform::Window *window, Entity &hero,
 double GameScale(const Game &game);
 
 /* The current state's screen, for the four states whose screen is a
-   panel over a still world — title, pause, death, victory. Play's screen
-   is the world the game draws below; the loop draws it and calls this
-   for the rest. */
+   panel over a still world — title, pause, death, victory — in final
+   form (lesson 096): the title's name and controls, the end screens'
+   final numbers, the prompt each input acts on. Play's screen is the
+   world the game draws below; the loop draws it and calls this for the
+   rest. */
 void GameDrawPanel(const Game &game, Framebuffer &fb, const Font &font);
+
+/* Lesson 096: the screen's backdrop — its color, faded in from black
+   over the screen's fade. The render phase clears with it; the value
+   animates by easing and arrives exactly at the screen's own color. */
+void GameScreenColor(const Game &game, int &r, int &g, int &b);
 
 /* Lesson 083: the game's world-view. The camera's base follows the hero
    — the world scrolls under the movement — clamped to the map's bounds,

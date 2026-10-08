@@ -1,0 +1,17 @@
+diff --git a/src/main.cpp b/src/main.cpp
+index f85e2f2..61864e7 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -633,6 +633,12 @@ int Run(void)
+            the shake's additive offset to exactly zero. */
+         FeelUpdate(feel, wall_dt, game.camera);
+ 
++        /* Exercise 2: the probe — the screen's fade beside the world's
++           step, every frame the screen is fading or showing. */
++        if (game.fade < GAME_FADE_S || game.state != GAME_PLAY)
++            std::printf("engine: probe: fade %.3f — step %.3f ms, state %s\n",
++                        game.fade, dt * 1e3, GameStateName(game.state));
++
+         frame.update = platform::Now() - t0;
+ 
+         /* Lesson 060: the audio step — the loop feeds the device the next
