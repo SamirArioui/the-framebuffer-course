@@ -1,0 +1,115 @@
+diff --git a/src/game.cpp b/src/game.cpp
+index a2f87fe..dfcb9bd 100644
+--- a/src/game.cpp
++++ b/src/game.cpp
+@@ -58,6 +58,7 @@ void GameInit(Game &game, int hero_health_full)
+     game.hero_health_full = hero_health_full;
+     game.play_clock = 0.0;
+     game.wave = 0;
++    game.wave_wait = 0.0;
+     game.camera = { 0, 0, 0, 0 };
+     std::printf("engine: game: %d state%s, starting on %s\n", 5, "s",
+                 GameStateName(game.state));
+@@ -76,6 +77,7 @@ void GameInput(Game &game, platform::Window *window, Entity &hero,
+             hero.health = game.hero_health_full;
+             game.waves_remaining = GAME_WAVES;
+             game.wave = 0; /* lesson 091: the fight starts over */
++            game.wave_wait = 0.0;
+             game.play_clock = 0.0;
+             hero.move_x = 0.0;
+             hero.move_y = 0.0;
+@@ -294,7 +296,11 @@ static bool IsFighter(const Entity &e)
+            e.behavior == BEHAVIOR_FLEE || e.behavior == BEHAVIOR_BOSS;
+ }
+ 
+-void GameWaves(Game &game, EntityStore &store, const EntityTable &foes)
++/* Exercise 1: the breath between waves, in game seconds. */
++constexpr double WAVE_BREATH_S = 2.0;
++
++void GameWaves(Game &game, EntityStore &store, const EntityTable &foes,
++               double dt)
+ {
+     /* A fresh fight: the last game's fighters and shots leave the store
+        — the hero is the game's actor and the `none` kinds are the
+@@ -323,8 +329,24 @@ void GameWaves(Game &game, EntityStore &store, const EntityTable &foes)
+     if (live > 0)
+         return;
+ 
+-    /* The wave is clear: the next begins — or the last one ended the
+-       game's waves, which is the named condition for victory. */
++    /* The wave is clear. Exercise 1: the next wave does not begin on
++       the fall — the fight takes a breath first, measured in game time
++       (it freezes with the pause and slows with a hitstop, like every
++       step of the simulation). */
++    if (game.wave_wait > 0.0) {
++        game.wave_wait -= dt;
++        if (game.wave_wait > 0.0)
++            return;
++    } else if (game.wave > 0 && game.wave < GAME_WAVES) {
++        game.wave_wait = WAVE_BREATH_S;
++        std::printf("engine: wave %d cleared — wave %d incoming (t=%.3f)\n",
++                    game.wave, game.wave + 1, game.play_clock);
++        return;
++    }
++
++    /* The breath is over (or the fight has just begun): the next wave —
++       or, the last one being done, the game's completion, which is the
++       named condition for victory. */
+     if (game.wave >= GAME_WAVES) {
+         if (game.waves_remaining > 0) {
+             std::printf("engine: the waves are complete (t=%.3f)\n",
+@@ -333,8 +355,6 @@ void GameWaves(Game &game, EntityStore &store, const EntityTable &foes)
+         }
+         return;
+     }
+-    if (game.wave > 0)
+-        std::printf("engine: wave %d cleared — the next begins\n", game.wave);
+     game.wave += 1;
+ 
+     /* The composition is the table's: every kind whose row's wave has
+@@ -362,7 +382,8 @@ void GameWaves(Game &game, EntityStore &store, const EntityTable &foes)
+             spawned += 1;
+         }
+     }
+-    std::printf("engine: wave %d begins — %d enemies\n", game.wave, spawned);
++    std::printf("engine: wave %d begins — %d enemies (t=%.3f)\n", game.wave,
++                spawned, game.play_clock);
+ }
+ 
+ } /* namespace engine */
+diff --git a/src/game.h b/src/game.h
+index e171716..0126729 100644
+--- a/src/game.h
++++ b/src/game.h
+@@ -55,6 +55,8 @@ struct Game {
+     double play_clock;    /* wall seconds spent in play this game */
+     int wave;             /* lesson 091: the wave being fought (0 = the
+                             fight has not started) */
++    double wave_wait;     /* exercise 1: the breath left before the next
++                            wave spawns, in game seconds */
+     Camera camera;        /* lesson 083: the game's world-view — one
+                             camera over the single scrolling map. Its
+                             base follows the hero; its additive offset
+@@ -122,7 +124,8 @@ int GameWalk(EntityStore &store, const TileMap &map, const Entity &hero,
+    count of them); and the next wave begins when the last enemy of the
+    current one is retired. When the last wave is clear the waves are
+    complete — the named condition for victory, and no stand-in. */
+-void GameWaves(Game &game, EntityStore &store, const EntityTable &foes);
++void GameWaves(Game &game, EntityStore &store, const EntityTable &foes,
++               double dt);
+ 
+ } /* namespace engine */
+ 
+diff --git a/src/main.cpp b/src/main.cpp
+index c460681..6b0ddfd 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -544,7 +544,7 @@ int Run(void)
+            current one is retired; and the last wave's clear is the
+            game's completion. */
+         if (game.state == GAME_PLAY)
+-            GameWaves(game, store, foes);
++            GameWaves(game, store, foes, dt);
+ 
+         double t_entities = platform::Now();
+         int visited = GameWalk(store, map, hero, shots, dt);

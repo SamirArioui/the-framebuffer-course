@@ -20,14 +20,11 @@
 
 namespace engine {
 
-/* The demonstration stand-ins, named so they cannot be mistaken for the
-   game. Lesson 087 made the hit real: a projectile reduces its target's
+/* Lesson 087 made the hit real: a projectile reduces its target's
    health by its row's damage, and a zero-health entity is retired.
-   Lesson 090 made the enemy fire real: the enemy rows carry their own
-   weapons and the walk's attack fires them at the hero — the `G` key's
-   stand-in is gone. What remains is ENTER in play below: the game's
-   completion stood in for, until lesson 091's waves spend it for real.
-   Keyed, it never fires on its own during a gameplay test. */
+   Lesson 090 made the enemy fire real. Lesson 091 made the waves real.
+   No stand-ins remain: every named condition of this machine is the
+   game's own work now. */
 
 /* A transition, named once here and printed the moment it happens, so a
    run shows the machine moving between states and why. */
@@ -60,6 +57,7 @@ void GameInit(Game &game, int hero_health_full)
     game.waves_remaining = GAME_WAVES;
     game.hero_health_full = hero_health_full;
     game.play_clock = 0.0;
+    game.wave = 0;
     game.camera = { 0, 0, 0, 0 };
     std::printf("engine: game: %d state%s, starting on %s\n", 5, "s",
                 GameStateName(game.state));
@@ -77,6 +75,7 @@ void GameInput(Game &game, platform::Window *window, Entity &hero,
                state. */
             hero.health = game.hero_health_full;
             game.waves_remaining = GAME_WAVES;
+            game.wave = 0; /* lesson 091: the fight starts over */
             game.play_clock = 0.0;
             hero.move_x = 0.0;
             hero.move_y = 0.0;
@@ -99,15 +98,9 @@ void GameInput(Game &game, platform::Window *window, Entity &hero,
             break;
         }
 
-        /* The stand-in for the waves: ENTER in play says the game is
-           complete (lesson 091 spends the waves for real). Completion is
-           the game's waves reaching zero. A keyed stand-in, like SPACE
-           is a hit — it never fires on its own during a gameplay test. */
-        if (platform::KeyPressed(window, platform::KEY_ENTER)) {
-            game.waves_remaining = 0;
-            std::printf("engine: the waves are complete (t=%.3f)\n",
-                        game.play_clock);
-        }
+        /* Completion is the game's waves reaching zero — spent for
+           real by the wave fight (GameWaves, lesson 091) now, not by a
+           key. */
         if (game.waves_remaining == 0) {
             Transition(game, GAME_VICTORY, "the game's waves are complete");
             break;
@@ -289,6 +282,87 @@ int GameWalk(EntityStore &store, const TileMap &map, const Entity &hero,
             e.facing = 3;
     }
     return visited;
+}
+
+/* Lesson 091: the kinds that fight are the ones with a behavior to
+   fight with. The hero, the scenery (behavior `none`), and the shots
+   (`fly`) are none of them — so "is a fighter of the waves" is the
+   row's behavior, asked once. */
+static bool IsFighter(const Entity &e)
+{
+    return e.behavior == BEHAVIOR_CHASE || e.behavior == BEHAVIOR_KEEP ||
+           e.behavior == BEHAVIOR_FLEE || e.behavior == BEHAVIOR_BOSS;
+}
+
+void GameWaves(Game &game, EntityStore &store, const EntityTable &foes)
+{
+    /* A fresh fight: the last game's fighters and shots leave the store
+       — the hero is the game's actor and the `none` kinds are the
+       world's scenery, and both stay. */
+    if (game.wave == 0) {
+        int cleared = 0;
+        for (int i = 0; i < ENTITY_CAP; ++i) {
+            Entity &e = store.slots[i];
+            if (!e.live)
+                continue;
+            if (IsFighter(e) || e.behavior == BEHAVIOR_FLY) {
+                EntityRetire(store, e);
+                cleared += 1;
+            }
+        }
+        if (cleared)
+            std::printf("engine: wave: the last fight leaves the store (%d retired)\n",
+                        cleared);
+    }
+
+    /* The wave is being fought while any of its fighters lives. */
+    int live = 0;
+    for (int i = 0; i < ENTITY_CAP; ++i)
+        if (store.slots[i].live && IsFighter(store.slots[i]))
+            live += 1;
+    if (live > 0)
+        return;
+
+    /* The wave is clear: the next begins — or the last one ended the
+       game's waves, which is the named condition for victory. */
+    if (game.wave >= GAME_WAVES) {
+        if (game.waves_remaining > 0) {
+            std::printf("engine: the waves are complete (t=%.3f)\n",
+                        game.play_clock);
+            game.waves_remaining = 0;
+        }
+        return;
+    }
+    if (game.wave > 0)
+        std::printf("engine: wave %d cleared — the next begins\n", game.wave);
+    game.wave += 1;
+
+    /* The composition is the table's: every kind whose row's wave has
+       come joins the wave (a kind joins at its wave and every wave
+       after it), its row's count of them. The copies stand in a line
+       beside their row's spot. */
+    int spawned = 0;
+    for (int i = 0; i < foes.count; ++i) {
+        const EntityDef &def = foes.rows[i];
+        if (def.wave <= 0 || def.wave > game.wave)
+            continue;
+        for (int n = 0; n < def.count; ++n) {
+            EntityResult made = EntityCreate(store, def);
+            if (made.error != ENTITY_OK) {
+                std::printf("engine: wave %d: the store refused %s\n",
+                            game.wave, def.name);
+                continue;
+            }
+            made.entity->x = def.x + n * ANIM_FRAME_W;
+            std::printf("engine: wave %d: spawns %s at %d,%d — speed %d, health %d, %s\n",
+                        game.wave, made.entity->name, (int)made.entity->x,
+                        (int)made.entity->y, made.entity->speed,
+                        made.entity->health,
+                        BehaviorName(made.entity->behavior));
+            spawned += 1;
+        }
+    }
+    std::printf("engine: wave %d begins — %d enemies\n", game.wave, spawned);
 }
 
 } /* namespace engine */

@@ -1,0 +1,25 @@
+diff --git a/src/game.cpp b/src/game.cpp
+index a2f87fe..388d46d 100644
+--- a/src/game.cpp
++++ b/src/game.cpp
+@@ -313,6 +313,20 @@ void GameWaves(Game &game, EntityStore &store, const EntityTable &foes)
+         if (cleared)
+             std::printf("engine: wave: the last fight leaves the store (%d retired)\n",
+                         cleared);
++        /* Exercise 2: the plan, from the rows alone — what every wave
++           will bring, read off the table before anything spawns. */
++        for (int w = 1; w <= GAME_WAVES; ++w) {
++            int total = 0;
++            for (int i = 0; i < foes.count; ++i) {
++                const EntityDef &def = foes.rows[i];
++                if (def.wave <= 0 || def.wave > w)
++                    continue;
++                std::printf("engine: plan: wave %d brings %s x%d\n", w,
++                            def.name, def.count);
++                total += def.count;
++            }
++            std::printf("engine: plan: wave %d total %d\n", w, total);
++        }
+     }
+ 
+     /* The wave is being fought while any of its fighters lives. */

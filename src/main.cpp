@@ -164,20 +164,6 @@ static void PrintDefs(const char *path, const EntityTable &table)
     }
 }
 
-/* Lesson 088: one live entity, carrying its row's values — printed in
-   the same words as the definition above, so the carrying is checkable
-   by eye against the file's rows. The sprite prints as its dimensions
-   because the entity carries the row's art *loaded* — the image, not
-   the path that named it. */
-static void PrintEntity(const char *kind, const Entity &e)
-{
-    std::printf("engine: %s %s: x %d y %d facing %d speed %d health %d sprite %dx%d accel %d damage %d rate %d fires %s range %d behavior %s wave %d count %d\n",
-                kind, e.name, (int)e.x, (int)e.y, e.facing, e.speed, e.health,
-                e.sprite->width, e.sprite->height, e.accel, e.damage, e.rate,
-                e.fires[0] ? e.fires : "none", e.range, BehaviorName(e.behavior),
-                e.wave, e.count);
-}
-
 int Run(void)
 {
     platform::WindowResult opened =
@@ -356,24 +342,10 @@ int Run(void)
     std::printf("engine: world: %d entities from the table's rows, live %d of %d\n",
                 created, store.live, ENTITY_CAP);
 
-    /* Lesson 088: the enemy roster is data. The three types and the
-       boss are rows of the game's table; each row becomes one entity,
-       carrying its row's values in named fields the game reads
-       directly. A new row is a new enemy — the run has no per-kind code
-       to grow, and no per-type copy of any attribute to keep honest. */
-    for (int i = 0; i < foes.count; ++i) {
-        EntityResult made = EntityCreate(store, foes.rows[i]);
-        if (made.error != ENTITY_OK) {
-            std::fprintf(stderr, "engine: the store refused %s\n",
-                         foes.rows[i].name);
-            platform::CloseWindow(opened.window);
-            ArenaRelease(arena);
-            return 1;
-        }
-        PrintEntity("entity", *made.entity);
-    }
-    std::printf("engine: roster: %d enemies from the table's rows, live %d of %d\n",
-                foes.count, store.live, ENTITY_CAP);
+    /* Lesson 091: the enemy roster is the waves' now — lesson 088's
+       standing spawn gave way to the wave fight (GameWaves), which
+       spawns the same rows wave by wave. A new row is still a new
+       enemy: no per-kind code has appeared since. */
 
     /* Lesson 087: weapons are rows. The hero starts armed with the
        weapons table's first row; the number keys arm the rest
@@ -566,6 +538,14 @@ int Run(void)
            every live entity's request into motion through the mover (and
            every projectile into its flight). The loop times it as the
            frame record's entity sub-phase. */
+        /* Lesson 091: the waves — the fight's shape. A fresh game
+           clears the last fight; a wave spawns its composition from the
+           table's rows; the next begins when the last enemy of the
+           current one is retired; and the last wave's clear is the
+           game's completion. */
+        if (game.state == GAME_PLAY)
+            GameWaves(game, store, foes);
+
         double t_entities = platform::Now();
         int visited = GameWalk(store, map, hero, shots, dt);
         frame.entities = platform::Now() - t_entities;

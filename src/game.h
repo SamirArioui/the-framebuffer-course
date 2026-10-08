@@ -41,8 +41,9 @@ enum GameState {
 };
 
 /* The game's wave count — the named condition for victory reads it: the
-   game is complete when its waves are done. Lesson 091 builds the waves
-   that spend it; until then it is the game's plan, named here. */
+   game is complete when its waves are done. Lesson 091: the waves are
+   fought now — each one spawns the kinds its table rows call for, and
+   the next begins when the last enemy of the current one is retired. */
 constexpr int GAME_WAVES = 3;
 
 /* The game's own state: which state it is in, and the facts the named
@@ -52,6 +53,8 @@ struct Game {
     int waves_remaining;  /* the named condition for victory */
     int hero_health_full; /* the health a fresh game starts the hero at */
     double play_clock;    /* wall seconds spent in play this game */
+    int wave;             /* lesson 091: the wave being fought (0 = the
+                            fight has not started) */
     Camera camera;        /* lesson 083: the game's world-view — one
                             camera over the single scrolling map. Its
                             base follows the hero; its additive offset
@@ -112,6 +115,14 @@ void GameDrawSprites(const Game &game, Framebuffer &fb,
    rules to know the game's actor by. Returns the visit count. */
 int GameWalk(EntityStore &store, const TileMap &map, const Entity &hero,
              const EntityTable &shots, double dt);
+
+/* Lesson 091: the waves, once per frame of play. A fresh fight clears
+   the last one from the store; a wave spawns its composition from the
+   table's definitions (every kind whose row's wave has come, its row's
+   count of them); and the next wave begins when the last enemy of the
+   current one is retired. When the last wave is clear the waves are
+   complete — the named condition for victory, and no stand-in. */
+void GameWaves(Game &game, EntityStore &store, const EntityTable &foes);
 
 } /* namespace engine */
 

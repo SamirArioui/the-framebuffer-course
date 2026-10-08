@@ -86,8 +86,9 @@ struct EntityDef {
     int range;                   /* world pixels: a projectile's flight
                                     budget — its life */
     int behavior;                /* BehaviorKind, its row's */
-    int wave;                    /* which wave spawns this kind;
-                                    0 = never by wave */
+    int wave;                    /* the wave this kind joins — it spawns
+                                    in that wave and every wave after
+                                    (lesson 091); 0 = never by wave */
     int count;                   /* how many of this kind join the wave */
 };
 

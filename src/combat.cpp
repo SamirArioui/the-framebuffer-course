@@ -21,6 +21,15 @@ bool Overlaps(const Entity &a, const Entity &b)
            a.y < b.y + b.sprite->height && b.y < a.y + a.sprite->height;
 }
 
+/* Two kinds' names, the same or not. */
+bool SameName(const char *a, const char *b)
+{
+    int i = 0;
+    while (a[i] && a[i] == b[i])
+        ++i;
+    return a[i] == b[i];
+}
+
 } /* namespace */
 
 void CombatAim(double vx, double vy, double &dir_x, double &dir_y)
@@ -113,16 +122,19 @@ void CombatFly(const TileMap &map, EntityStore &store, const Entity &hero,
        it hit, a wall (the step refused), and its range running out. */
     double left = (double)shot.speed * dt;
     for (;;) {
-        /* The first actor the shot overlaps, other than itself and its
-           owner. Slots are checked in order; the first hit is the hit.
-           A shot flies through other shots — a projectile hits the
-           living, and crossing fire does not cancel in mid-air. */
+        /* The first actor the shot overlaps, other than itself, its
+           owner, and its owner's kind. Slots are checked in order; the
+           first hit is the hit. A shot flies through other shots — and
+           through its own kind: a wave's copies do not shoot each
+           other down. A shot's targets are the other kinds. */
         Entity *target = 0;
         for (int i = 0; i < ENTITY_CAP && !target; ++i) {
             Entity &e = store.slots[i];
             if (!e.live || &e == &shot || &e == shot.owner)
                 continue;
             if (e.behavior == BEHAVIOR_FLY)
+                continue;
+            if (shot.owner && SameName(e.name, shot.owner->name))
                 continue;
             if (Overlaps(shot, e))
                 target = &e;

@@ -424,6 +424,10 @@
   - [Solution: ex1 — the pattern owns its attacks](solutions/lesson-090/ex1.md)
   - [Solution: ex2 — the schedule's timeline](solutions/lesson-090/ex2.md)
 
+- [Lesson 091 — waves](lessons/part-5/lesson-091-waves.md)
+  - [Solution: ex1 — the breath between waves](solutions/lesson-091/ex1.md)
+  - [Solution: ex2 — the wave plan](solutions/lesson-091/ex2.md)
+
 # Sample
 
 - [Sample lesson — filling a rectangle](lessons/sample-lesson.md)
