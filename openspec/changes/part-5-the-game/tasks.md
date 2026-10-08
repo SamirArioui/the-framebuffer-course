@@ -31,7 +31,7 @@
 
 ## 5. Pay the debt (lesson-097)
 
-- [ ] 5.1 Author lesson-097 (L16, the debt lesson: fix-forward the structural debt the assembly accumulated — "refactor is curriculum") with its exercises and diff solutions; verify the refactor keeps the game's behavior unchanged (the run's reports and the checklist's demonstrations re-run as documented), the build stays warning-free and the boundary check clean, the page renders, and the commit is tagged `lesson-097`.
+- [x] 5.1 Author lesson-097 (L16, the debt lesson: fix-forward the structural debt the assembly accumulated — "refactor is curriculum") with its exercises and diff solutions; verify the refactor keeps the game's behavior unchanged (the run's reports and the checklist's demonstrations re-run as documented), the build stays warning-free and the boundary check clean, the page renders, and the commit is tagged `lesson-097`.
 
 ## 6. The three-pass optimization (lesson-098…101)
 

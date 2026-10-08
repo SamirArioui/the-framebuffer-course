@@ -1390,3 +1390,97 @@ fades on the presentation's clock). The frozen checklist's "juice
 toolkit" and "states" lines are now demonstrable end to end; the
 "audio" line is demonstrated to the byte, its audible half routed to
 the learner's machine.
+
+## Lesson-097 — pay the debt (L16): authoring record
+
+The planned debt lesson (design D10): no behavior change, only shape.
+One code step — the run gets its shape — and the verification is the
+transcript's bill.
+
+### What debt it paid (the ledger)
+
+- **`Run()` did five jobs** (open the window, wire the assets, run the
+  frame's phases, print the probes, close with the account — ~670
+  lines, every lesson's report added mid-loop). Paid by the split:
+  `load.*` (the run's asset wiring — `LoadRunSample`/`LoadRunTable`/
+  `LoadRunArt` + the byte checks `PrintSample`/`PrintDefs`, moved
+  whole), `world.*` (`World` + `WorldStart`: the startup's exact
+  sequence as one named composition — the game's machine still starts
+  between the hero's creation and the world's fill, so the report order
+  is preserved), `report.*` (`RunReport` + `ReportFrame` + `ReportEnd`).
+  `main.cpp` keeps the window, the banners, the loop, the close.
+- **The probes tangled through the loop** — one per measurement lesson
+  (077's mover state, 085's velocity, 086's walk frame, 089's world
+  travel) with anonymous `was_*` bookkeeping between the phases. Paid:
+  the probes live in `report.*`, their bookkeeping is one named struct
+  (`RunReport`: `blocked`, `vx`, `vy`, `walk_frame`, `seen_x/y`), and
+  the printfs moved **verbatim** (a report line is a contract with every
+  lesson that quoted it).
+- **The wiring reached into the mixer** — the loop's audio step read the
+  music channel's cursor (the wrap's detection), scheduled the next
+  buffer, reported the stream's first bytes, named a refusing device,
+  submitted to the seam. Paid: `sound.*` grows `CHUNK_FRAMES`, `Feed`
+  and `SoundFeed`; the loop times the audio phase and calls one
+  function. `main.cpp` no longer knows the mixer has channels.
+- **Names that stopped fitting** — `main.cpp`'s header still said
+  "Lesson 069: the Part 3 closing demo"; the loop's `was_*` locals named
+  their birth lesson. Paid: the header says what the file is; the
+  bookkeeping's names are its job.
+- **Looked at and kept (judged contract, not debt):** `GameWalk`'s
+  explicit parameter list — design D6's "per-entity work is expressed
+  once", the game's modules meeting at the walk made visible at the
+  call site. The lesson's prose names the judgment; the bundling
+  alternative is left to the reader's own judgment.
+
+### What the runs verified (headless, Xvfb `:99`, scripted input)
+
+The scenario: title → `Return` into play → 4 s walking right + firing →
+`Escape` pause → `Escape` resume → 2 s walking left → close; paced
+~25 fps by window-move jiggles (`xdotool windowmove`); four runs —
+twice at `lesson-096` (worktree build) and twice at `lesson-097`.
+
+- **The transcript's bill is zero.** Each run reduced to its report
+  shape (digits stripped, repeats collapsed): **105 templates in every
+  run**; the two refactored runs' sets are *byte-identical* to the
+  first old run's (`md5 42c2b6b1…` ×3). The noise floor — old run 1 vs
+  old run 2 — is **8 templates apart** (4 each way; the second old run
+  killed the hero early: `state play -> death`, the death screen, no
+  spitter shell). The only before/after sequential difference: one
+  `hero unblocked` probe a few lines earlier — same jitter class.
+- **The checklist's demonstrations re-run as documented**: `state title
+  -> play (the player started)`; `wave 1 begins — 2 enemies`; `hit: bolt
+  hits hero — damage 1, health 3 -> 2`; `feel: hitstop fired (0.25x,
+  0.15s)` / `shake fired (5 px, 0.25s)`; `burst: spark x4 at 429,218 — 4
+  made, 0 dropped`; `spark settled … 64 px out, its row's range 64
+  (exact)`; `state play -> pause` + `screen: pause: "PAUSED" / "SCORE
+  000424 TIME 0:04 WAVE 2/3" / "ESCAPE: RESUME"` + `pause fade arrived
+  at 24,24,40`; `state pause -> play`; the closing account (`sound: 164
+  frames measured, 157 buffers of stream mixed (115395 frames), 32
+  effects fired, 0 music wraps`; `walk: 1462 visits over 164 frames`).
+- **The cost is unmoved**: frame budget old `163 frames, avg 1.936 ms
+  (tilemap 0.981, render 1.465, present 0.427)` vs new `avg 1.947 ms
+  (tilemap 0.957, render 1.425, present 0.477)` — the same shape within
+  the noise floor, and the strictest witness: `arena: 1580894 of
+  33554432 bytes used` byte-identical in all four runs.
+- Build warning-free (27 sources now) and `tools/check-boundary.sh`
+  clean; `mdbook build` renders the page.
+
+### Lesson-097 exercises
+
+- **ex1 (extend-the-code) — the banners come in from the cold.** The
+  five identity banners move into `report.*` (`ReportBanners`); a real
+  run shows the same five lines, same words, same order (quoted in the
+  walkthrough), and `main.cpp` loses its last `font.h`/`tiles.h` uses.
+- **ex2 (measure-the-performance) — the transcript's bill.** The
+  whole measurement with the noise floor first: `tools/`
+  `transcript-normalize.sh` (shipped as the solution's patch) reduces a
+  run to its shape; two old runs are 8 templates apart, the refactored
+  runs 0 from the old one. The walkthrough's method note: report the
+  floor next to the verdict, always.
+
+### Class-1 prose fixes riding along
+
+The stale "Next:" footers — `lesson-082`…`lesson-086`, `lesson-091`,
+and `lesson-096` said "the course home" while a next lesson exists —
+now link forward (the task's grant named 086 and 091; 082-085 and 096
+were the same staleness and were fixed the same way).
