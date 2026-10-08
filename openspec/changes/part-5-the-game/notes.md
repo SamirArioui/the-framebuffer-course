@@ -1569,3 +1569,77 @@ by window-move jiggles.
   names what may legitimately differ (the present's CPU/wait split,
   the device's feed, the build's flags) and demands the machine's name
   beside every number (D12).
+
+## Lesson-099 — pass 2a: fix the map's draw (L18): authoring record
+
+Pass 2a on the frozen menu (D11): fix hotspot #1 — the map's draw
+(`DrawTileMap`'s walk, `BlitSprite` per cell) — and nothing else.
+Every change names that hotspot.
+
+### The design decisions this lesson settled
+
+- **Three levers, one draw path.** `BlitSprite` gains (1) hoisted row
+  pointers (copy closer together), (2) a straight expand for sprites
+  with `key_count == 0` — counted at every birth site (`LoadSprite`,
+  `LoadTileSheet`, `LoadFont`) so the frame pays no decision the load
+  made (copy wider's shape), and (3) `DrawTileMap` walks only the
+  visible cell window (copy less). The one-copy-loop honesty holds:
+  every drawn pixel still comes through `BlitSprite`.
+- **The twin loop is left alone, on purpose.** `BlitSpriteFrame` (the
+  `sprites` row, 0.006 ms) was not named by pass 1, so it is not fixed
+  here — the menu's discipline is the point. Its medicine ships as
+  exercise 1.
+- **What widening would really take is recorded, not smuggled in.**
+  The census at `-O3` still reads 0 vector instructions for
+  `BlitSprite` (the expand moves 3 bytes in / 4 bytes out; GCC
+  declines at these settings). Widening means the tiles' pixels in the
+  framebuffer's own order at load (a layout change, breaking
+  blit.h's one-copy-loop rule) — future work.
+
+### What the runs verified (headless, Xvfb `:99`, scripted input)
+
+- **The measured cost falls** (same measurement scenario as lesson-098,
+  split by `step`: 1,551 frames, 1,415 play in both runs):
+  play-frame `tilemap 0.981 → 0.559 ms` (−43%); play-frame `total
+  1.944 → 1.505 ms`. Profile (2,583-frame `-pg` runs, same scenario):
+  `BlitSprite` self `2.11 s → 1.14 s` (−46%; 0.957 → 0.466 ms per map
+  draw), calls `3,501,190 → 3,045,953` (the culling), whole-run
+  profiled CPU `3.53 s → 2.28 s` (−35%).
+- **The percentage trap, quoted in the lesson**: `ClearBuffer`'s
+  profile share rose 37.68% → 46.05% while its measured cost did not
+  move (the account's `clear` row 0.456 → 0.449 ms — noise): shares
+  are fractions of what remains.
+- **Behavior unchanged, two ways**: (1) byte-level — a scratch harness
+  (`/tmp/opencode/blitcmp.cpp`, not course code) drew 2,000
+  randomized sprites (opaque and with key pixels, clipped at every
+  edge) through the old and new loops into separate buffers: **0 pixels
+  differ**; (2) report-level — the scripted run's transcript shape
+  (digits stripped, repeats collapsed) is identical to the
+  pre-fix state's: 106 templates, same set, same demonstrations.
+- `arena: 1580894 of 33554432 bytes used` still byte-identical — the
+  fix allocates nothing new (key_count is a field, not a buffer).
+- Build warning-free (the Sprite aggregate initializers grew their
+  seventh zero — `-Wextra` caught the missing initializer) and the
+  boundary check clean.
+
+### Per-tile decomposition (from exercise 2's probe, real run)
+
+- before: `0.981 ms / 1536 cells = 639 ns per tile`;
+- after: `0.549 ms / ~1215 cells = 450 ns per tile` — the count (−21%)
+  is the culling's, the per-tile cost (−30%) is the loop's; together
+  the measured 43% fall.
+
+### Lesson-099 exercises
+
+- **ex1 (extend-the-code) — the sprites' draw gets the same
+  medicine.** `BlitSpriteFrame` hoisted + straight path. Measured (the
+  exercise's whole point): play-frame `sprites 0.0063 → 0.0047 ms`,
+  the busiest 50 sprite frames `0.0202 → 0.0155 ms` — a real 25% fall
+  of a row that is 0.3% of the frame. The honest verdict is the
+  lesson: spend optimization where measurement speaks.
+- **ex2 (measure-the-performance) — the cost per tile.** The probe
+  prints the walk's cell count on change (1200/1230 as the camera
+  clamps; the offset passing 128 is the shake's additive hook joining
+  the clamped base). The walkthrough decomposes the fix into the two
+  levers' numbers and footnotes why a probe must not inflate the phase
+  it measures (lesson 079's rule).
