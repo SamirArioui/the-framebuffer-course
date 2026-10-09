@@ -102,6 +102,27 @@ Compiles every C/C++ source under `src/` and links `build/game`. On an empty
 `src/` it reports that there is nothing to compile and exits 0. This one shell
 script is the build — Make and CMake are never curriculum.
 
+## Produce the 60 fps hardware card
+
+The game's perf line — *60 fps on modest hardware* — is answered by a
+**hardware card**: the machine named, the run's shape named, the report's
+table with its percentiles and budget line, and the sentence the checklist
+needs. One command produces it on whatever machine you are sitting at:
+
+```
+./tools/frame-card.sh
+```
+
+The game opens a window on your desktop: play hard (walk, fire, die,
+restart), then close the window. The script builds the finished game with
+lesson 101 exercise 1's percentiles instrument in a throwaway export of the
+committed tree — your working tree is never touched — and writes
+`frame-card.md` with the run's whole `frame-log.txt` beside it. Options:
+`--optimize` for a `-O2` row (run it twice to carry both), `--auto SECONDS`
+for a scripted xdotool run, `--machine NAME` for the machine line,
+`--out DIR` for where the card lands. A card carries only its own machine's
+numbers — a number that lost its machine is a rumor.
+
 ## Build the sandbox programs (Part 0 tags)
 
 Part 0's throwaway programs under `sandbox/` did not use `build.sh`. Each one
