@@ -1,16 +1,19 @@
 diff --git a/src/game.cpp b/src/game.cpp
-index 4a6656f..32f8fd2 100644
+index a4371f7..e1b56ab 100644
 --- a/src/game.cpp
 +++ b/src/game.cpp
-@@ -28,6 +28,7 @@ namespace engine {
-    removed when the real triggers arrive; the transitions they fire are
-    the game's own (defeat on zero health, completion on no waves). */
- constexpr double GAME_SURVIVE_SECONDS = 3.0; /* unharmed this long -> done */
-+constexpr int GAME_LOOKAHEAD = 48; /* exercise 1: how far the camera leads */
+@@ -30,6 +30,10 @@ namespace engine {
+    completion on no waves). Keyed, they never fire on their own during a
+    gameplay test. */
  
++/* How far the camera leads the hero — exercise 1: the look-ahead. Three
++   tiles, enough to see where the hero is going without the view chasing. */
++constexpr int GAME_LOOKAHEAD = 48;
++
  /* A transition, named once here and printed the moment it happens, so a
     run shows the machine moving between states and why. */
-@@ -201,8 +202,10 @@ void GameFollow(Game &game, const Entity &hero, const TileMap &map)
+ static void Transition(Game &game, GameState to, const char *why)
+@@ -202,8 +206,10 @@ void GameFollow(Game &game, const Entity &hero, const TileMap &map)
         shows past the world's edge. The base is the view's origin over the
         map; the additive offset rests at exactly zero, the hook the juice
         toolkit will drive (lesson 092). */
