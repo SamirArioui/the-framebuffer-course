@@ -13,7 +13,9 @@
 #                   the English page that includes the same patch);
 #   (c) drift       the English page's current revision equals the declared
 #                   one — a page whose English source moved is reported as
-#                   behind, naming both revisions;
+#                   behind, naming both revisions. Drift is read from git
+#                   history, so this check needs a full clone: in a shallow
+#                   checkout it cannot tell, and says so instead of guessing;
 #   (d) horizon     book/stability-horizon.md and book-fr/src/stability-horizon.md
 #                   name the same frozen range.
 #
@@ -30,6 +32,14 @@ fail=0
 checked=0
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
+
+# Drift (c) is read from git history. In a shallow checkout the history is
+# truncated — `git log -1 -- <path>` would name the tip commit for every file
+# and make every translation look stale. Say "cannot tell" instead of lying.
+shallow=0
+if [ "$(git rev-parse --is-shallow-repository 2>/dev/null)" = "true" ]; then
+    shallow=1
+fi
 
 report() { printf 'FAIL %s\n' "$*"; fail=1; }
 
@@ -103,9 +113,11 @@ while IFS= read -r fr_file; do
     fi
 
     # (c) drift — the English page stands where the translation declares
-    cur_rev=$(git log -1 --format=%h -- "$en_path")
-    if [ "$cur_rev" != "$en_rev" ]; then
-        report "$fr_file: behind — declares '$en_rev' but $en_path now stands at '$cur_rev'; retranslate and redeclare (plan/translation-conventions.md §5)"
+    if [ "$shallow" -eq 0 ]; then
+        cur_rev=$(git log -1 --format=%h -- "$en_path")
+        if [ "$cur_rev" != "$en_rev" ]; then
+            report "$fr_file: behind — declares '$en_rev' but $en_path now stands at '$cur_rev'; retranslate and redeclare (plan/translation-conventions.md §5)"
+        fi
     fi
 
     # (b) code blocks match, byte for byte, in order
@@ -121,6 +133,10 @@ done < <(find "$fr_root" -name '*.md' | sort)
 
 if [ "$checked" -eq 0 ]; then
     report "no French pages found under $fr_root/"
+fi
+
+if [ "$shallow" -eq 1 ]; then
+    report "drift not assessed: shallow checkout, git history truncated — markers and code blocks above are still checked; re-run from a full clone (git fetch --unshallow)"
 fi
 
 if [ "$fail" -eq 0 ]; then

@@ -110,6 +110,27 @@ including the cross-edition links to the English edition.
   `book/index.md` would let the next French batch redeclare against the
   corrected revision (`plan/conventions.md` §3).
 
+## Addendum — first deploy run (after archiving)
+
+The first CI run of the deploy workflow failed at the checker's drift step: all
+18 pages reported "behind … now stands at `8ea6b95`". Cause: `actions/checkout`
+defaults to a shallow clone (`fetch-depth: 1`), where `git log -1 -- <path>`
+can only see the tip commit and names it for every file. The checker was
+correct on a full clone and lying on a shallow one.
+
+Fixed after archiving, in `tools/check-fr-sync.sh`, `.github/workflows/deploy-site.yml`,
+and `README.md`:
+
+- the workflow checks out with `fetch-depth: 0` (drift is read from history, so
+  the job needs history);
+- the checker detects a shallow checkout and reports `drift not assessed`
+  instead of guessing — markers and code blocks are still checked, and the run
+  still fails, because "cannot tell" is not "in sync".
+
+Lesson for later batches: a check whose evidence is git history must say what
+it cannot see. Verified after the fix: full clone → `OK 18 French page(s)`,
+exit 0; shallow clone → one `drift not assessed` failure, exit 1.
+
 ## Verification reruns
 
 - `./tools/check-fr-sync.sh` → `OK 18 French page(s) in sync` (exit 0).

@@ -109,7 +109,9 @@ names the English page and revision it follows, carries code blocks and diffs
 byte-identical to that source, and is reported as *behind* when its English
 page moves. This checker verifies all of that across `book-fr/src/` and the
 agreement of the two stability banners; the deploy workflow runs it and stops
-on a failure. The translation contract lives in
+on a failure. It reads git history for the drift half of its job, so run it
+from a full clone — in a shallow checkout it reports that it cannot tell
+rather than guessing. The translation contract lives in
 [`plan/translation-conventions.md`](plan/translation-conventions.md).
 
 ## Deployment
