@@ -1,0 +1,50 @@
+# Builds the course site with the pinned mdBook and deploys it to GitHub
+# Pages. The pin (mdBook 0.5.4) lives here and in README.md; keep the two
+# in step. The site builds only from book/ — plan/, src/, and openspec/
+# never appear in published output (book.toml's build-dir is site/).
+name: Deploy site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time; never cancel a publish in progress.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pinned mdBook 0.5.4
+        run: |
+          curl -sL -o /tmp/mdbook.tar.gz https://github.com/rust-lang/mdBook/releases/download/v0.5.4/mdbook-v0.5.4-x86_64-unknown-linux-gnu.tar.gz
+          tar -xzf /tmp/mdbook.tar.gz -C /tmp
+          install -m 755 /tmp/mdbook /usr/local/bin/mdbook
+          mdbook --version | grep -F 'mdbook v0.5.4'
+
+      - name: Build the site
+        run: mdbook build
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

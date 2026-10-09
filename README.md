@@ -83,6 +83,14 @@ This writes a self-contained static directory to `site/` that needs no
 server-side runtime and deploys to any static file host. **GitHub Pages is the
 assumed deployment target**: publish the contents of `site/`.
 
+## Deployment
+
+The site deploys to GitHub Pages automatically: every push to `main` runs
+`.github/workflows/deploy-site.yml`, which installs the same pinned mdBook
+0.5.4, builds the site, and publishes `site/` to Pages. No manual step is
+needed; trigger the workflow by hand from the Actions tab when a build without
+a push is wanted.
+
 ## Build the code
 
 ```
