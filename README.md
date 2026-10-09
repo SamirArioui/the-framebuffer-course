@@ -87,9 +87,10 @@ assumed deployment target**: publish the contents of `site/`.
 
 The site deploys to GitHub Pages automatically: every push to `main` runs
 `.github/workflows/deploy-site.yml`, which installs the same pinned mdBook
-0.5.4, builds the site, and publishes `site/` to Pages. No manual step is
-needed; trigger the workflow by hand from the Actions tab when a build without
-a push is wanted.
+0.5.4, builds the site, and publishes `site/` to Pages. The published course
+lives at <https://samirarioui.github.io/the-framebuffer-course/>. No manual
+step is needed; trigger the workflow by hand from the Actions tab when a build
+without a push is wanted.
 
 ## Build the code
 
