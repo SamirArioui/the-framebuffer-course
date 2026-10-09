@@ -17,6 +17,24 @@ drift from them.
 - `src/` keeps **one linear commit history**. Diffing two lesson tags equals
   exactly the code steps of the lessons between them.
   *(codebase-continuity: Linear history with lesson tags)*
+  - **Two documented exceptions** to "the tag diff equals the embedded code
+    step", both intentional and both named here so the rule stays honest:
+    1. **A bulk deletion is named in prose, not embedded.** When a code step
+       deletes a large tree, the lesson's `diff` block shows what is born and
+       the prose states the deletion; embedding hundreds of deletion lines
+       would bury the step. The one case is `lesson-026`, where `sandbox/`
+       (Part 0's four throwaway programs) dies in the code step — the block
+       shows `src/main.cpp` born and `src/.gitkeep` removed, and the page and
+       `part1-review.md` both say "`sandbox/` is deleted in the same step".
+       The tag diff still carries the full deletion.
+    2. **A bookkeeping commit may touch code tooling.** "Record …" commits sit
+       between lesson tags (see the warts note in each part review). Normally
+       they touch `openspec/`/`plan/` only, so a `src/`+`assets/` diff is
+       exactly the lesson's code step. In one case a bookkeeping commit also
+       edited a code-scope file: `47ed0df` ("Record the Part 3 toolchain check
+       and seam audit") grew `tools/check-boundary.sh`, so `lesson-058..059`'s
+       code-scope diff carries that tooling change in addition to lesson-059's
+       own step. The lesson's embedded block correctly shows only its step.
 - **Prose and its code step are co-committed**: a lesson's prose change and its
   code change land in the same commit, so a tag means "code and text as of
   lesson N". Checking out a tag always shows both.
