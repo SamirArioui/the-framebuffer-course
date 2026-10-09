@@ -11,3 +11,9 @@ src = "book"
 build-dir = "site"
 # Every chapter file is authored explicitly; mdBook must not invent files.
 create-missing = false
+
+[output.html]
+# The per-page language switch shared with the French edition (book-fr/).
+# Authoring tooling: the no-external-libraries rule governs student-visible
+# C/C++ only.
+additional-js = ["tools/lang-switch.js"]

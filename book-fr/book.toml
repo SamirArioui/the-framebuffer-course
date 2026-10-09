@@ -1,0 +1,25 @@
+[book]
+title = "The Framebuffer Course"
+authors = ["Samir Arioui"]
+description = "Des fondations en C à un jeu d'arcade 2D terminé, sur un moteur que vous avez écrit vous-même."
+language = "fr"
+src = "src"
+
+[build]
+# Sortie statique du site. Autonome ; se déploie sur n'importe quel hôte
+# statique. L'édition française est publiée sous site/fr/, à l'intérieur du
+# site de l'édition anglaise : l'anglais se construit d'abord (mdbook build
+# efface son répertoire de sortie), le français ensuite. Jamais l'inverse.
+build-dir = "../site/fr"
+# Chaque fichier du sommaire est écrit à la main ; mdBook ne doit pas en
+# inventer. book/ (l'édition anglaise) n'est jamais modifié pour cette
+# édition.
+create-missing = false
+
+[output.html]
+# Le sélecteur de langue partagé avec l'édition anglaise. Le fichier canonique
+# est tools/lang-switch.js à la racine du dépôt ; ce lien symbolique est
+# nécessaire parce que mdBook ne copie un additional-js dans la sortie que
+# s'il vit à l'intérieur de la racine du livre. Outil d'écriture : la règle
+# « pas de bibliothèques externes » ne vise que le C/C++ visible par l'élève.
+additional-js = ["lang-switch.js"]

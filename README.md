@@ -3,7 +3,9 @@
 *From C foundations to a finished 2D arcade game on an engine you wrote
 yourself.*
 
-A free, open, English-language written course: 103 medium lessons (30-60
+A free, open, English-language written course, with a **French edition** whose
+pages follow the English source batch by batch (the pilot batch: lessons
+001-003 with their solutions): 103 medium lessons (30-60
 minutes each) that take a developer fluent in Python or Ruby — with zero
 C/C++ and no manual-memory experience — from C foundations to a finished 2D
 top-down arcade game running on a fully hand-written engine. No external
@@ -22,6 +24,7 @@ placed inside the parts that need them, not filed away as asides.
 | Path       | What it holds                                                            |
 | ---------- | ------------------------------------------------------------------------ |
 | `book/`    | The course site: lesson prose, exercises, and solutions (mdBook source)  |
+| `book-fr/` | The French edition: its own mdBook root, mirroring `book/`'s paths       |
 | `src/`     | The engine: one linear history, each lesson's end state tagged `lesson-NNN` |
 | `tools/`   | Build, check, and asset tooling                                          |
 | `plan/`    | Authoring artifacts (conventions, contracts, part skeletons) — never published to the site |
@@ -71,23 +74,51 @@ mdbook serve
 
 Then open the URL mdBook prints (by default <http://localhost:3000>). The whole
 course is browsable on your own machine; editing anything under `book/`
-reloads the page.
+reloads the page. The French edition serves the same way from its own root:
+
+```
+mdbook serve book-fr
+```
+
+Each edition serves on its own port — `mdbook serve` twice in two terminals,
+and open both URLs it prints.
 
 ## Build the site for publication
 
 ```
 mdbook build
+mdbook build book-fr
 ```
 
-This writes a self-contained static directory to `site/` that needs no
-server-side runtime and deploys to any static file host. **GitHub Pages is the
-assumed deployment target**: publish the contents of `site/`.
+**English first, French second — never the other way around.** `mdbook build`
+clears its build directory, so building the English edition wipes `site/fr/`
+along with it; the French edition publishes *inside* the English one. The
+first command writes a self-contained static directory to `site/` that needs
+no server-side runtime and deploys to any static file host, and the second
+adds the French edition under `site/fr/`. **GitHub Pages is the assumed
+deployment target**: publish the contents of `site/`, both editions included.
+
+## Check the French edition against its English sources
+
+```
+./tools/check-fr-sync.sh
+```
+
+The French pages are translations that answer to the English source: each one
+names the English page and revision it follows, carries code blocks and diffs
+byte-identical to that source, and is reported as *behind* when its English
+page moves. This checker verifies all of that across `book-fr/src/` and the
+agreement of the two stability banners; the deploy workflow runs it and stops
+on a failure. The translation contract lives in
+[`plan/translation-conventions.md`](plan/translation-conventions.md).
 
 ## Deployment
 
 The site deploys to GitHub Pages automatically: every push to `main` runs
 `.github/workflows/deploy-site.yml`, which installs the same pinned mdBook
-0.5.4, builds the site, and publishes `site/` to Pages. The published course
+0.5.4, checks the French edition against its English sources, builds both
+editions (English first), and publishes `site/` — the French edition under
+`site/fr/` — to Pages. The published course
 lives at <https://samirarioui.github.io/the-framebuffer-course/>. No manual
 step is needed; trigger the workflow by hand from the Actions tab when a build
 without a push is wanted.

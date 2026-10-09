@@ -1,7 +1,9 @@
-# Builds the course site with the pinned mdBook and deploys it to GitHub
-# Pages. The pin (mdBook 0.5.4) lives here and in README.md; keep the two
-# in step. The site builds only from book/ — plan/, src/, and openspec/
-# never appear in published output (book.toml's build-dir is site/).
+# Builds both editions of the course site with the pinned mdBook and deploys
+# them to GitHub Pages: the English edition from book/ to site/, then the
+# French edition from book-fr/ to site/fr/. The pin (mdBook 0.5.4) lives here
+# and in README.md; keep the two in step. plan/, src/, and openspec/ never
+# appear in published output (build-dir is site/ for the English book and
+# site/fr/ for the French one).
 name: Deploy site
 
 on:
@@ -32,8 +34,18 @@ jobs:
           install -m 755 /tmp/mdbook /usr/local/bin/mdbook
           mdbook --version | grep -F 'mdbook v0.5.4'
 
-      - name: Build the site
+      - name: Build the English site
         run: mdbook build
+
+      # The translation-fidelity checker gates the deploy: a French page whose
+      # code, marker, or drift is off stops the publication (design D6/D8).
+      - name: Check the French edition against its English sources
+        run: ./tools/check-fr-sync.sh
+
+      # English first, French second: mdbook build clears its build directory,
+      # and the French edition publishes inside the English one (design D2).
+      - name: Build the French site
+        run: mdbook build book-fr
 
       - uses: actions/upload-pages-artifact@v3
         with:
