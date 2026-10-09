@@ -3,7 +3,7 @@
 *From C foundations to a finished 2D arcade game on an engine you wrote
 yourself.*
 
-A free, open, English-language written course: ~130 medium lessons (30-60
+A free, open, English-language written course: 103 medium lessons (30-60
 minutes each) that take a developer fluent in Python or Ruby — with zero
 C/C++ and no manual-memory experience — from C foundations to a finished 2D
 top-down arcade game running on a fully hand-written engine. No external
