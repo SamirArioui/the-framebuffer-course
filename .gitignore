@@ -4,3 +4,7 @@
 
 # Authoring-harness state (not part of the course repo)
 /.opencode/
+
+# The 60 fps card's run outputs (per-machine, regenerated per run)
+/frame-card.md
+/frame-log.txt
