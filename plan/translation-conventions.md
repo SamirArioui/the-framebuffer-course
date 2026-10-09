@@ -59,10 +59,17 @@ used where it exists; the pilot's terms:
 | memory leak | fuite de mémoire | |
 | frame, sprite, tilemap, hitstop, screenshake, diff, patch, commit, tag, build | kept in English | loanwords French developer usage keeps |
 | sanitizer, LeakSanitizer, AddressSanitizer, redzone, shadow memory, inline | kept in English | tool and mechanism names; the reader meets them as-is in the output |
+| hook, callback, shim | kept in English | loanwords French developer usage keeps |
 | padding / alignment | remplissage / alignement | |
 | wraparound | retournement | first use glossed "retournement (wrap)" |
 | out-of-bounds access | accès hors limites | |
 | endianness | boutisme | |
+| stride | pas | |
+| hashtable / bucket / chain / load factor | table de hachage / seau / chaîne / facteur de charge | |
+| translation unit / object file / symbol table | unité de traduction / fichier objet / table de symboles | |
+| include guard / forward declaration | garde d'inclusion (include guard) / déclaration en avant | |
+| linkage (internal/external) | lien (interne/externe) | |
+| predicate | prédicat | |
 | exercise archetype tags (`predict-the-output`, `fix-the-crash`, `extend-the-code`, `measure-the-performance`, `explain-in-prose`, `port-to-your-own-machine`) | kept in English | they name the six archetypes of the `exercises` spec, as identifiers |
 | `REPL`, `traceback`, `backtrace`, `sandbox` | kept in English | loanwords or program names the pilot's pages use as-is |
 

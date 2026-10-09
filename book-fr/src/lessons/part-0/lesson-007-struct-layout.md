@@ -212,7 +212,7 @@ de machine ; lancez-la sur chaque machine que vous touchez et comparez.
 
 **Partie :** [Partie 0 — Fondations en C](../../index.md) ·
 **Précédente :** [Leçon 006 — comportement indéfini et débordements de tampon](lesson-006-undefined-behavior.md) ·
-**Suivante :** <a href="../../../lessons/part-0/lesson-008-dynarray.html">Leçon 008 — croissance de dynarray : realloc et capacité</a> *(en anglais ; traduction à venir)* ·
+**Suivante :** [Leçon 008 — croissance de dynarray : realloc et capacité](lesson-008-dynarray.md) ·
 **Étiquette de code :** [`lesson-007`](https://github.com/SamirArioui/the-framebuffer-course/tree/lesson-007)
 
 *Page traduite de la version anglaise

@@ -3,10 +3,11 @@
 [Accueil](index.md)
 
 <!-- L'édition française du cours. Les entrées ci-dessous suivent exactement
-     l'ordre du programme de book/SUMMARY.md ; le lot pilote (leçons 001-003)
-     et le lot 2 (leçons 004-007) sont traduits, et les lots suivants ajoutent
-     la suite sans rien réordonner. Les liens du cours non encore traduit
-     mènent à l'édition anglaise, et le disent. -->
+     l'ordre du programme de book/SUMMARY.md ; les lots 1 (leçons 001-003), 2
+     (leçons 004-007) et 3 (leçons 008-012) sont traduits — tout l'arc
+     wordcount et tout l'arc ds-kit — et les lots suivants ajoutent la suite
+     sans rien réordonner. Les liens du cours non encore traduit mènent à
+     l'édition anglaise, et le disent. -->
 
 # Partie 0 — Fondations en C
 
@@ -50,5 +51,33 @@
   - [Solution : ex2 — le remplissage est de la vraie mémoire](solutions/lesson-007/ex2.md)
   - [Solution : ex3 — pourquoi la machine insiste](solutions/lesson-007/ex3.md)
   - [Solution : ex4 — la disposition de l'autre machine](solutions/lesson-007/ex4.md)
+
+- [Leçon 008 — croissance de dynarray : realloc et capacité](lessons/part-0/lesson-008-dynarray.md)
+  - [Solution : ex1 — le calendrier des croissances](solutions/lesson-008/ex1.md)
+  - [Solution : ex2 — le tableau à moitié libéré](solutions/lesson-008/ex2.md)
+  - [Solution : ex3 — doubler contre un-à-la-fois](solutions/lesson-008/ex3.md)
+  - [Solution : ex4 — ce que `realloc` promet vraiment](solutions/lesson-008/ex4.md)
+
+- [Leçon 009 — pointeurs de fonction : comparateurs et hooks](lessons/part-0/lesson-009-function-pointers.md)
+  - [Solution : ex1 — l'ordre inversé](solutions/lesson-009/ex1.md)
+  - [Solution : ex2 — chercher par prédicat](solutions/lesson-009/ex2.md)
+  - [Solution : ex3 — pourquoi le pont existe](solutions/lesson-009/ex3.md)
+
+- [Leçon 010 — void\* : la généricité et ses peines](lessons/part-0/lesson-010-void-pointer.md)
+  - [Solution : ex1 — les mêmes octets, autrement](solutions/lesson-010/ex1.md)
+  - [Solution : ex2 — la mauvaise taille](solutions/lesson-010/ex2.md)
+  - [Solution : ex3 — supprimer au milieu](solutions/lesson-010/ex3.md)
+  - [Solution : ex4 — le contrat, par écrit](solutions/lesson-010/ex4.md)
+
+- [Leçon 011 — la table de hachage : hachage, seaux, recherche](lessons/part-0/lesson-011-hashtable.md)
+  - [Solution : ex1 — comptez dessus](solutions/lesson-011/ex1.md)
+  - [Solution : ex2 — le classement](solutions/lesson-011/ex2.md)
+  - [Solution : ex3 — la longueur de la marche](solutions/lesson-011/ex3.md)
+  - [Solution : ex4 — un seul seau](solutions/lesson-011/ex4.md)
+
+- [Leçon 012 — constructions multi-fichiers : unités de traduction et édition de liens](lessons/part-0/lesson-012-multi-file.md)
+  - [Solution : ex1 — l'auxiliaire qui est entré en collision](solutions/lesson-012/ex1.md)
+  - [Solution : ex2 — statistiques de table](solutions/lesson-012/ex2.md)
+  - [Solution : ex3 — la lettre minuscule](solutions/lesson-012/ex3.md)
 
 <!-- translation-source: book/SUMMARY.md @ cfeaecd -->
