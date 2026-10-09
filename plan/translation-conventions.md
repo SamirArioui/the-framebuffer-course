@@ -58,6 +58,11 @@ used where it exists; the pilot's terms:
 | undefined behavior | comportement indéfini | |
 | memory leak | fuite de mémoire | |
 | frame, sprite, tilemap, hitstop, screenshake, diff, patch, commit, tag, build | kept in English | loanwords French developer usage keeps |
+| sanitizer, LeakSanitizer, AddressSanitizer, redzone, shadow memory, inline | kept in English | tool and mechanism names; the reader meets them as-is in the output |
+| padding / alignment | remplissage / alignement | |
+| wraparound | retournement | first use glossed "retournement (wrap)" |
+| out-of-bounds access | accès hors limites | |
+| endianness | boutisme | |
 | exercise archetype tags (`predict-the-output`, `fix-the-crash`, `extend-the-code`, `measure-the-performance`, `explain-in-prose`, `port-to-your-own-machine`) | kept in English | they name the six archetypes of the `exercises` spec, as identifiers |
 | `REPL`, `traceback`, `backtrace`, `sandbox` | kept in English | loanwords or program names the pilot's pages use as-is |
 
@@ -108,8 +113,10 @@ shell plus lessons 001-003 with their solutions).
    revisions.
 3. Run `tools/check-fr-sync.sh`; fix everything it reports.
 4. Build and read the pages once (`mdbook build book-fr`).
-5. Record the batch in the change's notes: pages translated, throughput
-   measured, checker findings, terms added to the table.
+5. Record the batch in the batch log (`plan/translation-batches.md`): pages
+   translated, throughput measured, checker findings, terms added to the
+   table. A batch that rides an OpenSpec change records it in the change's
+   notes too.
    *(translation-fidelity: Terminology follows the stated conventions)*
 
 ## 5. The drift procedure

@@ -281,7 +281,7 @@ instrumentée de la solution est une façon portable de confirmer ce que vos pas
 
 **Partie :** [Partie 0 — Fondations en C](../../index.md) ·
 **Précédente :** [Leçon 002 — gdb : points d'arrêt, pas à pas, trames de pile](lesson-002-gdb.md) ·
-**Suivante :** <a href="../../../lessons/part-0/lesson-004-heap-buffers.html">Leçon 004 — malloc et free : faire grandir les tampons sur le tas</a> *(en anglais ; traduction à venir)* ·
+**Suivante :** [Leçon 004 — malloc et free : faire grandir les tampons sur le tas](lesson-004-heap-buffers.md) ·
 **Étiquette de code :** [`lesson-003`](https://github.com/SamirArioui/the-framebuffer-course/tree/lesson-003)
 
 *Page traduite de la version anglaise
