@@ -125,6 +125,9 @@ else
 fi
 
 mkdir -p "$OUT"
+# Resolve OUT now: the game runs with its working directory in the
+# throwaway tree, so a relative LOG would be created (and lost) there.
+OUT="$(cd "$OUT" && pwd)"
 LOG="$OUT/frame-log.txt"
 
 # --- the run: played hard, or scripted ---
