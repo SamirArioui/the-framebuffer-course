@@ -556,7 +556,7 @@ le programme aurait fait si elle avait été permise.
 
 **Partie :** [Partie 0 — Fondations en C](../../index.md) ·
 **Précédente :** [Leçon 024 — la table de commandes à pointeurs de fonction](lesson-024-command-table.md) ·
-**Suivante :** <a href="../../../lessons/part-1/lesson-026-birth.html">Leçon 026 — la base de code naît</a> *(en anglais ; traduction à venir)* ·
+**Suivante :** [Leçon 026 — la base de code naît](../part-1/lesson-026-birth.md) ·
 **Étiquette de code :** [`lesson-025`](https://github.com/SamirArioui/the-framebuffer-course/tree/lesson-025)
 
 *Page traduite de la version anglaise

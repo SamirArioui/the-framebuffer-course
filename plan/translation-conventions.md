@@ -73,6 +73,25 @@ used where it exists; the pilot's terms:
 | rasterize / rasterizer | rastériser / rastériseur | |
 | name mangling / vtable / vptr | kept in English | toolchain terms the reader meets in `nm` output |
 | slice (object slicing) | tranchement (slice) | first use glossed |
+| platform layer / seam | couche plateforme / couture | seam already used for lesson 012's linker seam |
+| event pump | pompe à événements | |
+| framebuffer / present | kept in English | code-visible names; prose capitalizes `Present` as a symbol |
+| poll (input) | scrutation (en scrutant) | |
+| latch (input) | mémoriser (latch) | first use glossed; prose verb "mémoriser" |
+| virtual memory / page table / mapping | mémoire virtuelle / table de pages / mappage | |
+| reservation / commit (memory) | réservation / validation (commit) | |
+| arena | arena | kept: it names `struct Arena` in the sources |
+| MMIO / TLB / MMU / X11 / Xlib / DISPLAY / pty | kept in English | platform and tool names |
+| news (event pump) | les nouvelles | |
+| take / release (OS resource) | acquisition / libération | verbs: acquérir / libérer |
+| exit path | chemin de sortie | |
+| headless(ly) | sans écran | |
+| press / release / tap / held key | appui / relâchement / frappe / touche maintenue | |
+| frame record / frame log / frame budget | enregistrement de frame / journal / budget de frames | |
+| KiB / MiB / GiB (prose) | Kio / Mio / Gio | quoted outputs keep `KiB`; MB → Mo in prose |
+| reservation-backed / demand-zero | adossé à une réservation / demand-zero (glossed) | |
+| page frame / copy-on-write / bump pointer | cadre de page / copie sur écriture / kept in English | |
+| mark (ArenaMark) / rollback | marque / retour arrière | |
 | exercise archetype tags (`predict-the-output`, `fix-the-crash`, `extend-the-code`, `measure-the-performance`, `explain-in-prose`, `port-to-your-own-machine`) | kept in English | they name the six archetypes of the `exercises` spec, as identifiers |
 | `REPL`, `traceback`, `backtrace`, `sandbox` | kept in English | loanwords or program names the pilot's pages use as-is |
 

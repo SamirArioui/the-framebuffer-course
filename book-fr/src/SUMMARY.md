@@ -3,9 +3,9 @@
 [Accueil](index.md)
 
 <!-- L'édition française du cours. Les entrées ci-dessous suivent exactement
-     l'ordre du programme de book/SUMMARY.md ; les lots 1 à 5 (leçons 001-025)
-     traduisent toute la partie 0, et les lots suivants ajoutent la suite
-     (parties 1 à 5) sans rien réordonner. Les liens du cours non encore
+     l'ordre du programme de book/SUMMARY.md ; les lots 1 à 6 (leçons 001-043)
+     traduisent les parties 0 et 1, et les lots suivants ajoutent la suite
+     (parties 2 à 5) sans rien réordonner. Les liens du cours non encore
      traduit mènent à l'édition anglaise, et le disent. -->
 
 # Partie 0 — Fondations en C
@@ -156,5 +156,79 @@
   - [Solution : ex2 — le mot caché](solutions/lesson-025/ex2.md)
   - [Solution : ex3 — la vtable sous la loupe](solutions/lesson-025/ex3.md)
   - [Solution : ex4 — la copie qui ne peut pas exister](solutions/lesson-025/ex4.md)
+
+# Partie 1 — la couche plateforme
+
+- [Leçon 026 — la base de code naît](lessons/part-1/lesson-026-birth.md)
+  - [Solution : ex1 — le moteur dit son nom](solutions/lesson-026/ex1.md)
+  - [Solution : ex2 — deux unités de traduction](solutions/lesson-026/ex2.md)
+
+- [Leçon 027 — la couture plateforme et la première fenêtre X11](lessons/part-1/lesson-027-first-window.md)
+  - [Solution : ex1 — la fenêtre prend votre titre](solutions/lesson-027/ex1.md)
+  - [Solution : ex2 — où se trouve la frontière](solutions/lesson-027/ex2.md)
+
+- [Leçon 028 — la pompe à événements : garder la fenêtre en vie et signaler la fermeture](lessons/part-1/lesson-028-event-pump.md)
+  - [Solution : ex1 — le redimensionnement est une nouvelle aussi](solutions/lesson-028/ex1.md)
+  - [Solution : ex2 — deux façons dont la nouvelle arrive](solutions/lesson-028/ex2.md)
+
+- [Leçon 029 — fermeture propre et chemins d'erreur : les ressources de l'OS libérées à chaque sortie](lessons/part-1/lesson-029-clean-close.md)
+  - [Solution : ex1 — la fenêtre qu'on ouvre deux fois](solutions/lesson-029/ex1.md)
+  - [Solution : ex2 — le registre](solutions/lesson-029/ex2.md)
+
+- [Leçon 030 — le framebuffer comme nos propres octets](lessons/part-1/lesson-030-framebuffer.md)
+  - [Solution : ex1 — FillRect, de retour de la Partie 0](solutions/lesson-030/ex1.md)
+  - [Solution : ex2 — les quatre octets](solutions/lesson-030/ex2.md)
+
+- [Leçon 031 — la présentation à travers la couche plateforme](lessons/part-1/lesson-031-present.md)
+  - [Solution : ex1 — la vérification de la présentation](solutions/lesson-031/ex1.md)
+  - [Solution : ex2 — recouvrir et révéler](solutions/lesson-031/ex2.md)
+
+- [Leçon 032 — l'état d'entrée par scrutation](lessons/part-1/lesson-032-polled-input.md)
+  - [Solution : ex1 — vos propres touches](solutions/lesson-032/ex1.md)
+  - [Solution : ex2 — l'appui qui a disparu](solutions/lesson-032/ex2.md)
+
+- [Leçon 033 — mémoriser les appuis brefs et suivre le focus](lessons/part-1/lesson-033-latching.md)
+  - [Solution : ex1 — le compteur d'appuis](solutions/lesson-033/ex1.md)
+  - [Solution : ex2 — la touche qui ne veut pas lâcher](solutions/lesson-033/ex2.md)
+
+- [Leçon 034 — la première frame interactive](lessons/part-1/lesson-034-first-frame.md)
+  - [Solution : ex1 — huit directions](solutions/lesson-034/ex1.md)
+  - [Solution : ex2 — la vitesse qui appartient au clavier](solutions/lesson-034/ex2.md)
+
+- [Leçon 035 — l'horloge de la plateforme](lessons/part-1/lesson-035-clock.md)
+  - [Solution : ex1 — la diagonale est trop rapide](solutions/lesson-035/ex1.md)
+  - [Solution : ex2 — l'horloge qui ment](solutions/lesson-035/ex2.md)
+
+- [Leçon 036 — le temps de frame comme donnée mesurée](lessons/part-1/lesson-036-frame-time.md)
+  - [Solution : ex1 — la copie, isolée](solutions/lesson-036/ex1.md)
+  - [Solution : ex2 — le budget de frames](solutions/lesson-036/ex2.md)
+
+- [Leçon 037 — lectures de fichier entier](lessons/part-1/lesson-037-file-read.md)
+  - [Solution : ex1 — lire dans votre propre mémoire](solutions/lesson-037/ex1.md)
+  - [Solution : ex2 — le fichier qui ne finit jamais](solutions/lesson-037/ex2.md)
+
+- [Leçon 038 — écritures de fichier entier et aller-retour](lessons/part-1/lesson-038-file-write.md)
+  - [Solution : ex1 — la capture d'écran](solutions/lesson-038/ex1.md)
+  - [Solution : ex2 — le périphérique qui est toujours plein](solutions/lesson-038/ex2.md)
+
+- [Leçon 039 — plongée dans la mémoire virtuelle](lessons/part-1/lesson-039-virtual-memory.md)
+  - [Solution : ex1 — trouvez votre mappage](solutions/lesson-039/ex1.md)
+  - [Solution : ex2 — le fichier qui ment sur sa taille](solutions/lesson-039/ex2.md)
+
+- [Leçon 040 — des tampons adossés à une réservation](lessons/part-1/lesson-040-reservations.md)
+  - [Solution : ex1 — un octet, s'il vous plaît](solutions/lesson-040/ex1.md)
+  - [Solution : ex2 — la page qui riposte](solutions/lesson-040/ex2.md)
+
+- [Leçon 041 — les arenas](lessons/part-1/lesson-041-arenas.md)
+  - [Solution : ex1 — la traînée du marqueur](solutions/lesson-041/ex1.md)
+  - [Solution : ex2 — le bug qu'ASan ne voit pas](solutions/lesson-041/ex2.md)
+
+- [Leçon 042 — l'interface comme contrat](lessons/part-1/lesson-042-contract.md)
+  - [Solution : ex1 — le second OS](solutions/lesson-042/ex1.md)
+  - [Solution : ex2 — ce que le contrôle ne peut pas voir](solutions/lesson-042/ex2.md)
+
+- [Leçon 043 — la démo de clôture : la couche plateforme terminée](lessons/part-1/lesson-043-demo.md)
+  - [Solution : ex1 — la couche plateforme terminée, sur votre machine](solutions/lesson-043/ex1.md)
+  - [Solution : ex2 — la table d'acceptation](solutions/lesson-043/ex2.md)
 
 <!-- translation-source: book/SUMMARY.md @ cfeaecd -->

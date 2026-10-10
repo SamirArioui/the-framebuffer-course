@@ -13,14 +13,51 @@ holds**.
 | 2 | lessons 004-007 + solutions — the `wordcount` arc complete | 19 | 7 876 | 9 334 | 1.19 | 2026-10-10 (`0328bc5`) |
 | 3 | lessons 008-012 + solutions — the `ds-kit` arc complete | 23 | 9 630 | 11 433 | 1.19 | 2026-10-10 (`bc24616`) |
 | 4 | lessons 013-018 + solutions — the `paint` arc complete | 30 | 11 534 | 13 551 | 1.17 | 2026-10-10 (`35d2a84`) |
-| 5 | lessons 019-025 + solutions — the `snek` arc complete; **all of Part 0 translated** | 35 | 14 109 | 16 543 | 1.17 | 2026-10-10 |
+| 5 | lessons 019-025 + solutions — the `snek` arc complete; **all of Part 0 translated** | 35 | 14 109 | 16 543 | 1.17 | 2026-10-10 (`f6392e2`) |
+| 6 | Part 1 — the platform layer (lessons 026-043 + solutions) | 54 | 28 384 | 33 638 | 1.19 | 2026-10-10 |
 
-Part 0 is complete in French: the whole French tree is 125 pages,
-53 030 EN → 60 372 FR prose words (measured across every French file and its
-English counterpart; the aggregate ratio reads 1.14 because the English
+Parts 0 and 1 are complete in French: the whole French tree is 179 pages,
+81 414 EN → 94 010 FR prose words (summed from the batch rows; whole-tree
+aggregates read lower than the per-page ratio because the English
 `SUMMARY.md` is over ten times the pilot's), every fenced block byte-identical
-to its English source. Parts 1-5 follow as their own batches; the same 1.20
-per-page planning number applies.
+to its English source. Remaining work, measured the same way:
+
+| Batch | Scope | Pages | EN words |
+| ----- | ----- | ----- | -------- |
+| 7 | Part 2 — software rendering (044-058) | 45 | 29 940 |
+| 8 | Part 3 — sound (059-070) | 36 | 33 795 |
+| 9 | Part 4 — services (071-081) | 33 | 25 371 |
+| 10 | Part 5 — the game (082-103) | 66 | 46 979 |
+
+Parts 2-5 follow as their own batches; the same 1.20 per-page planning number
+applies.
+
+## Batch 6 — 2026-10-10
+
+- **Pages:** the whole of Part 1 — 18 lessons (`026`-`043`) + 36 solutions;
+  179 French pages total, **Parties 0 and 1 complete**.
+- **Method:** translated by six parallel subagents (three lessons each) with a
+  clean session each; the coordinator owned SUMMARY.md, the home page, the
+  term table, and all verification. All 54 pages' fenced blocks were spliced
+  verbatim by `splice_part.py` (the same mechanism, with `--patch` rewriting
+  solution includes to the cross-tree patch path).
+- **Throughput:** ratio 1.19 (28 384 EN → 33 638 FR prose words). Across six
+  batches: 1.20 / 1.19 / 1.19 / 1.17 / 1.17 / 1.19.
+- **Terms added to the table** (conventions §2): les nouvelles (news),
+  acquisition/libération (take/release), chemin de sortie, sans écran
+  (headless), appui/relâchement/frappe/touche maintenue, enregistrement de
+  frame / journal / budget de frames, Kio/Mio/Gio in prose, adossé à une
+  réservation, cadre de page, copie sur écriture, marque/retour arrière
+  (arena), bump pointer kept English.
+- **Boundary work:** Part 0 lesson-025's *Next* moved from the English
+  fallback to the French lesson-026. lesson-043's footer mirrors English's
+  `**Next: —` (Part 1's last lesson has no next link in either edition; one
+  subagent had added an English fallback there and the coordinator removed
+  it — navigation stays mirrored exactly).
+- **Checker findings:** none — `OK 179 French page(s)` at the end.
+- **Verification:** rendered `<pre>` blocks byte-identical to English on all
+  176 lesson and solution pages; **1 455 links with 0 dead**; curriculum
+  order matches the English summary for all 43 lessons.
 
 ## Batch 5 — 2026-10-10
 
