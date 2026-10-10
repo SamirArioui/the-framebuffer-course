@@ -237,7 +237,7 @@ sorties ne peut-il *pas* attraper ?
 
 **Partie :** [Partie 0 — Fondations en C](../../index.md) ·
 **Précédente :** [Leçon 017 — écrire un vrai fichier image à la main](lesson-017-image-file.md) ·
-**Suivante :** <a href="../../../lessons/part-0/lesson-019-game-loop.html">Leçon 019 — la boucle de jeu</a> *(en anglais ; traduction à venir)* ·
+**Suivante :** [Leçon 019 — la boucle de jeu](lesson-019-game-loop.md) ·
 **Étiquette de code :** [`lesson-018`](https://github.com/SamirArioui/the-framebuffer-course/tree/lesson-018)
 
 *Page traduite de la version anglaise

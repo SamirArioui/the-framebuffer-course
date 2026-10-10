@@ -3,11 +3,10 @@
 [Accueil](index.md)
 
 <!-- L'édition française du cours. Les entrées ci-dessous suivent exactement
-     l'ordre du programme de book/SUMMARY.md ; les lots 1 (leçons 001-003), 2
-     (leçons 004-007), 3 (leçons 008-012) et 4 (leçons 013-018) sont traduits
-     — les arcs wordcount, ds-kit et paint — et les lots suivants ajoutent la
-     suite sans rien réordonner. Les liens du cours non encore traduit mènent
-     à l'édition anglaise, et le disent. -->
+     l'ordre du programme de book/SUMMARY.md ; les lots 1 à 5 (leçons 001-025)
+     traduisent toute la partie 0, et les lots suivants ajoutent la suite
+     (parties 1 à 5) sans rien réordonner. Les liens du cours non encore
+     traduit mènent à l'édition anglaise, et le disent. -->
 
 # Partie 0 — Fondations en C
 
@@ -115,5 +114,47 @@
   - [Solution : ex2 — la garde qui est supprimée](solutions/lesson-018/ex2.md)
   - [Solution : ex3 — relisez le remplissage d'un collègue](solutions/lesson-018/ex3.md)
   - [Solution : ex4 — prouvez la correction](solutions/lesson-018/ex4.md)
+
+- [Leçon 019 — la boucle de jeu](lessons/part-0/lesson-019-game-loop.md)
+  - [Solution : ex1 — la vie de `strtoul`](solutions/lesson-019/ex1.md)
+  - [Solution : ex2 — la chaîne qui ne finit jamais](solutions/lesson-019/ex2.md)
+  - [Solution : ex3 — emballez l'état](solutions/lesson-019/ex3.md)
+  - [Solution : ex4 — pourquoi trois phases](solutions/lesson-019/ex4.md)
+
+- [Leçon 020 — la mesure du temps avec `clock_gettime`](lessons/part-0/lesson-020-timing.md)
+  - [Solution : ex1 — prédire les ticks](solutions/lesson-020/ex1.md)
+  - [Solution : ex2 — ce que coûte le plafond de frames](solutions/lesson-020/ex2.md)
+  - [Solution : ex3 — monotone contre horloge murale](solutions/lesson-020/ex3.md)
+  - [Solution : ex4 — une chose qui bouge](solutions/lesson-020/ex4.md)
+
+- [Leçon 021 — la saisie brute au terminal avec les codes d'échappement](lessons/part-0/lesson-021-terminal-input.md)
+  - [Solution : ex1 — des octets jusqu'au bout](solutions/lesson-021/ex1.md)
+  - [Solution : ex2 — la touche qui a disparu](solutions/lesson-021/ex2.md)
+  - [Solution : ex3 — CSI, SS3, et votre terminal](solutions/lesson-021/ex3.md)
+  - [Solution : ex4 — WASD](solutions/lesson-021/ex4.md)
+
+- [Leçon 022 — la grille de caractères à double tampon](lessons/part-0/lesson-022-double-buffer.md)
+  - [Solution : ex1 — compter le vidage](solutions/lesson-022/ex1.md)
+  - [Solution : ex2 — un de trop, deux fois](solutions/lesson-022/ex2.md)
+  - [Solution : ex3 — ce que le différentiel économise](solutions/lesson-022/ex3.md)
+  - [Solution : ex4 — des suites, pas des cellules](solutions/lesson-022/ex4.md)
+
+- [Leçon 023 — la machine à états : titre, jeu, mort](lessons/part-0/lesson-023-state-machine.md)
+  - [Solution : ex1 — compter jusqu'au mur](solutions/lesson-023/ex1.md)
+  - [Solution : ex2 — le redémarrage qui n'en était pas un](solutions/lesson-023/ex2.md)
+  - [Solution : ex3 — pause](solutions/lesson-023/ex3.md)
+  - [Solution : ex4 — pourquoi des états, pas des drapeaux](solutions/lesson-023/ex4.md)
+
+- [Leçon 024 — la table de commandes à pointeurs de fonction](lessons/part-0/lesson-024-command-table.md)
+  - [Solution : ex1 — WASD, c'est quatre lignes](solutions/lesson-024/ex1.md)
+  - [Solution : ex2 — Entrée est un retour chariot](solutions/lesson-024/ex2.md)
+  - [Solution : ex3 — deux lignes, une touche](solutions/lesson-024/ex3.md)
+  - [Solution : ex4 — où vivent les fonctions](solutions/lesson-024/ex4.md)
+
+- [Leçon 025 — le sous-ensemble C++ : classes et vtables](lessons/part-0/lesson-025-cpp-subset.md)
+  - [Solution : ex1 — une troisième vue](solutions/lesson-025/ex1.md)
+  - [Solution : ex2 — le mot caché](solutions/lesson-025/ex2.md)
+  - [Solution : ex3 — la vtable sous la loupe](solutions/lesson-025/ex3.md)
+  - [Solution : ex4 — la copie qui ne peut pas exister](solutions/lesson-025/ex4.md)
 
 <!-- translation-source: book/SUMMARY.md @ cfeaecd -->

@@ -12,15 +12,41 @@ holds**.
 | 1 (pilot) | site shell + lessons 001-003 + solutions | 15 | 6 890 | 8 267 | 1.20 | 2026-10-09 (`daa7088`) |
 | 2 | lessons 004-007 + solutions — the `wordcount` arc complete | 19 | 7 876 | 9 334 | 1.19 | 2026-10-10 (`0328bc5`) |
 | 3 | lessons 008-012 + solutions — the `ds-kit` arc complete | 23 | 9 630 | 11 433 | 1.19 | 2026-10-10 (`bc24616`) |
-| 4 | lessons 013-018 + solutions — the `paint` arc complete | 30 | 11 534 | 13 551 | 1.17 | 2026-10-10 |
+| 4 | lessons 013-018 + solutions — the `paint` arc complete | 30 | 11 534 | 13 551 | 1.17 | 2026-10-10 (`35d2a84`) |
+| 5 | lessons 019-025 + solutions — the `snek` arc complete; **all of Part 0 translated** | 35 | 14 109 | 16 543 | 1.17 | 2026-10-10 |
 
-Remaining in Part 0, by sandbox program (measured the same way):
+Part 0 is complete in French: the whole French tree is 125 pages,
+53 030 EN → 60 372 FR prose words (measured across every French file and its
+English counterpart; the aggregate ratio reads 1.14 because the English
+`SUMMARY.md` is over ten times the pilot's), every fenced block byte-identical
+to its English source. Parts 1-5 follow as their own batches; the same 1.20
+per-page planning number applies.
 
-| Batch | Scope | Pages | EN words |
-| ----- | ----- | ----- | -------- |
-| 5 | `snek`: lessons 019-025 + solutions | 35 | 14 109 |
+## Batch 5 — 2026-10-10
 
-Parts 1-5 follow as their own batches once Part 0 is done.
+- **Pages:** 7 lessons (`019`-`025`) + 28 solutions; 125 French pages total,
+  and **Part 0 is fully translated** — all four sandbox arcs: `wordcount`,
+  `ds-kit`, `paint`, `snek`.
+- **Throughput:** ratio 1.17 (14 109 EN → 16 543 FR prose words). Across five
+  batches: 1.20 / 1.19 / 1.19 / 1.17 / 1.17 — the ~1.20 planning number held
+  for every batch. Wall-clock per page still not instrumented.
+- **Terms added to the table** (conventions §2): *name mangling / vtable /
+  vptr* kept in English (the reader meets them in `nm` output); *slice* →
+  tranchement (slice), first use glossed.
+- **Boundary work:** lesson-018's *Next* moved from the English fallback to
+  the French lesson-019; lesson-025's *Next* — the first link out of Part 0 —
+  now carries the fallback into Part 1 (lesson-026, untranslated).
+  `SUMMARY.md` and the home page's edition note name the whole of Part 0 as
+  translated.
+- **Method note:** all seven lessons' fenced blocks, including four large
+  code steps and lesson-025's whole-conversion diff, were spliced verbatim
+  from the English source by script.
+- **Checker findings:** none — `OK 125 French page(s)` at the end of the
+  batch.
+- **Verification:** rendered `<pre>` blocks byte-identical to English on all
+  122 lesson and solution pages; **1 007 links across the built French site
+  with 0 dead**; curriculum order matches the English summary for all 25
+  lessons.
 
 ## Batch 4 — 2026-10-10
 

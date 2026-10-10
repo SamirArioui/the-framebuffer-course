@@ -71,6 +71,8 @@ used where it exists; the pilot's terms:
 | linkage (internal/external) | lien (interne/externe) | |
 | predicate | prédicat | |
 | rasterize / rasterizer | rastériser / rastériseur | |
+| name mangling / vtable / vptr | kept in English | toolchain terms the reader meets in `nm` output |
+| slice (object slicing) | tranchement (slice) | first use glossed |
 | exercise archetype tags (`predict-the-output`, `fix-the-crash`, `extend-the-code`, `measure-the-performance`, `explain-in-prose`, `port-to-your-own-machine`) | kept in English | they name the six archetypes of the `exercises` spec, as identifiers |
 | `REPL`, `traceback`, `backtrace`, `sandbox` | kept in English | loanwords or program names the pilot's pages use as-is |
 
