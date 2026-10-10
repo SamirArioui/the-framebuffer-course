@@ -4,10 +4,10 @@
 
 <!-- L'édition française du cours. Les entrées ci-dessous suivent exactement
      l'ordre du programme de book/SUMMARY.md ; les lots 1 (leçons 001-003), 2
-     (leçons 004-007) et 3 (leçons 008-012) sont traduits — tout l'arc
-     wordcount et tout l'arc ds-kit — et les lots suivants ajoutent la suite
-     sans rien réordonner. Les liens du cours non encore traduit mènent à
-     l'édition anglaise, et le disent. -->
+     (leçons 004-007), 3 (leçons 008-012) et 4 (leçons 013-018) sont traduits
+     — les arcs wordcount, ds-kit et paint — et les lots suivants ajoutent la
+     suite sans rien réordonner. Les liens du cours non encore traduit mènent
+     à l'édition anglaise, et le disent. -->
 
 # Partie 0 — Fondations en C
 
@@ -79,5 +79,41 @@
   - [Solution : ex1 — l'auxiliaire qui est entré en collision](solutions/lesson-012/ex1.md)
   - [Solution : ex2 — statistiques de table](solutions/lesson-012/ex2.md)
   - [Solution : ex3 — la lettre minuscule](solutions/lesson-012/ex3.md)
+
+- [Leçon 013 — octets bruts et formats de pixel](lessons/part-0/lesson-013-raw-bytes.md)
+  - [Solution : ex1 — trois pixels, à la main](solutions/lesson-013/ex1.md)
+  - [Solution : ex2 — le même pixel en 32 bits compacté](solutions/lesson-013/ex2.md)
+  - [Solution : ex3 — les décalages, à la main](solutions/lesson-013/ex3.md)
+  - [Solution : ex4 — le pixel qui n'est pas là](solutions/lesson-013/ex4.md)
+
+- [Leçon 014 — boutisme et disposition des en-têtes d'image](lessons/part-0/lesson-014-image-headers.md)
+  - [Solution : ex1 — largeur 258](solutions/lesson-014/ex1.md)
+  - [Solution : ex2 — dans le mauvais sens](solutions/lesson-014/ex2.md)
+  - [Solution : ex3 — les structures ne font pas de fichiers](solutions/lesson-014/ex3.md)
+  - [Solution : ex4 — interrogez votre propre machine](solutions/lesson-014/ex4.md)
+
+- [Leçon 015 — remplir un rectangle dans un tampon mémoire](lessons/part-0/lesson-015-fill-rect.md)
+  - [Solution : ex1 — le rectangle hors du bord gauche](solutions/lesson-015/ex1.md)
+  - [Solution : ex2 — compter ce qui a survécu](solutions/lesson-015/ex2.md)
+  - [Solution : ex3 — l'addition qui a mangé le découpage](solutions/lesson-015/ex3.md)
+  - [Solution : ex4 — pourquoi plier d'abord](solutions/lesson-015/ex4.md)
+
+- [Leçon 016 — tracer des lignes dans le tampon](lessons/part-0/lesson-016-lines.md)
+  - [Solution : ex1 — la ligne verticale à travers tout](solutions/lesson-016/ex1.md)
+  - [Solution : ex2 — des rectangles en contour](solutions/lesson-016/ex2.md)
+  - [Solution : ex3 — flottant contre entier](solutions/lesson-016/ex3.md)
+  - [Solution : ex4 — le terme d'erreur, observé](solutions/lesson-016/ex4.md)
+
+- [Leçon 017 — écrire un vrai fichier image à la main](lessons/part-0/lesson-017-image-file.md)
+  - [Solution : ex1 — les lignes sur disque](solutions/lesson-017/ex1.md)
+  - [Solution : ex2 — aller-retour](solutions/lesson-017/ex2.md)
+  - [Solution : ex3 — l'image retournée](solutions/lesson-017/ex3.md)
+  - [Solution : ex4 — par octet contre par ligne](solutions/lesson-017/ex4.md)
+
+- [Leçon 018 — l'optimiseur et le comportement indéfini](lessons/part-0/lesson-018-optimizer-ub.md)
+  - [Solution : ex1 — prédisez les dégâts](solutions/lesson-018/ex1.md)
+  - [Solution : ex2 — la garde qui est supprimée](solutions/lesson-018/ex2.md)
+  - [Solution : ex3 — relisez le remplissage d'un collègue](solutions/lesson-018/ex3.md)
+  - [Solution : ex4 — prouvez la correction](solutions/lesson-018/ex4.md)
 
 <!-- translation-source: book/SUMMARY.md @ cfeaecd -->

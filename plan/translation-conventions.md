@@ -70,6 +70,7 @@ used where it exists; the pilot's terms:
 | include guard / forward declaration | garde d'inclusion (include guard) / déclaration en avant | |
 | linkage (internal/external) | lien (interne/externe) | |
 | predicate | prédicat | |
+| rasterize / rasterizer | rastériser / rastériseur | |
 | exercise archetype tags (`predict-the-output`, `fix-the-crash`, `extend-the-code`, `measure-the-performance`, `explain-in-prose`, `port-to-your-own-machine`) | kept in English | they name the six archetypes of the `exercises` spec, as identifiers |
 | `REPL`, `traceback`, `backtrace`, `sandbox` | kept in English | loanwords or program names the pilot's pages use as-is |
 

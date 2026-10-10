@@ -8,8 +8,8 @@ navigateurs sans JavaScript ; ailleurs, le sélecteur de langue en haut de
 chaque page mène à la page correspondante de l'autre édition.</em></p>
 
 > **Note d'édition.** La traduction française avance par lots. Sont traduits
-> à ce jour : cette page et les leçons 001 à 012 avec leurs solutions (les
-> arcs `wordcount` et `ds-kit` complets) ; la suite du cours est en anglais et
+> à ce jour : cette page et les leçons 001 à 018 avec leurs solutions (les
+> arcs `wordcount`, `ds-kit` et `paint`) ; la suite du cours est en anglais et
 > les liens qui y mènent le signalent. La page anglaise fait foi ; chaque page
 > traduite nomme sa source et la révision qu'elle suit.
 

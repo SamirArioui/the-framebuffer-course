@@ -756,7 +756,7 @@ leçon.
 
 **Partie :** [Partie 0 — Fondations en C](../../index.md) ·
 **Précédente :** [Leçon 011 — la table de hachage : hachage, seaux, recherche](lesson-011-hashtable.md) ·
-**Suivante :** <a href="../../../lessons/part-0/lesson-013-raw-bytes.html">Leçon 013 — octets bruts et formats de pixel</a> *(en anglais ; traduction à venir)* ·
+**Suivante :** [Leçon 013 — octets bruts et formats de pixel](lesson-013-raw-bytes.md) ·
 **Étiquette de code :** [`lesson-012`](https://github.com/SamirArioui/the-framebuffer-course/tree/lesson-012)
 
 *Page traduite de la version anglaise
