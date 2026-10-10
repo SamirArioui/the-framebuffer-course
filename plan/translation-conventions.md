@@ -129,6 +129,20 @@ used where it exists; the pilot's terms:
 | scratch probe / high-water mark / headroom | sonde jetable / marque du plus haut emplacement / marge | |
 | balance / health / facing | équilibrage / vie (points de vie) / facing kept | facing is the column name in prose |
 | knob / wall step / wall time | bouton / pas mural / temps mural | |
+| spawn / wave / bounty | apparition (faire apparaître) / vague / prime | |
+| boss / particles / score / high score | boss kept / particules / score / meilleur score | |
+| debt / retrospective / hand-over | dette / rétrospective / passation | |
+| fix-forward | corriger en avançant (fix-forward) | first use glossed |
+| measure pass / fix pass / three-pass optimization | passe de mesure / passe de correction / optimisation en trois passes | |
+| pattern (boss) / projectile / to fire | schéma / projectile / tirer | |
+| feedback / damage / hit / kill | rétroaction / dégâts / coup / mise à mort | |
+| weapon / shot / cooldown / rate / range | arme / tir / temps de recharge / cadence / portée | |
+| roster / readout / stand-in | effectif / indicateur / substitut | |
+| sprite sheet / walk cycle / stride (animation) | planche de sprites / cycle de marche / foulée | |
+| wind-up / enrage / keeper / tunneling | préparation / enrage kept / gardien / tunneling kept (glossed) | |
+| overshoot / anticipation (camera) / sawtooth | dépassement / anticipation / en dents de scie | |
+| report template / frozen menu / hand-over card | gabarit de rapport / menu figé / carte de passation | |
+| leg (of a played run) / aliasing / clear (noun) | manche / aliasing kept / clear kept | |
 | exercise archetype tags (`predict-the-output`, `fix-the-crash`, `extend-the-code`, `measure-the-performance`, `explain-in-prose`, `port-to-your-own-machine`) | kept in English | they name the six archetypes of the `exercises` spec, as identifiers |
 | `REPL`, `traceback`, `backtrace`, `sandbox` | kept in English | loanwords or program names the pilot's pages use as-is |
 

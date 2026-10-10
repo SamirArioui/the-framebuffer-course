@@ -96,7 +96,7 @@ cette leçon ne fait que le garder vide.
 
 La réservation mérite sa propre phrase parce que c'est une promesse, pas une
 préférence. La musique est un long son sous tout le reste ; les effets sont les
-courtes salves par-dessus. Si une seconde chargée pouvait voler le canal 0, la
+courtes rafales par-dessus. Si une seconde chargée pouvait voler le canal 0, la
 musique sauterait exactement quand le jeu est le plus vivant — l'arrière-plan
 doit survivre au moment le plus chargé, donc le moment le plus chargé n'a pas le
 droit d'y toucher.
@@ -157,7 +157,7 @@ sur cette machine, face au périphérique `null` d'ALSA :
   ```
 
   Trente tampons de 735 trames font 22050 — la longueur de l'échantillon,
-  exactement. La salve a changé qui joue, pas combien de temps le son dure.
+  exactement. La rafale a changé qui joue, pas combien de temps le son dure.
 - **Le build porte exactement un avertissement :** `DrawScene` défini mais non
   utilisé dans `src/main.cpp` — la verrue de la partie 2 reportée à dessein —
   et cette leçon n'en ajoute aucun. `tools/check-boundary.sh` passe toujours :
@@ -175,7 +175,7 @@ ce que la coupe sonne sur de vrais haut-parleurs est à vous de l'entendre.
 Une modification pour cette leçon, trois fichiers : `src/audio.h` et
 `src/audio.cpp` font grandir l'allocateur — `MixerPlay`, l'estampille
 `Channel.started`, le compteur `Mixer.order` et la réservation
-`AUDIO_MUSIC_CHANNEL` — et `src/main.cpp` joue une salve scénarisée de seize
+`AUDIO_MUSIC_CHANNEL` — et `src/main.cpp` joue une rafale scénarisée de seize
 effets à travers lui, un de plus que les canaux d'effet du pool, pour que la
 politique se déroule devant le lecteur. Le rapport de fin de la boucle est
 reformulé dans les propres nombres du mixage — combien de tampons ont porté du
@@ -389,7 +389,7 @@ la place. Faites exister la politique rejetée au lieu de croire la phrase : un
 second allocateur à côté de `MixerPlay` — même pool, même premier canal d'effet
 libre — qui démarre le son quand il y a de la place et le refuse, nommément,
 quand tous les canaux d'effet sont occupés. `MixerPlay` lui-même reste intact.
-Pilotez la salve de seize effets de la leçon à travers les deux allocateurs et
+Pilotez la rafale de seize effets de la leçon à travers les deux allocateurs et
 rapportez ce que le seizième appui fait sous chacun. Terminez par un
 paragraphe : quelle politique vous livreriez pour les effets sonores d'un jeu,
 et ce que le joueur vit sous celle que vous laissez de côté.

@@ -7,11 +7,10 @@ Framebuffer Course</a> — cette page d'accueil garde ce lien en clair pour les
 navigateurs sans JavaScript ; ailleurs, le sélecteur de langue en haut de
 chaque page mène à la page correspondante de l'autre édition.</em></p>
 
-> **Note d'édition.** La traduction française avance par lots. **Les parties
-> 0 à 4 sont entièrement traduites** : cette page et les leçons 001 à 081
-> avec leurs solutions. La partie 5 (le jeu) est pour l'instant en anglais et
-> les liens qui y mènent le signalent. La page anglaise fait foi ; chaque page
-> traduite nomme sa source et la révision qu'elle suit.
+> **Note d'édition.** La traduction française est **complète** : cette page
+> et les leçons 001 à 103 avec leurs solutions — les six parties, des
+> fondations en C jusqu'au jeu terminé. La page anglaise fait foi ; chaque
+> page traduite nomme sa source et la révision qu'elle suit.
 
 Ceci est le site du cours **The Framebuffer Course** — *des fondations en C à
 un jeu d'arcade 2D terminé, sur un moteur que vous avez écrit vous-même* : un

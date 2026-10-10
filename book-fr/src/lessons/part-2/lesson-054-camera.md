@@ -104,7 +104,7 @@ engine: camera additive 0,0 (at rest)
 
 Ceci est une *démonstration* du hook, pas la boîte à outils : une secousse fixe
 qui se termine à zéro. La boîte à outils du juice de la partie 4 possédera la
-vraie chose — hitstop, screenshake, salves de particules, easing — et pilotera
+vraie chose — hitstop, screenshake, rafales de particules, easing — et pilotera
 exactement ce champ. Le contrat dont elle a besoin est ce que cette leçon
 livre : l'additif peut déplacer chaque pixel de l'écran sans perturber la base,
 et l'effacer restaure la vue exactement.

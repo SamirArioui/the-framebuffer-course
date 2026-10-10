@@ -5,7 +5,7 @@
 ## Prose
 
 La leçon 066 a donné sa musique au jeu : un son qui joue jusqu'à ce qu'on lui
-dise d'arrêter. Cette leçon est l'autre moitié — l'effet sonore, la salve qui
+dise d'arrêter. Cette leçon est l'autre moitié — l'effet sonore, la rafale qui
 joue jusqu'à sa fin puis disparaît. Deux sons, deux comportements, et le
 contrat de la route que le moteur réserve à chacun s'écrit là où le code peut
 être vérifié contre lui. La route elle-même n'est pas nouvelle. **L'allocateur

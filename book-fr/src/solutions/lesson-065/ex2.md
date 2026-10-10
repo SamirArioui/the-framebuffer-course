@@ -18,8 +18,8 @@ le même `ChannelPlay`, la même estampille `started` — et s'arrête une étap
 tôt : un pool plein renvoie `AUDIO_NO_CHANNEL` au lieu d'aller chercher le plus
 ancien. `MixerPlay` lui-même est intact, donc les deux politiques côte à côte
 peuvent être pilotées dans une même exécution. La démo dans `src/main.cpp` s'en
-charge : la salve de seize effets de la leçon elle-même, inchangée, et la même
-salve de nouveau sur son propre mixeur à travers `MixerTryPlay`.
+charge : la rafale de seize effets de la leçon elle-même, inchangée, et la même
+rafale de nouveau sur son propre mixeur à travers `MixerTryPlay`.
 
 Le journal de l'exécution, les deux politiques dedans :
 
@@ -43,7 +43,7 @@ jouer jusqu'à leur fin. Les deux réponses sont légales ; elles diffèrent par
 le plus ancien ; le refus fait payer le joueur, sans rien couper.
 
 Rien d'autre dans l'exécution ne bouge : le rapport de fin reste 30 tampons de
-son — la salve qui refuse parle à son propre mixeur et n'est jamais mixée dans
+son — la rafale qui refuse parle à son propre mixeur et n'est jamais mixée dans
 le flux — et le canal de musique est aussi réservé sous une politique que sous
 l'autre.
 

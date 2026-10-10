@@ -7,7 +7,7 @@
 La leçon 065 a réservé un canal et l'a laissé vide. Cette leçon dépense la
 réservation : la musique du jeu passe sur `AUDIO_MUSIC_CHANNEL`, et le fait le
 plus important de la musique, c'est qu'elle ne se termine pas. Un effet sonore
-est une salve qui joue jusqu'à sa fin puis disparaît ; la musique est le son
+est une rafale qui joue jusqu'à sa fin puis disparaît ; la musique est le son
 qui se répète — les mêmes mesures, encore et encore, aussi longtemps que
 l'exécution dure. Le travail du mixeur est, pour les deux, la même somme. Ce qui
 diffère, c'est un bit d'état par canal, et toute la leçon tient à ce que ce bit

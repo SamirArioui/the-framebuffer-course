@@ -53,7 +53,7 @@ Ce que la prédiction a eu juste et faux mérite d'être retenu :
   fait ~1,8× les instructions du chemin de saut, et les pixels opaques
   coûtent vraiment à peu près cela de plus que les pixels de la couleur-clé.
 - **Faux :** les instructions ne sont pas des cycles. À `-O0`,
-  l'ordonnancement du compilateur est arbitraire (un énoncé, une salve
+  l'ordonnancement du compilateur est arbitraire (un énoncé, une rafale
   d'instructions), mais le *matériel* court toujours devant — les chargements
   sont émis tôt, les additions se chevauchent. Un compte d'instructions au
   dos d'une enveloppe est un plancher du travail, pas un chronomètre.

@@ -3,10 +3,9 @@
 [Accueil](index.md)
 
 <!-- L'édition française du cours. Les entrées ci-dessous suivent exactement
-     l'ordre du programme de book/SUMMARY.md ; les lots 1 à 9 (leçons 001-081)
-     traduisent les parties 0 à 4, et le dernier lot ajoute la partie 5 sans
-     rien réordonner. Les liens du cours non encore traduit mènent à l'édition
-     anglaise, et le disent. -->
+     l'ordre du programme de book/SUMMARY.md ; les dix lots (leçons 001-103)
+     traduisent le cours entier — les six parties — et les lots suivants
+     n'auront qu'à suivre les révisions de la source anglaise. -->
 
 # Partie 0 — Fondations en C
 
@@ -388,5 +387,95 @@
 - [Leçon 081 — le coût de la tranche dans le budget de frames](lessons/part-4/lesson-081-entities-row.md)
   - [Solution : ex1 — la ligne, à deux tailles](solutions/lesson-081/ex1.md)
   - [Solution : ex2 — ce que la ligne ne dit pas](solutions/lesson-081/ex2.md)
+
+# Partie 5 — le jeu
+
+- [Leçon 082 — le squelette du jeu](lessons/part-5/lesson-082-skeleton.md)
+  - [Solution : ex1 — le score sur les écrans de fin](solutions/lesson-082/ex1.md)
+  - [Solution : ex2 — pourquoi l'échelle](solutions/lesson-082/ex2.md)
+
+- [Leçon 083 — la tilemap et la caméra](lessons/part-5/lesson-083-tilemap-camera.md)
+  - [Solution : ex1 — la caméra qui anticipe](solutions/lesson-083/ex1.md)
+  - [Solution : ex2 — la base, aux coins](solutions/lesson-083/ex2.md)
+
+- [Leçon 084 — la collision avec les tuiles](lessons/part-5/lesson-084-collision.md)
+  - [Solution : ex1 — le coin et le mur](solutions/lesson-084/ex1.md)
+  - [Solution : ex2 — pas de tunneling](solutions/lesson-084/ex2.md)
+
+- [Leçon 085 — le mouvement du héros](lessons/part-5/lesson-085-hero-movement.md)
+  - [Solution : ex1 — la courbe, prédite](solutions/lesson-085/ex1.md)
+  - [Solution : ex2 — plus lourd à arrêter](solutions/lesson-085/ex2.md)
+
+- [Leçon 086 — la rétroaction et l'animation](lessons/part-5/lesson-086-feedback-animation.md)
+  - [Solution : ex1 — la rétroaction commence avec l'événement](solutions/lesson-086/ex1.md)
+  - [Solution : ex2 — pourquoi le temps mural](solutions/lesson-086/ex2.md)
+
+- [Leçon 087 — les projectiles et les deux armes](lessons/part-5/lesson-087-projectiles-weapons.md)
+  - [Solution : ex1 — le tir en éventail](solutions/lesson-087/ex1.md)
+  - [Solution : ex2 — le projectile sans art](solutions/lesson-087/ex2.md)
+
+- [Leçon 088 — les tables d'archétypes des ennemis](lessons/part-5/lesson-088-enemy-tables.md)
+  - [Solution : ex1 — les types que personne n'a encore faits](solutions/lesson-088/ex1.md)
+  - [Solution : ex2 — pourquoi le boss ne mérite pas de code](solutions/lesson-088/ex2.md)
+
+- [Leçon 089 — l'IA ennemie](lessons/part-5/lesson-089-enemy-ai.md)
+  - [Solution : ex1 — la distance du gardien est de la donnée](solutions/lesson-089/ex1.md)
+  - [Solution : ex2 — l'escalier du poursuivant](solutions/lesson-089/ex2.md)
+
+- [Leçon 090 — le boss](lessons/part-5/lesson-090-boss.md)
+  - [Solution : ex1 — le schéma possède ses attaques](solutions/lesson-090/ex1.md)
+  - [Solution : ex2 — la chronologie du planning](solutions/lesson-090/ex2.md)
+
+- [Leçon 091 — vagues](lessons/part-5/lesson-091-waves.md)
+  - [Solution : ex1 — la respiration entre les vagues](solutions/lesson-091/ex1.md)
+  - [Solution : ex2 — le plan des vagues](solutions/lesson-091/ex2.md)
+
+- [Leçon 092 — hitstop et screenshake](lessons/part-5/lesson-092-hitstop-shake.md)
+  - [Solution : ex1 — la secousse qui s'amortit](solutions/lesson-092/ex1.md)
+  - [Solution : ex2 — la pause qui rencontre le hitstop](solutions/lesson-092/ex2.md)
+
+- [Leçon 093 — rafales de particules et easing](lessons/part-5/lesson-093-bursts-easing.md)
+  - [Solution : ex1 — les étincelles héritent du coup](solutions/lesson-093/ex1.md)
+  - [Solution : ex2 — la courbe, prédite](solutions/lesson-093/ex2.md)
+
+- [Leçon 094 — le HUD](lessons/part-5/lesson-094-hud.md)
+  - [Solution : ex1 — le score pour les mises à mort](solutions/lesson-094/ex1.md)
+  - [Solution : ex2 — pourquoi le HUD ne défile jamais](solutions/lesson-094/ex2.md)
+
+- [Leçon 095 — l'intégration audio](lessons/part-5/lesson-095-audio.md)
+  - [Solution : ex1 — le volume suit la distance](solutions/lesson-095/ex1.md)
+  - [Solution : ex2 — le pool sous le feu](solutions/lesson-095/ex2.md)
+
+- [Leçon 096 — le peaufinage des écrans](lessons/part-5/lesson-096-screens.md)
+  - [Solution : ex1 — la pause par-dessus le monde figé](solutions/lesson-096/ex1.md)
+  - [Solution : ex2 — l'horloge du fondu](solutions/lesson-096/ex2.md)
+
+- [Leçon 097 — payer la dette](lessons/part-5/lesson-097-debt.md)
+  - [Solution : ex1 — les bandeaux sortent du froid](solutions/lesson-097/ex1.md)
+  - [Solution : ex2 — la facture de la transcription](solutions/lesson-097/ex2.md)
+
+- [Leçon 098 — passe 1 : mesurer](lessons/part-5/lesson-098-measure.md)
+  - [Solution : ex1 — ce que le profil ne peut pas voir](solutions/lesson-098/ex1.md)
+  - [Solution : ex2 — la passe de mesure sur votre machine](solutions/lesson-098/ex2.md)
+
+- [Leçon 099 — passe 2a : corriger le dessin de la carte](lessons/part-5/lesson-099-map-draw.md)
+  - [Solution : ex1 — le dessin des sprites reçoit le même remède](solutions/lesson-099/ex1.md)
+  - [Solution : ex2 — le coût par tuile](solutions/lesson-099/ex2.md)
+
+- [Leçon 100 — passe 2b : corriger le clear](lessons/part-5/lesson-100-clear.md)
+  - [Solution : ex1 — le prix d'un pixel](solutions/lesson-100/ex1.md)
+  - [Solution : ex2 — ce que le mot sait](solutions/lesson-100/ex2.md)
+
+- [Leçon 101 — passe 3 : le rapport de budget de frames](lessons/part-5/lesson-101-frame-budget.md)
+  - [Solution : ex1 — la ligne des 60 fps sur votre machine](solutions/lesson-101/ex1.md)
+  - [Solution : ex2 — la pire frame, prédite](solutions/lesson-101/ex2.md)
+
+- [Leçon 102 — la rétrospective : notre moteur face aux moteurs réels](lessons/part-5/lesson-102-retrospective.md)
+  - [Solution : ex1 — notre moteur, honnêtement comparé](solutions/lesson-102/ex1.md)
+  - [Solution : ex2 — la carte de l'épilogue sur votre machine](solutions/lesson-102/ex2.md)
+
+- [Leçon 103 — maintenant, faites VOTRE jeu](lessons/part-5/lesson-103-your-game.md)
+  - [Solution : ex1 — le premier changement de votre jeu](solutions/lesson-103/ex1.md)
+  - [Solution : ex2 — la carte de passation de votre machine](solutions/lesson-103/ex2.md)
 
 <!-- translation-source: book/SUMMARY.md @ cfeaecd -->

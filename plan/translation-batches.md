@@ -17,15 +17,43 @@ holds**.
 | 6 | Part 1 — the platform layer (lessons 026-043 + solutions) | 54 | 28 384 | 33 638 | 1.19 | 2026-10-10 (`a42f4cd`) |
 | 7 | Part 2 — software rendering (lessons 044-058 + solutions) | 45 | 29 940 | 35 657 | 1.19 | 2026-10-10 (`6d27fe8`) |
 | 8 | Part 3 — sound (lessons 059-070 + solutions) | 36 | 33 795 | 39 342 | 1.16 | 2026-10-10 (`893c43a`) |
-| 9 | Part 4 — services (lessons 071-081 + solutions) | 33 | 25 371 | 29 464 | 1.16 | 2026-10-10 |
+| 9 | Part 4 — services (lessons 071-081 + solutions) | 33 | 25 371 | 29 464 | 1.16 | 2026-10-10 (`7f00d29`) |
+| 10 | Part 5 — the game (lessons 082-103 + solutions) — **the French edition is complete** | 66 | 46 979 | 56 156 | 1.20 | 2026-10-10 |
 
-Parts 0 to 4 are complete in French: the whole French tree is 293 pages,
-about 181k EN → 198k FR prose words (summed from the batch rows). One batch
-remains:
+**The French edition is complete.** The whole French tree is 359 pages —
+103 lessons + 253 solutions + the shell — 217 499 EN → 256 854 FR prose
+words (summed from the batch rows), every fenced block byte-identical to its
+English source. Ten batches: 1.20 / 1.19 / 1.19 / 1.17 / 1.17 / 1.19 / 1.19 /
+1.16 / 1.16 / 1.20 — the ~1.20 per-page planning number held for every batch.
+From here, translations only follow English revisions (the drift half of
+`tools/check-fr-sync.sh`).
 
-| Batch | Scope | Pages | EN words |
-| ----- | ----- | ----- | -------- |
-| 10 | Part 5 — the game (082-103) | 66 | 46 979 |
+## Batch 10 — 2026-10-10
+
+- **Pages:** the whole of Part 5 — 22 lessons (`082`-`103`, the game) + 44
+  solutions; 359 French pages total. **The course is fully translated.**
+- **Method:** eight parallel subagents (1-3 lessons each) in clean sessions;
+  the coordinator owned SUMMARY.md, the home page, the term table, the
+  cross-page consistency pass, and all verification.
+- **Throughput:** ratio 1.20 (46 979 EN → 56 156 FR).
+- **Coordinator unifications:** burst → **rafale** (lessons 086/092 had
+  *salve*; also unified the older Part 2/3 pages that used *salve* for the
+  same English *burst*); stand-in → **substitut** (one page had
+  *bouche-trou*); readouts → **indicateurs** (lesson 103 had *relevés*);
+  scratch roster → **effectif jetable** (lesson 095 had *liste jetable*);
+  lesson-097's back-link fixed to lesson-096's actual H1 (*le peaufinage des
+  écrans*); two lowercase exercise titles capitalized. Footer-title check: 0
+  mismatches; the chain 082→103 complete; lesson-103 mirrors English's
+  footer, linking the course home.
+- **Terms added to the table** (conventions §2): rétroaction, dégâts, coup,
+  mise à mort, arme/tir/temps de recharge/cadence/portée, effectif,
+  indicateur, substitut, planche de sprites, wind-up/enrage/gardien/
+  tunneling, overshoot/anticipation, gabarit de rapport, menu figé, carte de
+  passation, manche, aliasing/clear kept.
+- **Checker findings:** none — `OK 359 French page(s)` at the end.
+- **Verification:** rendered `<pre>` blocks byte-identical to English on all
+  356 lesson and solution pages; **2 953 links with 0 dead**; curriculum
+  order matches the English summary for all 103 lessons.
 
 ## Batch 9 — 2026-10-10
 
