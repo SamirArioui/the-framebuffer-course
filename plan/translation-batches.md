@@ -15,20 +15,45 @@ holds**.
 | 4 | lessons 013-018 + solutions — the `paint` arc complete | 30 | 11 534 | 13 551 | 1.17 | 2026-10-10 (`35d2a84`) |
 | 5 | lessons 019-025 + solutions — the `snek` arc complete; **all of Part 0 translated** | 35 | 14 109 | 16 543 | 1.17 | 2026-10-10 (`f6392e2`) |
 | 6 | Part 1 — the platform layer (lessons 026-043 + solutions) | 54 | 28 384 | 33 638 | 1.19 | 2026-10-10 (`a42f4cd`) |
-| 7 | Part 2 — software rendering (lessons 044-058 + solutions) | 45 | 29 940 | 35 657 | 1.19 | 2026-10-10 |
+| 7 | Part 2 — software rendering (lessons 044-058 + solutions) | 45 | 29 940 | 35 657 | 1.19 | 2026-10-10 (`6d27fe8`) |
+| 8 | Part 3 — sound (lessons 059-070 + solutions) | 36 | 33 795 | 39 342 | 1.16 | 2026-10-10 |
 
-Parts 0 to 2 are complete in French: the whole French tree is 224 pages,
-about 117k EN → 130k FR prose words (summed from the batch rows). Remaining
+Parts 0 to 3 are complete in French: the whole French tree is 260 pages,
+about 156k EN → 169k FR prose words (summed from the batch rows). Remaining
 work, measured the same way:
 
 | Batch | Scope | Pages | EN words |
 | ----- | ----- | ----- | -------- |
-| 8 | Part 3 — sound (059-070) | 36 | 33 795 |
 | 9 | Part 4 — services (071-081) | 33 | 25 371 |
 | 10 | Part 5 — the game (082-103) | 66 | 46 979 |
 
-Parts 3-5 follow as their own batches; the same 1.20 per-page planning number
-applies.
+Parts 4 and 5 follow as their own batches; the same 1.20 per-page planning
+number applies.
+
+## Batch 8 — 2026-10-10
+
+- **Pages:** the whole of Part 3 — 12 lessons (`059`-`070`, sound) + 24
+  solutions; 260 French pages total, **Parties 0-3 done**.
+- **Method:** five parallel subagents (2-3 lessons each) in clean sessions;
+  coordinator owned SUMMARY.md, the home page, the term table, the
+  cross-page consistency pass, and all verification.
+- **Throughput:** ratio 1.16 (33 795 EN → 39 342 FR). Eight batches:
+  1.20 / 1.19 / 1.19 / 1.17 / 1.17 / 1.19 / 1.19 / 1.16.
+- **Coordinator consistency pass (three unifications):** the audio-domain
+  *frame* (sample frame) → **trame** in lessons 066/067 and their solutions
+  (lessons 059-065 already used it; the game *frame* stays kept); the mixer
+  *pull* → **tirage** (064/068/070 already used it; replaced *prélèvement*);
+  the stream *feed* → **alimentation** (75 uses across 8 files; replaced the
+  stray *envoi* in lesson 064) with *gate* → **barrière** (lesson 064 had
+  "porte de l'envoi"). Footer-title consistency check: 0 mismatches, chain
+  complete 059→070, lesson-070 mirrors `Next: —`.
+- **Terms added to the table** (conventions §2): alimentation/barrière/
+  tirage, écrêter (audio clamp; geometry clamp stays bornage), tonalité,
+  crête, sonie, famine, pool/chunk/ducking/one-shot kept.
+- **Checker findings:** none — `OK 260 French page(s)` at the end.
+- **Verification:** rendered `<pre>` blocks byte-identical to English on all
+  257 lesson and solution pages; **2 128 links with 0 dead**; curriculum
+  order matches the English summary for all 70 lessons.
 
 ## Batch 7 — 2026-10-10
 

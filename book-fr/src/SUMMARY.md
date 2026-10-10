@@ -3,9 +3,9 @@
 [Accueil](index.md)
 
 <!-- L'édition française du cours. Les entrées ci-dessous suivent exactement
-     l'ordre du programme de book/SUMMARY.md ; les lots 1 à 7 (leçons 001-058)
-     traduisent les parties 0 à 2, et les lots suivants ajoutent la suite
-     (parties 3 à 5) sans rien réordonner. Les liens du cours non encore
+     l'ordre du programme de book/SUMMARY.md ; les lots 1 à 8 (leçons 001-070)
+     traduisent les parties 0 à 3, et les lots suivants ajoutent la suite
+     (parties 4 et 5) sans rien réordonner. Les liens du cours non encore
      traduit mènent à l'édition anglaise, et le disent. -->
 
 # Partie 0 — Fondations en C
@@ -292,5 +292,55 @@
 - [Leçon 058 — la table du budget de frames](lessons/part-2/lesson-058-budget.md)
   - [Solution : ex1 — la ligne qui n'est pas là](solutions/lesson-058/ex1.md)
   - [Solution : ex2 — la colonne de la pire frame](solutions/lesson-058/ex2.md)
+
+# Partie 3 — le son
+
+- [Leçon 059 — le son comme des échantillons](lessons/part-3/lesson-059-samples.md)
+  - [Solution : ex1 — les huit premières trames](solutions/lesson-059/ex1.md)
+  - [Solution : ex2 — l'écouter sur de vrais haut-parleurs](solutions/lesson-059/ex2.md)
+
+- [Leçon 060 — la forme du flux](lessons/part-3/lesson-060-stream.md)
+  - [Solution : ex1 — l'horizon, doublé](solutions/lesson-060/ex1.md)
+  - [Solution : ex2 — la famine sur de vrais haut-parleurs](solutions/lesson-060/ex2.md)
+
+- [Leçon 061 — le conteneur WAV](lessons/part-3/lesson-061-wav.md)
+  - [Solution : ex1 — réécrire le fichier](solutions/lesson-061/ex1.md)
+  - [Solution : ex2 — le fichier qui finit trop tôt](solutions/lesson-061/ex2.md)
+
+- [Leçon 062 — les faits de lecture de l'échantillon](lessons/part-3/lesson-062-playback.md)
+  - [Solution : ex1 — l'échantillon qui ne fait pas trente tampons](solutions/lesson-062/ex1.md)
+  - [Solution : ex2 — l'entendre s'arrêter](solutions/lesson-062/ex2.md)
+
+- [Leçon 063 — un canal](lessons/part-3/lesson-063-channel.md)
+  - [Solution : ex1 — quart de volume, au chiffre près](solutions/lesson-063/ex1.md)
+  - [Solution : ex2 — le fondu vers le silence](solutions/lesson-063/ex2.md)
+
+- [Leçon 064 — le mixage](lessons/part-3/lesson-064-mix.md)
+  - [Solution : ex1 — cinq canaux à la crête](solutions/lesson-064/ex1.md)
+  - [Solution : ex2 — ce que coûte le mixage](solutions/lesson-064/ex2.md)
+
+- [Leçon 065 — l'allocation des canaux](lessons/part-3/lesson-065-allocation.md)
+  - [Solution : ex1 — le vingt et unième appui](solutions/lesson-065/ex1.md)
+  - [Solution : ex2 — la politique qui refuse](solutions/lesson-065/ex2.md)
+
+- [Leçon 066 — la musique comme une boucle](lessons/part-3/lesson-066-music.md)
+  - [Solution : ex1 — la couture, prédite](solutions/lesson-066/ex1.md)
+  - [Solution : ex2 — pause et reprise](solutions/lesson-066/ex2.md)
+
+- [Leçon 067 — les effets comme des one-shots](lessons/part-3/lesson-067-effects.md)
+  - [Solution : ex1 — un échantillon, deux volumes](solutions/lesson-067/ex1.md)
+  - [Solution : ex2 — l'effet qui ne doit pas s'empiler](solutions/lesson-067/ex2.md)
+
+- [Leçon 068 — la musique et les effets ensemble](lessons/part-3/lesson-068-together.md)
+  - [Solution : ex1 — la phase audio, mesurée](solutions/lesson-068/ex1.md)
+  - [Solution : ex2 — la musique qui ducke](solutions/lesson-068/ex2.md)
+
+- [Leçon 069 — la démo de clôture](lessons/part-3/lesson-069-demo.md)
+  - [Solution : ex1 — la démo de la partie 3 sur votre machine](solutions/lesson-069/ex1.md)
+  - [Solution : ex2 — la table d'acceptation de la partie](solutions/lesson-069/ex2.md)
+
+- [Leçon 070 — le coût du mixage dans le budget de frames](lessons/part-3/lesson-070-audio-row.md)
+  - [Solution : ex1 — les deux intérieurs de la ligne](solutions/lesson-070/ex1.md)
+  - [Solution : ex2 — les deux populations de la ligne](solutions/lesson-070/ex2.md)
 
 <!-- translation-source: book/SUMMARY.md @ cfeaecd -->

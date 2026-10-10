@@ -106,6 +106,17 @@ used where it exists; the pilot's terms:
 | key color / checksum / sheet / ink | couleur clé / somme de contrôle / planche / encre | |
 | advance (width) / kerning | avance / crénage | |
 | hotspot / working set / sweep / substep | point chaud / ensemble de travail / balayage / sous-pas | |
+| sample / sample rate / sample frame | échantillon / fréquence d'échantillonnage / trame d'échantillons | |
+| stream (audio) / mixer / to mix / mix (noun) | flux (audio) / mixeur / mixer / mixage | mixeur established by the course home page |
+| channel / playback / to play | canal / lecture / jouer | |
+| waveform / sine wave | forme d'onde / sinusoïde | |
+| clipping (audio) | écrêtage | distinct from clipping (graphics) → découpage |
+| gain / fade / loop (music) / one-shot | gain / fondu / boucle (boucler) / one-shot kept | |
+| device / underrun / latency | périphérique / underrun kept / latence | |
+| feed (audio) / gate / pull (mixer) | alimentation (alimenter) / barrière / tirage (tirer) | feed/gate established by lesson 060 |
+| clamp (audio) | écrêter / écrêtage | distinct from clamp (geometry) → bornage |
+| tone / peak / loudness / starvation | tonalité / crête / sonie / famine | |
+| pool / chunk / ducking / one-shot | kept in English | ducking keeps its verb "ducker" |
 | exercise archetype tags (`predict-the-output`, `fix-the-crash`, `extend-the-code`, `measure-the-performance`, `explain-in-prose`, `port-to-your-own-machine`) | kept in English | they name the six archetypes of the `exercises` spec, as identifiers |
 | `REPL`, `traceback`, `backtrace`, `sandbox` | kept in English | loanwords or program names the pilot's pages use as-is |
 
