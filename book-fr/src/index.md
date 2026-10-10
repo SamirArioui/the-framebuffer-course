@@ -8,8 +8,8 @@ navigateurs sans JavaScript ; ailleurs, le sélecteur de langue en haut de
 chaque page mène à la page correspondante de l'autre édition.</em></p>
 
 > **Note d'édition.** La traduction française avance par lots. **Les parties
-> 0 et 1 sont entièrement traduites** : cette page et les leçons 001 à 043
-> avec leurs solutions. La suite du cours (parties 2 à 5) est pour l'instant
+> 0 à 2 sont entièrement traduites** : cette page et les leçons 001 à 058
+> avec leurs solutions. La suite du cours (parties 3 à 5) est pour l'instant
 > en anglais et les liens qui y mènent le signalent. La page anglaise fait
 > foi ; chaque page traduite nomme sa source et la révision qu'elle suit.
 

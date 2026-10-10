@@ -3,9 +3,9 @@
 [Accueil](index.md)
 
 <!-- L'édition française du cours. Les entrées ci-dessous suivent exactement
-     l'ordre du programme de book/SUMMARY.md ; les lots 1 à 6 (leçons 001-043)
-     traduisent les parties 0 et 1, et les lots suivants ajoutent la suite
-     (parties 2 à 5) sans rien réordonner. Les liens du cours non encore
+     l'ordre du programme de book/SUMMARY.md ; les lots 1 à 7 (leçons 001-058)
+     traduisent les parties 0 à 2, et les lots suivants ajoutent la suite
+     (parties 3 à 5) sans rien réordonner. Les liens du cours non encore
      traduit mènent à l'édition anglaise, et le disent. -->
 
 # Partie 0 — Fondations en C
@@ -230,5 +230,67 @@
 - [Leçon 043 — la démo de clôture : la couche plateforme terminée](lessons/part-1/lesson-043-demo.md)
   - [Solution : ex1 — la couche plateforme terminée, sur votre machine](solutions/lesson-043/ex1.md)
   - [Solution : ex2 — la table d'acceptation](solutions/lesson-043/ex2.md)
+
+# Partie 2 — le rendu logiciel
+
+- [Leçon 044 — un sprite comme des octets chargés](lessons/part-2/lesson-044-sprite-bytes.md)
+  - [Solution : ex1 — l'en-tête qui ment](solutions/lesson-044/ex1.md)
+  - [Solution : ex2 — sprite, voici la fenêtre](solutions/lesson-044/ex2.md)
+
+- [Leçon 045 — le blit découpé et transparent](lessons/part-2/lesson-045-blit.md)
+  - [Solution : ex1 — votre propre clé](solutions/lesson-045/ex1.md)
+  - [Solution : ex2 — les quatre coins](solutions/lesson-045/ex2.md)
+
+- [Leçon 046 — le sprite se déplace](lessons/part-2/lesson-046-movable-sprite.md)
+  - [Solution : ex1 — où passe le render ?](solutions/lesson-046/ex1.md)
+  - [Solution : ex2 — le sprite qui se retourne](solutions/lesson-046/ex2.md)
+
+- [Leçon 047 — plongée dans les caches](lessons/part-2/lesson-047-caches.md)
+  - [Solution : ex1 — les coudes de votre machine](solutions/lesson-047/ex1.md)
+  - [Solution : ex2 — le pas qui ne rentre pas dans la ligne](solutions/lesson-047/ex2.md)
+
+- [Leçon 048 — l'assembleur compilé du blitter](lessons/part-2/lesson-048-assembly.md)
+  - [Solution : ex1 — le budget d'instructions](solutions/lesson-048/ex1.md)
+  - [Solution : ex2 — la signature du compilateur](solutions/lesson-048/ex2.md)
+
+- [Leçon 049 — la lentille SIMD](lessons/part-2/lesson-049-simd.md)
+  - [Solution : ex1 — deux remplissages, prédits](solutions/lesson-049/ex1.md)
+  - [Solution : ex2 — la largeur de registre de votre compilateur](solutions/lesson-049/ex2.md)
+
+- [Leçon 050 — la police bitmap comme asset](lessons/part-2/lesson-050-font.md)
+  - [Solution : ex1 — le dump de la police](solutions/lesson-050/ex1.md)
+  - [Solution : ex2 — les octets dont la planche n'a jamais entendu parler](solutions/lesson-050/ex2.md)
+
+- [Leçon 051 — du texte à l'écran](lessons/part-2/lesson-051-text.md)
+  - [Solution : ex1 — le HUD qui compte](solutions/lesson-051/ex1.md)
+  - [Solution : ex2 — les deux sortes de rien](solutions/lesson-051/ex2.md)
+
+- [Leçon 052 — le format d'asset du tilemap](lessons/part-2/lesson-052-tilemap.md)
+  - [Solution : ex1 — l'échec qui se nomme lui-même](solutions/lesson-052/ex1.md)
+  - [Solution : ex2 — la carte en caractères](solutions/lesson-052/ex2.md)
+
+- [Leçon 053 — le dessin de tilemap](lessons/part-2/lesson-053-tiles.md)
+  - [Solution : ex1 — la tuile sous le sprite](solutions/lesson-053/ex1.md)
+  - [Solution : ex2 — le dessin à vide](solutions/lesson-053/ex2.md)
+
+- [Leçon 054 — la caméra](lessons/part-2/lesson-054-camera.md)
+  - [Solution : ex1 — la secousse qui décroît](solutions/lesson-054/ex1.md)
+  - [Solution : ex2 — l'additif qui annule](solutions/lesson-054/ex2.md)
+
+- [Leçon 055 — les types de tuile et la solidité](lessons/part-2/lesson-055-collision.md)
+  - [Solution : ex1 — la politique est la vôtre](solutions/lesson-055/ex1.md)
+  - [Solution : ex2 — le rectangle à la frontière](solutions/lesson-055/ex2.md)
+
+- [Leçon 056 — le mover qui s'arrête aux murs](lessons/part-2/lesson-056-mover.md)
+  - [Solution : ex1 — la hitbox](solutions/lesson-056/ex1.md)
+  - [Solution : ex2 — le pas et le mur](solutions/lesson-056/ex2.md)
+
+- [Leçon 057 — la démo de clôture : le monde, dessiné](lessons/part-2/lesson-057-demo.md)
+  - [Solution : ex1 — la démo de la partie 2 sur votre machine](solutions/lesson-057/ex1.md)
+  - [Solution : ex2 — la table d'acceptation](solutions/lesson-057/ex2.md)
+
+- [Leçon 058 — la table du budget de frames](lessons/part-2/lesson-058-budget.md)
+  - [Solution : ex1 — la ligne qui n'est pas là](solutions/lesson-058/ex1.md)
+  - [Solution : ex2 — la colonne de la pire frame](solutions/lesson-058/ex2.md)
 
 <!-- translation-source: book/SUMMARY.md @ cfeaecd -->

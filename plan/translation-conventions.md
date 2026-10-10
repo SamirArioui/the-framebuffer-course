@@ -92,6 +92,20 @@ used where it exists; the pilot's terms:
 | reservation-backed / demand-zero | adossé à une réservation / demand-zero (glossed) | |
 | page frame / copy-on-write / bump pointer | cadre de page / copie sur écriture / kept in English | |
 | mark (ArenaMark) / rollback | marque / retour arrière | |
+| tile / tilemap / blit / sprite | tuile / tilemap / blit / sprite | tilemap, blit, sprite kept; tile translated |
+| font / glyph | police (de caractères) / glyphe | first use of "police" glossed "(font)" |
+| cache / cache line / miss / hit | cache / ligne de cache / défaut de cache / succès de cache | cache stays "cache" in French |
+| prefetch / memory bandwidth | préchargement / bande passante mémoire | |
+| SoA / AoS / SIMD / lane | kept in English / kept in English / kept in English / voie | data-layout and ISA jargon the code names |
+| vectorization | vectorisation | |
+| profiler / profiling | profileur / profilage | |
+| viewport / scrolling | zone d'affichage / défilement | matches lessons 015/022 French |
+| mover / AABB / overlap / solid tile | mover kept / AABB kept / chevauchement / tuile solide | mover names the code's type |
+| kind (tile kind) | type | |
+| blitter / knockback / hitbox / HUD | kept in English | loanwords; same family as hitstop/screenshake |
+| key color / checksum / sheet / ink | couleur clé / somme de contrôle / planche / encre | |
+| advance (width) / kerning | avance / crénage | |
+| hotspot / working set / sweep / substep | point chaud / ensemble de travail / balayage / sous-pas | |
 | exercise archetype tags (`predict-the-output`, `fix-the-crash`, `extend-the-code`, `measure-the-performance`, `explain-in-prose`, `port-to-your-own-machine`) | kept in English | they name the six archetypes of the `exercises` spec, as identifiers |
 | `REPL`, `traceback`, `backtrace`, `sandbox` | kept in English | loanwords or program names the pilot's pages use as-is |
 

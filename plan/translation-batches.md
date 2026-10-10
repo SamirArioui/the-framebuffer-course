@@ -14,23 +14,50 @@ holds**.
 | 3 | lessons 008-012 + solutions — the `ds-kit` arc complete | 23 | 9 630 | 11 433 | 1.19 | 2026-10-10 (`bc24616`) |
 | 4 | lessons 013-018 + solutions — the `paint` arc complete | 30 | 11 534 | 13 551 | 1.17 | 2026-10-10 (`35d2a84`) |
 | 5 | lessons 019-025 + solutions — the `snek` arc complete; **all of Part 0 translated** | 35 | 14 109 | 16 543 | 1.17 | 2026-10-10 (`f6392e2`) |
-| 6 | Part 1 — the platform layer (lessons 026-043 + solutions) | 54 | 28 384 | 33 638 | 1.19 | 2026-10-10 |
+| 6 | Part 1 — the platform layer (lessons 026-043 + solutions) | 54 | 28 384 | 33 638 | 1.19 | 2026-10-10 (`a42f4cd`) |
+| 7 | Part 2 — software rendering (lessons 044-058 + solutions) | 45 | 29 940 | 35 657 | 1.19 | 2026-10-10 |
 
-Parts 0 and 1 are complete in French: the whole French tree is 179 pages,
-81 414 EN → 94 010 FR prose words (summed from the batch rows; whole-tree
-aggregates read lower than the per-page ratio because the English
-`SUMMARY.md` is over ten times the pilot's), every fenced block byte-identical
-to its English source. Remaining work, measured the same way:
+Parts 0 to 2 are complete in French: the whole French tree is 224 pages,
+about 117k EN → 130k FR prose words (summed from the batch rows). Remaining
+work, measured the same way:
 
 | Batch | Scope | Pages | EN words |
 | ----- | ----- | ----- | -------- |
-| 7 | Part 2 — software rendering (044-058) | 45 | 29 940 |
 | 8 | Part 3 — sound (059-070) | 36 | 33 795 |
 | 9 | Part 4 — services (071-081) | 33 | 25 371 |
 | 10 | Part 5 — the game (082-103) | 66 | 46 979 |
 
-Parts 2-5 follow as their own batches; the same 1.20 per-page planning number
+Parts 3-5 follow as their own batches; the same 1.20 per-page planning number
 applies.
+
+## Batch 7 — 2026-10-10
+
+- **Pages:** the whole of Part 2 — 15 lessons (`044`-`058`, software
+  rendering) + 30 solutions; 224 French pages total, **Parties 0-2 done**.
+- **Method:** five parallel subagents (three lessons each) in clean sessions;
+  coordinator owned SUMMARY.md, the home page, the term table, cross-page
+  consistency, and all verification. Fenced blocks spliced verbatim
+  (`splice_part.py`, `--patch` for solutions).
+- **Throughput:** ratio 1.19 (29 940 EN → 35 657 FR). Seven batches:
+  1.20 / 1.19 / 1.19 / 1.17 / 1.17 / 1.19 / 1.19.
+- **Coordinator consistency pass (catch):** subagents diverged on three
+  recurring terms — unified `blitteur` → **blitter** (kept, matching `blit`),
+  `recul (knockback)` → **knockback** (kept, same family as hitstop/
+  screenshake), and fixed two footer link texts that disagreed with their
+  target lessons' H1s (052 in lesson-053, 055 in lesson-056). A footer-title
+  consistency check is now part of the coordinator pass.
+- **Terms added to the table** (conventions §2): tuile (tile), police
+  (font), glyphe, ligne de cache / défaut / succès, préchargement, bande
+  passante mémoire, SoA/AoS/SIMD kept, voie (SIMD lane), vectorisation,
+  profileur/profilage, zone d'affichage, défilement, mover kept, tuile
+  solide, couleur clé, somme de contrôle, planche (sheet), encre, avance,
+  crénage, point chaud (hotspot), ensemble de travail (working set), balayage
+  (sweep), sous-pas, hitbox/HUD/knockback/blitter kept.
+- **Checker findings:** none — `OK 224 French page(s)` at the end.
+- **Verification:** rendered `<pre>` blocks byte-identical to English on all
+  221 lesson and solution pages; **1 829 links with 0 dead**; curriculum
+  order matches the English summary for all 58 lessons; lesson-058 mirrors
+  English's `Next: —`.
 
 ## Batch 6 — 2026-10-10
 
