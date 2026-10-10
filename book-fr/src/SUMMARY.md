@@ -3,10 +3,10 @@
 [Accueil](index.md)
 
 <!-- L'édition française du cours. Les entrées ci-dessous suivent exactement
-     l'ordre du programme de book/SUMMARY.md ; les lots 1 à 8 (leçons 001-070)
-     traduisent les parties 0 à 3, et les lots suivants ajoutent la suite
-     (parties 4 et 5) sans rien réordonner. Les liens du cours non encore
-     traduit mènent à l'édition anglaise, et le disent. -->
+     l'ordre du programme de book/SUMMARY.md ; les lots 1 à 9 (leçons 001-081)
+     traduisent les parties 0 à 4, et le dernier lot ajoute la partie 5 sans
+     rien réordonner. Les liens du cours non encore traduit mènent à l'édition
+     anglaise, et le disent. -->
 
 # Partie 0 — Fondations en C
 
@@ -342,5 +342,51 @@
 - [Leçon 070 — le coût du mixage dans le budget de frames](lessons/part-3/lesson-070-audio-row.md)
   - [Solution : ex1 — les deux intérieurs de la ligne](solutions/lesson-070/ex1.md)
   - [Solution : ex2 — les deux populations de la ligne](solutions/lesson-070/ex2.md)
+
+# Partie 4 — les services
+
+- [Leçon 071 — la table d'archétypes](lessons/part-4/lesson-071-table.md)
+  - [Solution : ex1 — l'en-tête, réordonné](solutions/lesson-071/ex1.md)
+  - [Solution : ex2 — la table réécrite](solutions/lesson-071/ex2.md)
+
+- [Leçon 072 — le chargement, complet ou nommé](lessons/part-4/lesson-072-load.md)
+  - [Solution : ex1 — la table avec un trou](solutions/lesson-072/ex1.md)
+  - [Solution : ex2 — le coût du chargement, mesuré](solutions/lesson-072/ex2.md)
+
+- [Leçon 073 — les entités en lignes](lessons/part-4/lesson-073-rows.md)
+  - [Solution : ex1 — deux héros, une ligne](solutions/lesson-073/ex1.md)
+  - [Solution : ex2 — chaque définition, une entité](solutions/lesson-073/ex2.md)
+
+- [Leçon 074 — un magasin fixe](lessons/part-4/lesson-074-store.md)
+  - [Solution : ex1 — le refus qu'on ignore](solutions/lesson-074/ex1.md)
+  - [Solution : ex2 — la capacité que vous choisiriez](solutions/lesson-074/ex2.md)
+
+- [Leçon 075 — la marche et l'emplacement libre](lessons/part-4/lesson-075-lifetime.md)
+  - [Solution : ex1 — la marche qui retire devant](solutions/lesson-075/ex1.md)
+  - [Solution : ex2 — la carte du magasin](solutions/lesson-075/ex2.md)
+
+- [Leçon 076 — le héros comme entité](lessons/part-4/lesson-076-hero.md)
+  - [Solution : ex1 — le pas, prédit](solutions/lesson-076/ex1.md)
+  - [Solution : ex2 — le héros sur votre machine](solutions/lesson-076/ex2.md)
+
+- [Leçon 077 — le mover sur une entité](lessons/part-4/lesson-077-mover.md)
+  - [Solution : ex1 — le coin, prédit](solutions/lesson-077/ex1.md)
+  - [Solution : ex2 — quel mur a dit non](solutions/lesson-077/ex2.md)
+
+- [Leçon 078 — l'échelle du temps de jeu](lessons/part-4/lesson-078-game-time.md)
+  - [Solution : ex1 — un hitstop qui se termine](solutions/lesson-078/ex1.md)
+  - [Solution : ex2 — un bouton, pas trois](solutions/lesson-078/ex2.md)
+
+- [Leçon 079 — la mesure n'est pas mise à l'échelle](lessons/part-4/lesson-079-wall-clock.md)
+  - [Solution : ex1 — la frame en pause, prédite](solutions/lesson-079/ex1.md)
+  - [Solution : ex2 — ce que coûte un jeu en pause](solutions/lesson-079/ex2.md)
+
+- [Leçon 080 — la tranche verticale](lessons/part-4/lesson-080-slice.md)
+  - [Solution : ex1 — la caméra aux bords de la carte](solutions/lesson-080/ex1.md)
+  - [Solution : ex2 — réponse à la porte](solutions/lesson-080/ex2.md)
+
+- [Leçon 081 — le coût de la tranche dans le budget de frames](lessons/part-4/lesson-081-entities-row.md)
+  - [Solution : ex1 — la ligne, à deux tailles](solutions/lesson-081/ex1.md)
+  - [Solution : ex2 — ce que la ligne ne dit pas](solutions/lesson-081/ex2.md)
 
 <!-- translation-source: book/SUMMARY.md @ cfeaecd -->

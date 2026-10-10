@@ -113,10 +113,22 @@ used where it exists; the pilot's terms:
 | clipping (audio) | écrêtage | distinct from clipping (graphics) → découpage |
 | gain / fade / loop (music) / one-shot | gain / fondu / boucle (boucler) / one-shot kept | |
 | device / underrun / latency | périphérique / underrun kept / latence | |
-| feed (audio) / gate / pull (mixer) | alimentation (alimenter) / barrière / tirage (tirer) | feed/gate established by lesson 060 |
+| feed (audio) / pull (mixer) | alimentation (alimenter) / tirage (tirer) | feed established by lesson 060 |
+| gate | barrière (audio feed, lesson 060) / porte (services checkpoint, lesson 080) | two senses, scoped by context |
 | clamp (audio) | écrêter / écrêtage | distinct from clamp (geometry) → bornage |
 | tone / peak / loudness / starvation | tonalité / crête / sonie / famine | |
 | pool / chunk / ducking / one-shot | kept in English | ducking keeps its verb "ducker" |
+| archetype (table) / row | archétype / ligne | |
+| store (entity store) | magasin (store) | first use glossed; the `Store` symbol stays |
+| free slot / free list / walk (entities) | emplacement libre / liste libre / marche | matches Part 2's "marche" |
+| entity / hero | entité / héros | |
+| game time / game-time scale / wall clock | temps de jeu / échelle du temps de jeu / horloge murale | matches lesson 020 |
+| vertical slice / typed failure | tranche verticale / échec typé | matches the course home page |
+| retirement (entities) / live entity | retrait (retirer) / entité vivante | `EntityRetire` symbol stays |
+| movement request / slide / pathfinding | requête de déplacement / glissement / recherche de chemin | |
+| scratch probe / high-water mark / headroom | sonde jetable / marque du plus haut emplacement / marge | |
+| balance / health / facing | équilibrage / vie (points de vie) / facing kept | facing is the column name in prose |
+| knob / wall step / wall time | bouton / pas mural / temps mural | |
 | exercise archetype tags (`predict-the-output`, `fix-the-crash`, `extend-the-code`, `measure-the-performance`, `explain-in-prose`, `port-to-your-own-machine`) | kept in English | they name the six archetypes of the `exercises` spec, as identifiers |
 | `REPL`, `traceback`, `backtrace`, `sandbox` | kept in English | loanwords or program names the pilot's pages use as-is |
 

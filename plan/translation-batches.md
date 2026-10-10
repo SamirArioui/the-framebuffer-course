@@ -16,19 +16,40 @@ holds**.
 | 5 | lessons 019-025 + solutions — the `snek` arc complete; **all of Part 0 translated** | 35 | 14 109 | 16 543 | 1.17 | 2026-10-10 (`f6392e2`) |
 | 6 | Part 1 — the platform layer (lessons 026-043 + solutions) | 54 | 28 384 | 33 638 | 1.19 | 2026-10-10 (`a42f4cd`) |
 | 7 | Part 2 — software rendering (lessons 044-058 + solutions) | 45 | 29 940 | 35 657 | 1.19 | 2026-10-10 (`6d27fe8`) |
-| 8 | Part 3 — sound (lessons 059-070 + solutions) | 36 | 33 795 | 39 342 | 1.16 | 2026-10-10 |
+| 8 | Part 3 — sound (lessons 059-070 + solutions) | 36 | 33 795 | 39 342 | 1.16 | 2026-10-10 (`893c43a`) |
+| 9 | Part 4 — services (lessons 071-081 + solutions) | 33 | 25 371 | 29 464 | 1.16 | 2026-10-10 |
 
-Parts 0 to 3 are complete in French: the whole French tree is 260 pages,
-about 156k EN → 169k FR prose words (summed from the batch rows). Remaining
-work, measured the same way:
+Parts 0 to 4 are complete in French: the whole French tree is 293 pages,
+about 181k EN → 198k FR prose words (summed from the batch rows). One batch
+remains:
 
 | Batch | Scope | Pages | EN words |
 | ----- | ----- | ----- | -------- |
-| 9 | Part 4 — services (071-081) | 33 | 25 371 |
 | 10 | Part 5 — the game (082-103) | 66 | 46 979 |
 
-Parts 4 and 5 follow as their own batches; the same 1.20 per-page planning
-number applies.
+## Batch 9 — 2026-10-10
+
+- **Pages:** the whole of Part 4 — 11 lessons (`071`-`081`, services) + 22
+  solutions; 293 French pages total, **Parties 0-4 done**.
+- **Method:** four parallel subagents (2-3 lessons each) in clean sessions;
+  coordinator owned SUMMARY.md, the home page, the term table, the
+  cross-page consistency pass, and all verification.
+- **Throughput:** ratio 1.16 (25 371 EN → 29 464 FR). Nine batches:
+  1.20 / 1.19 / 1.19 / 1.17 / 1.17 / 1.19 / 1.19 / 1.16 / 1.16.
+- **Coordinator pass:** footer-title check clean (0 mismatches); the *gate*
+  divergence (one subagent used *porte* where the table's audio row said
+  *barrière*) resolved as two scoped senses — *barrière* for the audio feed's
+  gate (lesson 060), *porte* for the services checkpoint (lesson 080) — and
+  the table now says so. lesson-081 mirrors English's footer exactly,
+  linking `[Partie 5 — le jeu](../../index.md)`.
+- **Terms added to the table** (conventions §2): magasin (store), archétype,
+  retrait/entité vivante, requête de déplacement, glissement, recherche de
+  chemin, sonde jetable, marque du plus haut emplacement, marge, équilibrage,
+  facing kept, bouton/pas mural/temps mural.
+- **Checker findings:** none — `OK 293 French page(s)` at the end.
+- **Verification:** rendered `<pre>` blocks byte-identical to English on all
+  290 lesson and solution pages; **2 403 links with 0 dead**; curriculum
+  order matches the English summary for all 81 lessons.
 
 ## Batch 8 — 2026-10-10
 
